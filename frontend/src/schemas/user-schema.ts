@@ -5,8 +5,8 @@ import { settingsSchema, themeSchema } from './settings-schema'
 export const userSchema = z.object({
   id: pbIdSchema,
   avatar: z.string(),
-  email: z.email('Invalid email'),
-  name: z.string().min(2, 'Too short').optional().or(z.literal('')),
+  email: z.email('邮箱格式不正确'),
+  name: z.string().min(2, '内容过短').optional().or(z.literal('')),
   verified: z.boolean(),
   authWithPasswordAvailable: z.boolean()
 })
@@ -22,17 +22,17 @@ export type UserWithSettings = z.infer<typeof userWithSettingsSchema>
 
 export const updateUserSettingsSchema = z
   .object({
-    remindEmail: z.email('Invalid email'),
+    remindEmail: z.email('邮箱格式不正确'),
     remindByEmailEnabled: z.boolean(),
     avatar: z.instanceof(File).nullish().optional(),
-    name: z.string().min(2, 'Too short').optional().or(z.literal('')),
+    name: z.string().min(2, '内容过短').optional().or(z.literal('')),
     theme: themeSchema,
     oldPassword: z.string().optional(),
     password: z.string().optional(),
     passwordConfirm: z.string().optional()
   })
   .refine((data) => data.password === data.passwordConfirm, {
-    message: 'Passwords must match',
+    message: '两次输入的密码不一致',
     path: ['passwordConfirm']
   })
   .refine(
@@ -40,7 +40,7 @@ export const updateUserSettingsSchema = z
       (data.oldPassword === '' && data.password === '') ||
       data.oldPassword !== data.password,
     {
-      message: 'New password is the same',
+      message: '新密码与原密码相同',
       path: ['password']
     }
   )
@@ -53,7 +53,7 @@ export const updateUserSettingsSchema = z
       return !anyPasswordFieldNotEmpty || allPasswordFieldsFilled
     },
     {
-      message: 'Complete all password fields',
+      message: '请填写全部密码字段',
       path: ['password']
     }
   )

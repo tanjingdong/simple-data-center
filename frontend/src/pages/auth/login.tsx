@@ -27,9 +27,9 @@ export default function LoginPage() {
 
   return (
     <main className='mx-auto flex w-full max-w-[350px] flex-col items-center gap-y-4'>
-      <h2 className='mt-4 text-4xl font-bold'>Log In</h2>
+      <h2 className='mt-4 text-4xl font-bold'>登录</h2>
       <p className='text-muted-foreground text-center text-xl font-light'>
-        Sign in to your account
+        登录您的账号
       </p>
       <Form {...form}>
         <form
@@ -39,13 +39,13 @@ export default function LoginPage() {
           <PasswordField form={form} name='password' />
 
           <Link to='/forgot-password' className='text-primary ml-auto text-sm'>
-            Forgot password
+            忘记密码
           </Link>
           <Button
             className='w-full'
             type='submit'
             disabled={!form.formState.isDirty || isLoggingIn}>
-            Login
+            登录
           </Button>
           <Button
             className='w-full'
@@ -53,14 +53,14 @@ export default function LoginPage() {
             type='button'
             onClick={loginWithGoogle}>
             <GoogleLogo />
-            Sign In with Google
+            使用 Google 登录
           </Button>
         </form>
       </Form>
       <p className='text-sm'>
-        Don&apos;t have an account?{' '}
+        还没有账号?{' '}
         <Link to='/register' className='text-primary'>
-          Register
+          注册
         </Link>
       </p>
     </main>

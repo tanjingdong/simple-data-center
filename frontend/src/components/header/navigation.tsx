@@ -14,14 +14,14 @@ export default function Navigation() {
         <LongHabitMainLogo />
       </Link>
       <Link
-        aria-label='user account or log in'
+        aria-label='用户账号或登录'
         to={verified ? '/tasks/settings' : '/login'}
         className='focus:outline-hidden'>
         <Avatar className='flex size-10 items-center justify-center'>
           {avatar && !location.search.logout ? (
             <AvatarImage
               src={`/api/files/users/${userId}/${avatar}?thumb=100x100`}
-              alt='user avatar icon'
+              alt='用户头像'
             />
           ) : (
             <DefaultUserAvatarLogo />

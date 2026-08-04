@@ -5,9 +5,13 @@ backend/dist
 # Editor directories and files
 .cursorrules
 .vscode/*
+.claude/*
+.doc/superpowers
+docs/superpowers
 
 # Compiled binary
 longhabit
+longhabit*.exe
 
 # Database
 db

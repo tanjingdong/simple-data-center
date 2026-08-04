@@ -5,6 +5,7 @@ import {
   format,
   formatDistanceStrict
 } from 'date-fns'
+import { zhCN } from 'date-fns/locale'
 import { getNextDueDate, stringToDate } from './date-convert'
 
 export function getTaskStatusLabels(
@@ -23,41 +24,45 @@ export function getTaskStatusLabels(
   let dateText, daysText
 
   if (repeatGoalEnabled && daysRepeat > 0) {
-    dateText = `Next ${format(nextDate, 'dd MMM yyyy')}`
+    dateText = `下次 ${format(nextDate, 'yyyy年M月d日')}`
 
     const numDaysAbs = Math.abs(dueInDays)
 
     let numDaysText
     if (numDaysAbs === 1) {
-      numDaysText = '1 day'
+      numDaysText = '1 天'
     } else if (numDaysAbs <= 45) {
-      numDaysText = `${numDaysAbs} days`
+      numDaysText = `${numDaysAbs} 天`
     } else {
-      numDaysText = formatDistanceStrict(nextDate, new Date())
+      numDaysText = formatDistanceStrict(nextDate, new Date(), {
+        locale: zhCN
+      })
     }
 
     if (dueInDays === 0) {
-      daysText = 'due today'
+      daysText = '今天到期'
     } else if (dueInDays > 0) {
-      daysText = `due in ${numDaysText}`
+      daysText = `${numDaysText}后到期`
     } else {
-      daysText = `${numDaysText} late`
+      daysText = `逾期 ${numDaysText}`
     }
   } else {
     dateText = lastDate
-      ? `Last ${format(lastDate, 'dd MMM yyyy')}`
-      : 'Never done'
+      ? `上次 ${format(lastDate, 'yyyy年M月d日')}`
+      : '从未完成'
 
     if (!lastDate) {
-      daysText = 'n/a'
+      daysText = '—'
     } else if (daysSince === 0) {
-      daysText = 'done today'
+      daysText = '今天完成'
     } else if (daysSince === 1) {
-      daysText = '1 day since'
+      daysText = '1 天前完成'
     } else if (daysSince <= 45) {
-      daysText = `${daysSince} days since`
+      daysText = `${daysSince} 天前完成`
     } else {
-      daysText = `${formatDistanceStrict(new Date(), lastDate)} since`
+      daysText = `${formatDistanceStrict(new Date(), lastDate, {
+        locale: zhCN
+      })} 前完成`
     }
   }
 

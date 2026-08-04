@@ -24,9 +24,7 @@ export default function TaskColumnDisplay({ row }: { row: Row<Task> }) {
           'flex items-center gap-1 text-xs',
           !repeatGoalEnabled && 'text-muted-foreground'
         )}>
-        {repeatGoalEnabled
-          ? `every ${daysRepeat} day${daysRepeat === 1 ? '' : 's'}`
-          : 'no goal'}
+        {repeatGoalEnabled ? `每 ${daysRepeat} 天` : '无目标'}
         {willSendEmailReminder && (
           <EnvelopeClosedIcon className='text-muted-foreground size-2.5' />
         )}

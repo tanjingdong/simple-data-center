@@ -39,34 +39,30 @@ export default function VerifyEmailPage() {
 
   return (
     <main className='mx-auto flex w-full max-w-[350px] flex-col items-center gap-y-4'>
-      <h2 className='mt-4 text-4xl font-bold'>Verify Email</h2>
-      <p className='text-muted-foreground text-xl font-light'>
-        Complete your registration
-      </p>
+      <h2 className='mt-4 text-4xl font-bold'>验证邮箱</h2>
+      <p className='text-muted-foreground text-xl font-light'>完成注册</p>
       <Form {...form}>
         <form
           className='flex w-full flex-col items-center gap-y-4'
           onSubmit={form.handleSubmit(handleVerifyEmail)}>
           <p className='text-center text-sm'>
-            Check your inbox and click the registration link.
+            请查收您的收件箱并点击注册链接。
           </p>
           {user?.email && (
             <p className='text-center text-sm'>
-              An email was sent to:{' '}
+              邮件已发送至:{' '}
               <span className='text-primary'>{user.email}</span>{' '}
             </p>
           )}
-          <p className='text-center text-sm'>
-            Or enter the verification token into the field below:
-          </p>
+          <p className='text-center text-sm'>或在下方的输入框中输入验证令牌:</p>
 
-          <InputField form={form} name='token' label='Verification token' />
+          <InputField form={form} name='token' label='验证令牌' />
 
           <Button
             className='mt-4 w-full'
             type='submit'
             disabled={isVerifyingEmail}>
-            Verify Using Token
+            使用令牌验证
           </Button>
           {user ? (
             <>
@@ -77,22 +73,22 @@ export default function VerifyEmailPage() {
                 disabled={emailSendCountdown > 0}
                 onClick={() => sendVerificationEmail(user?.email)}>
                 {emailSendCountdown > 0
-                  ? `Send Again (${emailSendCountdown})`
-                  : 'Resend Email'}
+                  ? `重新发送 (${emailSendCountdown})`
+                  : '重新发送邮件'}
               </Button>
               <Button
                 type='button'
                 variant='link'
                 className='w-full hover:no-underline'
                 onClick={logout}>
-                Log out
+                退出登录
               </Button>
             </>
           ) : (
             <p className='text-sm'>
-              Back to{' '}
+              返回{' '}
               <Link to='/login' className='text-primary'>
-                log in
+                登录
               </Link>
             </p>
           )}

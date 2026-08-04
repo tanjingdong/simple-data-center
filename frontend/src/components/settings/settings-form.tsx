@@ -38,6 +38,13 @@ import { useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import UploadFileField from '../form/file-upload-field'
 
+// 主题值的中文显示名称
+const themeNames: Record<string, string> = {
+  light: '浅色',
+  dark: '深色',
+  system: '跟随系统'
+}
+
 export default function SettingsForm() {
   const formRef = useRef<HTMLFormElement>(null)
   const { logout } = useAuth()
@@ -77,15 +84,15 @@ export default function SettingsForm() {
           (userData) => userId && updateSettings(userId, userData)
         )}>
         <SheetHeader className='w-full'>
-          <SheetTitle className='pb-4 text-4xl font-bold'>Settings</SheetTitle>
-          <SheetDescription className='hidden'>Settings</SheetDescription>
+          <SheetTitle className='pb-4 text-4xl font-bold'>设置</SheetTitle>
+          <SheetDescription className='hidden'>设置</SheetDescription>
         </SheetHeader>
 
         <p className='text-muted-foreground w-full text-xl font-light'>
-          Account Settings
+          账户设置
         </p>
 
-        <UploadFileField form={form} name='avatar' label='Avatar image' />
+        <UploadFileField form={form} name='avatar' label='头像图片' />
 
         <InputField form={form} name='name' />
 
@@ -94,7 +101,7 @@ export default function SettingsForm() {
           name='theme'
           render={({ field }) => (
             <FormItem className='mr-auto'>
-              <FormLabel className='mt-0! cursor-pointer'>Theme</FormLabel>
+              <FormLabel className='mt-0! cursor-pointer'>主题</FormLabel>
               <div className='flex items-center gap-x-1'>
                 <FormControl>
                   <ThemeSwitch
@@ -102,8 +109,8 @@ export default function SettingsForm() {
                     onThemeChange={field.onChange}
                   />
                 </FormControl>
-                <FormLabel className='mt-0! cursor-pointer capitalize'>
-                  {field.value}
+                <FormLabel className='mt-0! cursor-pointer'>
+                  {themeNames[field.value]}
                 </FormLabel>
               </div>
             </FormItem>
@@ -111,70 +118,64 @@ export default function SettingsForm() {
         />
 
         <p className='text-muted-foreground w-full text-xl font-light'>
-          Notification Settings
+          通知设置
         </p>
 
         <InputField
           form={form}
           name='remindEmail'
           type='email'
-          label='Email for reminders'
+          label='提醒邮箱'
         />
 
         <SwitchField
           form={form}
           name='remindByEmailEnabled'
-          label='Enable email reminders '
+          label='启用邮件提醒'
         />
 
         {authWithPasswordAvailable && (
           <>
             <p className='text-muted-foreground w-full text-xl font-light'>
-              Change Password
+              修改密码
             </p>
 
-            <PasswordField
-              form={form}
-              name='oldPassword'
-              label='Current password'
-            />
+            <PasswordField form={form} name='oldPassword' label='当前密码' />
 
-            <PasswordField form={form} name='password' label='New password' />
+            <PasswordField form={form} name='password' label='新密码' />
 
             <PasswordField
               form={form}
               name='passwordConfirm'
-              label='Confirm new password'
+              label='确认新密码'
             />
           </>
         )}
 
         <SheetFooter className='mt-4 grid w-full grid-cols-2 gap-4 px-0 sm:space-x-0'>
           <Button disabled={!fieldsEdited} className='w-full' type='submit'>
-            Update Settings
+            更新设置
           </Button>
 
           <Dialog>
             <DialogTrigger asChild>
               <Button variant='outline' type='button' className='w-full'>
-                Log out
+                退出登录
               </Button>
             </DialogTrigger>
             <DialogContent className='bg-popover sm:max-w-[300px]'>
               <DialogHeader>
-                <DialogTitle>Logging out</DialogTitle>
-                <DialogDescription>
-                  Are you sure you want to log out?
-                </DialogDescription>
+                <DialogTitle>正在退出登录</DialogTitle>
+                <DialogDescription>确定要退出登录吗?</DialogDescription>
               </DialogHeader>
 
               <DialogFooter className='flex items-center gap-4 sm:justify-between'>
                 <Button className='w-full' onClick={logout}>
-                  Log out
+                  退出登录
                 </Button>
                 <DialogClose asChild>
                   <Button type='button' className='w-full' variant='secondary'>
-                    Cancel
+                    取消
                   </Button>
                 </DialogClose>
               </DialogFooter>
@@ -186,7 +187,7 @@ export default function SettingsForm() {
             type='button'
             className='col-span-2 w-full'>
             <Link to='/tasks' preload={false}>
-              Back
+              返回
             </Link>
           </Button>
         </SheetFooter>

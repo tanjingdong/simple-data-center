@@ -99,7 +99,7 @@ const privacyPolicyRoute = createRoute({
   component: PrivacyPolicyPage,
   pendingComponent: Spinner,
   beforeLoad: () => {
-    return { getTitle: () => 'Privacy Policy' }
+    return { getTitle: () => '隐私政策' }
   }
 })
 
@@ -120,7 +120,7 @@ const loginRoute = createRoute({
   beforeLoad: () => {
     if (checkUserIsLoggedIn() && !checkEmailIsVerified())
       throw redirect({ to: '/verify-email' })
-    return { getTitle: () => 'Login' }
+    return { getTitle: () => '登录' }
   }
 })
 
@@ -131,7 +131,7 @@ const registerRoute = createRoute({
   beforeLoad: () => {
     if (checkUserIsLoggedIn() && !checkEmailIsVerified())
       throw redirect({ to: '/verify-email' })
-    return { getTitle: () => 'Register' }
+    return { getTitle: () => '注册' }
   }
 })
 
@@ -141,7 +141,7 @@ const verifyEmailRoute = createRoute({
   component: VerifyEmailPage,
   validateSearch: verifyEmailParamsSchema,
   beforeLoad: () => {
-    return { getTitle: () => 'Verify Email' }
+    return { getTitle: () => '验证邮箱' }
   }
 })
 
@@ -152,7 +152,7 @@ const forgotPasswordRoute = createRoute({
   beforeLoad: () => {
     if (checkUserIsLoggedIn() && !checkEmailIsVerified())
       throw redirect({ to: '/verify-email' })
-    return { getTitle: () => 'Forgot Password' }
+    return { getTitle: () => '忘记密码' }
   }
 })
 
@@ -161,7 +161,7 @@ const resetPasswordRoute = createRoute({
   path: 'reset-password',
   component: ResetPasswordPage,
   validateSearch: resetPasswordParamsSchema,
-  beforeLoad: () => ({ getTitle: () => 'Reset Password' })
+  beforeLoad: () => ({ getTitle: () => '重置密码' })
 })
 
 const tasksRoute = createRoute({
@@ -171,7 +171,7 @@ const tasksRoute = createRoute({
   pendingComponent: Spinner,
   beforeLoad: () => {
     if (!checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/login' })
-    return { getTitle: () => 'Tasks' }
+    return { getTitle: () => '任务' }
   },
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData(tasksQueryOptions)
@@ -181,7 +181,7 @@ const settingsRoute = createRoute({
   getParentRoute: () => tasksRoute,
   path: 'settings',
   component: SettingsPage,
-  beforeLoad: () => ({ getTitle: () => 'Settings' })
+  beforeLoad: () => ({ getTitle: () => '设置' })
 })
 
 const newTaskRoute = createRoute({
@@ -189,7 +189,7 @@ const newTaskRoute = createRoute({
   path: 'new',
   component: NewTaskPage,
   beforeLoad: () => {
-    return { getTitle: () => 'New' }
+    return { getTitle: () => '新建' }
   }
 })
 
@@ -198,7 +198,7 @@ const editTaskRoute = createRoute({
   path: '$taskId',
   component: EditTaskPage,
   beforeLoad: () => {
-    return { getTitle: () => 'Edit' }
+    return { getTitle: () => '编辑' }
   },
   loader: async ({ context: { queryClient }, params: { taskId } }) => {
     const taskIdValidationResult = pbIdSchema.safeParse(taskId)

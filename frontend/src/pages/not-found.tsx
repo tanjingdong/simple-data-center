@@ -15,16 +15,14 @@ export default function NotFoundPage() {
   return (
     <main className='flex flex-col items-center gap-y-4 text-center'>
       <div className='mt-4 space-y-2 text-4xl font-bold sm:text-5xl'>
-        This page does not exist
+        页面不存在
       </div>
-      <p className='text-lg font-light sm:text-xl'>
-        Sorry, we could not find the page you are looking for
-      </p>
+      <p className='text-lg font-light sm:text-xl'>抱歉,未找到您访问的页面</p>
       <Button
         variant='link'
         className='w-32 hover:no-underline'
         onClick={() => history.go(-1)}>
-        ← Go back
+        ← 返回
       </Button>
     </main>
   )

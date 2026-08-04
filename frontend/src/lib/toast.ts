@@ -19,7 +19,7 @@ export function successToast(title: string, message: string = '') {
 export function errorToast(title: string, messageData?: unknown) {
   let messageText = ''
   if (messageData instanceof Error)
-    messageText = messageData.message || 'Unknown error'
+    messageText = messageData.message || '未知错误'
   if (typeof messageData === 'string') messageText = messageData
   toast.error(title, {
     description: messageText,

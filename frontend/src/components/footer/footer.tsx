@@ -20,7 +20,7 @@ export default function Footer() {
             className='flex items-center justify-center hover:underline'
             href='https://github.com/s-petr/longhabit'>
             <GitHubLogoIcon className='mr-1' />
-            Source Code
+            源代码
           </a>
         </div>
         <p className='text-center md:text-right'>
@@ -28,7 +28,7 @@ export default function Footer() {
             resetScroll={true}
             to='/privacy-policy'
             className='hover:underline'>
-            Privacy Policy
+            隐私政策
           </Link>
         </p>
       </div>

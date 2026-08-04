@@ -14,17 +14,17 @@ export default function ErrorPage({ error }: { error: Error }) {
   return (
     <main className='flex flex-col items-center gap-y-4 text-center'>
       <div className='mt-8 space-y-2 text-4xl font-bold sm:text-5xl'>
-        Internal server error
+        服务器内部错误
       </div>
       <p className='text-lg font-light sm:text-xl'>
-        Something went wrong. We apologize for the inconvenience.
+        出现了一些问题,给您带来不便,敬请谅解。
       </p>
       {error.message && <p className='text-sm'>{error.message}</p>}
       <Button
         variant='link'
         className='w-32 hover:no-underline'
         onClick={() => history.go(-1)}>
-        ← Go back
+        ← 返回
       </Button>
     </main>
   )

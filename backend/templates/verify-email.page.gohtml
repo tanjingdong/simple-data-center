@@ -1,27 +1,26 @@
 {{define "content"}}
-<p>Hi,</p>
-<p>Thank you for signing up to Long Habit.</p>
-<p>Click on the button below to verify your email address.</p>
+<p>您好,</p>
+<p>感谢您注册 Long Habit。</p>
+<p>请点击下方按钮验证您的邮箱地址。</p>
 <p>
   <a
     class="btn"
     href="{{.domain}}/verify-email?token={{.token}}"
     target="_blank"
     rel="noopener"
-    >Verify</a
+    >验证</a
   >
 </p>
 
 <p>
-  Alternatively, you can copy the token below to verify your email in the
-  browser.
+  或者,您也可以复制下方令牌,在浏览器中完成邮箱验证。
 </p>
 <p>
   <i>{{.token}}</i>
 </p>
 
 <p>
-  Thanks,<br />
+  谢谢,<br />
   Long Habit
 </p>
 {{ end }}

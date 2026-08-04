@@ -46,16 +46,13 @@ export default function useTasks() {
 
     onSuccess: (_, context) => {
       trackEvent('task-add')
-      successToast(
-        'New task added',
-        `A new task "${context.data.name}" was created.`
-      )
+      successToast('任务已添加', `已创建新任务「${context.data.name}」。`)
       navigate({ to: '/tasks' })
     },
 
     onError: (error) => {
       console.error(error)
-      errorToast('Could not create a new task', error)
+      errorToast('新建任务失败', error)
     },
 
     onSettled: () => {
@@ -90,16 +87,13 @@ export default function useTasks() {
     },
 
     onSuccess: (_, context) => {
-      successToast(
-        'Updated task',
-        `Updated details for task "${context.data.name}".`
-      )
+      successToast('任务已更新', `任务「${context.data.name}」的详情已更新。`)
       navigate({ to: '/tasks' })
     },
 
     onError: (error, variables, context) => {
       console.error(error)
-      errorToast('Could not update task', error)
+      errorToast('更新任务失败', error)
       queryClient.setQueryData(['tasks'], context?.previousTasks)
       queryClient.setQueryData(
         ['tasks', variables.taskId],
@@ -152,7 +146,7 @@ export default function useTasks() {
 
     onError: (error, variables, context) => {
       console.error(error)
-      errorToast('Could not update task history', error)
+      errorToast('更新任务记录失败', error)
       queryClient.setQueryData(['tasks'], context?.previousTasks)
       queryClient.setQueryData(
         ['tasks', variables.taskId],
@@ -171,13 +165,13 @@ export default function useTasks() {
     mutationFn: (taskData: Task) => deleteTaskApi(taskData.id!),
 
     onSuccess: (_, context) => {
-      successToast('Deleted task', `Task "${context.name}" was deleted.`)
+      successToast('任务已删除', `任务「${context.name}」已删除。`)
       navigate({ to: '/tasks' })
     },
 
     onError: (error) => {
       console.error(error)
-      errorToast('Could not delete task', error)
+      errorToast('删除任务失败', error)
     },
 
     onSettled: () => {

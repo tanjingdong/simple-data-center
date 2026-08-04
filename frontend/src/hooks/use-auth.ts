@@ -49,7 +49,7 @@ export default function useAuth() {
       queryClient.invalidateQueries({ queryKey: ['user'] })
       router.navigate({ to: '/tasks' })
     } catch (error) {
-      errorToast('Could not log in', error)
+      errorToast('登录失败', error)
     }
   }
 
@@ -62,7 +62,7 @@ export default function useAuth() {
       router.invalidate()
       router.navigate({ to: '/tasks' })
     } catch (error) {
-      errorToast('Could not log in', error)
+      errorToast('登录失败', error)
     }
   }
 
@@ -70,13 +70,10 @@ export default function useAuth() {
     try {
       await createNewUser(newUserData)
       trackEvent('signup')
-      successToast(
-        'Registration successful!',
-        'Please check your inbox for a verification email'
-      )
+      successToast('注册成功!', '请查收邮箱中的验证邮件')
       router.navigate({ to: '/login' })
     } catch (error) {
-      errorToast('Could not register', error)
+      errorToast('注册失败', error)
     }
   }
 
@@ -106,13 +103,10 @@ export default function useAuth() {
   const requestPasswordReset = async (email: string) => {
     try {
       await requestPasswordResetApi(email)
-      successToast(
-        'Password reset email sent',
-        'An email with password reset instructions has been sent to your inbox'
-      )
+      successToast('重置密码邮件已发送', '密码重置说明已发送至您的邮箱')
       startEmailSendCountdown()
     } catch (error) {
-      errorToast('Could not send password reset email', error)
+      errorToast('发送密码重置邮件失败', error)
     }
   }
 
@@ -123,24 +117,21 @@ export default function useAuth() {
   ) => {
     try {
       await confirmPasswordResetApi(password, passwordConfirm, token)
-      successToast('Changed password', 'Your password has been updated')
+      successToast('密码已修改', '您的密码已更新')
       router.navigate({ to: '/login' })
     } catch (error) {
-      errorToast('Could not update password', error)
+      errorToast('更新密码失败', error)
     }
   }
 
   const sendVerificationEmail = async (email: string | undefined) => {
     try {
-      if (!email) throw new Error("Unable to get logged in user's email")
+      if (!email) throw new Error('无法获取当前登录用户的邮箱')
       await sendVerificationEmailApi(email)
-      successToast(
-        'Verification email sent',
-        'Please check your inbox for a verification email'
-      )
+      successToast('验证邮件已发送', '请查收邮箱中的验证邮件')
       startEmailSendCountdown()
     } catch (error) {
-      errorToast('Could not send verification email', error)
+      errorToast('发送验证邮件失败', error)
     }
   }
 
@@ -155,13 +146,10 @@ export default function useAuth() {
             }
           : userData
       )
-      successToast(
-        'Verification successful',
-        'Your email address has been verified'
-      )
+      successToast('验证成功', '您的邮箱地址已验证')
       router.navigate({ to: '/login' })
     } catch (error) {
-      errorToast('Could not verify email by token', error)
+      errorToast('邮箱验证失败', error)
     }
   }
 

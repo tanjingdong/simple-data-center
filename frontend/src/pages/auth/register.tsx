@@ -27,9 +27,9 @@ export default function RegisterPage() {
 
   return (
     <main className='mx-auto flex w-full max-w-[350px] flex-col items-center gap-y-4'>
-      <h2 className='mt-4 text-4xl font-bold'>Register</h2>
+      <h2 className='mt-4 text-4xl font-bold'>注册</h2>
       <p className='text-muted-foreground text-center text-xl font-light'>
-        Enter your details to create a new account
+        填写信息创建新账号
       </p>
       <Form {...form}>
         <form
@@ -48,7 +48,7 @@ export default function RegisterPage() {
             className='mt-4 w-full'
             type='submit'
             disabled={!form.formState.isDirty || isRegistering}>
-            Register
+            注册
           </Button>
           <Button
             className='w-full'
@@ -56,14 +56,14 @@ export default function RegisterPage() {
             type='button'
             onClick={loginWithGoogle}>
             <GoogleLogo />
-            Sign Up with Google
+            使用 Google 注册
           </Button>
         </form>
       </Form>
       <p className='text-sm'>
-        Already have an account?{' '}
+        已有账号?{' '}
         <Link to='/login' className='text-primary'>
-          Log in
+          登录
         </Link>
       </p>
     </main>

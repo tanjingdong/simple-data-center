@@ -23,7 +23,7 @@ export function TaskDone({ task }: { task: Task }) {
   return (
     <button
       type='button'
-      aria-label='Mark as done'
+      aria-label='标记为完成'
       className={cn(
         'flex size-8 cursor-pointer items-center justify-center rounded-full transition-all duration-75 ease-in-out',
         doneToday

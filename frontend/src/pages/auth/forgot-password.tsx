@@ -26,9 +26,9 @@ export default function ForgotPasswordPage() {
 
   return (
     <main className='mx-auto flex w-full max-w-[350px] flex-col items-center gap-y-4'>
-      <h2 className='mt-4 text-4xl font-bold'>Reset Password</h2>
+      <h2 className='mt-4 text-4xl font-bold'>重置密码</h2>
       <p className='text-muted-foreground text-center text-xl font-light'>
-        Enter your email address to request a password reset
+        输入您的邮箱地址以请求重置密码
       </p>
       <Form {...form}>
         <form
@@ -43,16 +43,16 @@ export default function ForgotPasswordPage() {
             type='submit'
             disabled={emailSendCountdown > 0 || !form.formState.isDirty}>
             {emailSendCountdown > 0
-              ? `Send Again (${emailSendCountdown})`
-              : 'Request Reset'}
+              ? `重新发送 (${emailSendCountdown})`
+              : '发送重置邮件'}
           </Button>
         </form>
       </Form>
 
       <p className='text-sm'>
-        Back to{' '}
+        返回{' '}
         <Link to='/login' className='text-primary'>
-          login
+          登录
         </Link>
       </p>
     </main>

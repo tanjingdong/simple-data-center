@@ -50,14 +50,14 @@ export default function useSettings() {
 
     onSuccess: () => {
       trackEvent('settings-update')
-      successToast('Success!', 'Account details were updated successfully')
+      successToast('成功!', '账户信息更新成功')
       navigate({ to: '/tasks' })
     },
 
     onError: (error, _, context) => {
       console.error(error)
       queryClient.setQueryData(['user'], context?.previousUser)
-      errorToast('Could not update account details', error)
+      errorToast('更新账户信息失败', error)
     },
 
     onSettled: () => {

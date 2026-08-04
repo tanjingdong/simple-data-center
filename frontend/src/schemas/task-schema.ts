@@ -9,13 +9,13 @@ export const taskHistoryDateSchema = z.string().refine((date) => {
   } catch {
     return false
   }
-}, 'Invalid date. Must use format yyyy-MM-dd')
+}, '日期无效,格式须为 yyyy-MM-dd')
 
 export type TaskHistoryDate = z.infer<typeof taskHistoryDateSchema>
 
 export const taskSchema = z.object({
   id: pbIdSchema.optional(),
-  name: z.string().min(2, 'Too short'),
+  name: z.string().min(2, '内容过短'),
   description: z.string().optional(),
   category: z.string().optional(),
   repeatGoalEnabled: z.boolean().default(false),
@@ -23,7 +23,7 @@ export const taskSchema = z.object({
     .union([
       z.literal(''),
       z.literal(0).transform(() => ''),
-      z.coerce.number().int().min(1, 'Invalid number of days')
+      z.coerce.number().int().min(1, '天数无效')
     ])
     .transform((val) => (val === '' ? 0 : val))
     .optional(),
@@ -31,7 +31,7 @@ export const taskSchema = z.object({
     .union([
       z.literal(''),
       z.literal(0).transform(() => ''),
-      z.coerce.number().int().min(1, 'Invalid number of days')
+      z.coerce.number().int().min(1, '天数无效')
     ])
     .transform((val) => (val === '' ? 0 : val))
     .optional(),

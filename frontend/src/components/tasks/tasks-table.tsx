@@ -51,7 +51,7 @@ export const columns: ColumnDef<Task>[] = [
           className='-ml-9 gap-x-0 pl-0 text-sm hover:bg-transparent'
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
           <CaretSortIcon />
-          Task / Goal
+          任务 / 目标
         </Button>
       )
     },
@@ -68,7 +68,7 @@ export const columns: ColumnDef<Task>[] = [
             onClick={() =>
               column.toggleSorting(column.getIsSorted() === 'asc')
             }>
-            Status
+            状态
             <CaretSortIcon />
           </Button>
         </div>
@@ -132,7 +132,7 @@ export function TasksTable({ tasks }: { tasks: Task[] }) {
     <div className='w-full'>
       <div className='flex items-center justify-between py-2'>
         <Input
-          placeholder='Filter tasks...'
+          placeholder='筛选任务...'
           className='rounded-r-none focus-visible:ring-0'
           value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
@@ -147,17 +147,17 @@ export function TasksTable({ tasks }: { tasks: Task[] }) {
           value={categoryFilter ?? 'All'}
           onValueChange={setCategoryFilter}>
           <SelectTrigger
-            aria-label='Filter by category'
+            aria-label='按分类筛选'
             className='w-32 cursor-pointer rounded-l-none border-l-0 select-none focus:ring-0 focus-visible:ring-0'
             onKeyDown={(event) =>
               event.key === 'Escape' && setCategoryFilter('All')
             }>
-            <SelectValue placeholder='Filter category' />
+            <SelectValue placeholder='筛选分类' />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
               <SelectItem value='All' className='cursor-pointer'>
-                All
+                全部
               </SelectItem>
               {categories.map((category, index) => (
                 <SelectItem
@@ -172,7 +172,7 @@ export function TasksTable({ tasks }: { tasks: Task[] }) {
         </Select>
         <Button
           className='ml-2 size-8 rounded-full'
-          aria-label='Add new task'
+          aria-label='新建任务'
           onClick={() => navigate({ to: '/tasks/new' })}>
           <PlusIcon />
         </Button>
@@ -231,7 +231,7 @@ export function TasksTable({ tasks }: { tasks: Task[] }) {
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className='h-8 text-center'>
-                  {tasks.length ? 'No results.' : 'No tasks added yet.'}
+                  {tasks.length ? '无匹配结果' : '还没有添加任务'}
                 </TableCell>
               </TableRow>
             )}

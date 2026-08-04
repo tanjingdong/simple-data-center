@@ -40,8 +40,12 @@ function Calendar({
       )}
       captionLayout={captionLayout}
       formatters={{
-        formatMonthDropdown: (date: Date) =>
-          date.toLocaleString('default', { month: 'short' }),
+        // 中文化:月份下拉、标题、星期标题
+        formatMonthDropdown: (date: Date) => `${date.getMonth() + 1}月`,
+        formatCaption: (date: Date) =>
+          `${date.getFullYear()}年${date.getMonth() + 1}月`,
+        formatWeekdayName: (weekday: Date) =>
+          ['日', '一', '二', '三', '四', '五', '六'][weekday.getDay()],
         ...formatters
       }}
       classNames={{

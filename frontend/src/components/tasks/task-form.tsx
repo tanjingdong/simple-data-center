@@ -78,7 +78,7 @@ export default function TaskForm({
     }
   }
 
-  const pageTitle = `${selectedTask ? 'Edit' : 'New'} Task`
+  const pageTitle = `${selectedTask ? '编辑' : '新建'}任务`
 
   return (
     <Form {...form}>
@@ -101,14 +101,14 @@ export default function TaskForm({
         <SwitchField
           form={form}
           name='repeatGoalEnabled'
-          label='Set a goal to repeat regularly'
+          label='设置定期重复的目标'
         />
 
         <InputField
           form={form}
           type='number'
           name='daysRepeat'
-          label='Repeat every x days'
+          label='每 x 天重复'
           min={1}
           disabled={!form.watch('repeatGoalEnabled')}
         />
@@ -116,7 +116,7 @@ export default function TaskForm({
         <SwitchField
           form={form}
           name='remindByEmail'
-          label='Send reminders by email'
+          label='通过邮件发送提醒'
           hidden={!remindByEmailEnabled}
           disabled={!remindByEmailEnabled || !form.watch('repeatGoalEnabled')}
         />
@@ -125,7 +125,7 @@ export default function TaskForm({
           form={form}
           type='number'
           name='daysRemind'
-          label='Remind every x days'
+          label='每 x 天提醒'
           min={1}
           hidden={!remindByEmailEnabled}
           disabled={
@@ -140,9 +140,7 @@ export default function TaskForm({
           name='history'
           render={({ field }) => (
             <FormItem className='w-full pb-4'>
-              <FormLabel className='w-full text-center'>
-                Dates completed
-              </FormLabel>
+              <FormLabel className='w-full text-center'>完成日期</FormLabel>
               <FormControl>
                 <DatePicker value={field.value} onChange={field.onChange} />
               </FormControl>
@@ -155,13 +153,13 @@ export default function TaskForm({
             type='submit'
             disabled={!fieldsEdited}
             className={cn('w-full', !selectedTask && 'col-span-2')}>
-            {selectedTask ? 'Update Task' : 'Add Task'}
+            {selectedTask ? '更新任务' : '添加任务'}
           </Button>
           {selectedTask && (
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant='destructive' type='button' className='w-full'>
-                  Delete Task
+                  删除任务
                 </Button>
               </DialogTrigger>
               <DialogContent
@@ -170,10 +168,10 @@ export default function TaskForm({
                   event.key === 'Enter' && deleteTask(selectedTask)
                 }>
                 <DialogHeader>
-                  <DialogTitle>Delete Task</DialogTitle>
+                  <DialogTitle>删除任务</DialogTitle>
                   <DialogDescription>
-                    Are you sure you want to delete the task &quot;
-                    {selectedTask.name}&quot;?
+                    确定要删除任务「
+                    {selectedTask.name}」吗?
                   </DialogDescription>
                 </DialogHeader>
 
@@ -182,14 +180,14 @@ export default function TaskForm({
                     className='w-full'
                     variant='destructive'
                     onClick={() => deleteTask(selectedTask)}>
-                    Delete
+                    删除
                   </Button>
                   <DialogClose asChild>
                     <Button
                       type='button'
                       className='w-full'
                       variant='secondary'>
-                      Cancel
+                      取消
                     </Button>
                   </DialogClose>
                 </DialogFooter>
@@ -202,7 +200,7 @@ export default function TaskForm({
             type='button'
             className='col-span-2 w-full'>
             <Link to='/tasks' preload={false}>
-              {selectedTask ? 'Back' : 'Cancel'}
+              {selectedTask ? '返回' : '取消'}
             </Link>
           </Button>
         </SheetFooter>

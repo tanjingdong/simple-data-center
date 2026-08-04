@@ -2,104 +2,102 @@
 
 <a href="https://longhabit.com"><img src="https://longhabit.com/og-image.png" /></a>
 
-
-
 # Long Habit
 
-Long Habit is a simple CRUD application for tracking long-term habits and recurring tasks. It is a production-ready full-stack project built using PocketBase and React. This is a comprehensive example of integrating PocketBase into a larger Go project and combining it with a modern React frontend using best practices. The application is very simple and can be used as a template for starting new projects. Most of the boilerplate setup has been taken care of and common issues have been identified and fixed.
+Long Habit 是一个用于追踪长期习惯和周期性任务的简单 CRUD 应用。它是一个基于 PocketBase 和 React 构建的生产级全栈项目,是集成 PocketBase 到大型 Go 项目并将其与现代 React 前端结合的综合性示例。应用程序非常简单,可以作为新项目的模板。大部分样板配置已处理完毕,常见问题已被发现并修复。
 
-Try the live version: https://longhabit.com
+在线体验:https://longhabit.com
 
-## Key Features
+## 主要特性
 
-### Backend Architecture
-- Running the latest version of Pocketbase (v0.39).
-- Single-binary build. Uses Go's "embed" package to embed the React front-end as a file system inside the compiled binary.
-- PocketBase is installed as a Go package and used as a framework. The project makes use of many extension features including:
-  - Custom hooks and middleware
-  - Route binding
-  - Database operations
-  - Scheduled tasks with cron
-  - HTML email templates
-  - Custom logging configuration
-- Worker pool implementation for bulk email processing done using the Pond library
-- Idiomatic Go code organization with clean separation of concerns
+### 后端架构
+- 运行最新版 Pocketbase (v0.39)。
+- 单二进制构建。使用 Go 的 "embed" 包将 React 前端作为文件系统嵌入编译后的二进制文件中。
+- PocketBase 以 Go 包形式安装并作为框架使用。项目使用了许多扩展特性,包括:
+  - 自定义 hooks 和中间件
+  - 路由绑定
+  - 数据库操作
+  - 带 cron 的定时任务
+  - HTML 邮件模板
+  - 自定义日志配置
+- 使用 Pond 库实现的批量邮件处理 worker pool
+- 惯用的 Go 代码组织,职责分离清晰
 
-### Frontend Implementation
-- Modern React setup with TypeScript and Vite.
-- Built for React 19. Works with React Compiler enabled.
-- TailwindCSS with ShadCN UI fully configured with a custom theme.
-- Responsive design using all the best practices. Supports light and dark mode. Tested on desktop and mobile screens.
-- Complete authentication flow with customized forms. Works with email + password auth as well as Google OAuth.
-- TanStack Router configured using best practices. All the authentication logic and data fetching happens in the router before the pages are loaded. Dynamic page title switching based on route.
-- TanStack Query fully integrated with PocketBase and TanStack Router. Fresh data is fetched from the backend and loaded before the routes are rendered. TanStack Query takes care of data fetching and ensures that client-side state is up to date with server-side data.
-- Loading states are implemented using the new React Suspense boundaries. 
-- Dynamic forms with validation and error messages implemented using React Hook Form and Zod.
-- SEO optimizations like meta description and social media cards meta tags added to root HTML page, sitemap.xml and robots.txt added and configured. Exclude rule for the PocketBase admin "/_" URL added to prevent it from being indexed by crawlers.
+### 前端实现
+- 使用 TypeScript 和 Vite 构建的现代 React 配置。
+- 基于 React 19 构建,支持 React Compiler。
+- 完整配置 TailwindCSS 与 ShadCN UI,带自定义主题。
+- 采用最佳实践实现响应式设计,支持浅色和深色模式,已在桌面和移动端测试。
+- 完整的认证流程,带自定义表单。支持邮箱 + 密码认证以及 Google OAuth。
+- 使用 TanStack Router 按最佳实践配置。所有认证逻辑和数据获取在页面加载前于路由中完成。基于路由的动态页面标题切换。
+- TanStack Query 与 PocketBase 和 TanStack Router 完全集成。数据在路由渲染前从后端获取并加载。TanStack Query 负责数据获取,确保客户端状态与服务器端数据保持同步。
+- 使用新的 React Suspense 边界实现加载状态。
+- 使用 React Hook Form 和 Zod 实现带验证和错误消息的动态表单。
+- SEO 优化,如 meta description 和社交媒体卡片 meta 标签已添加到根 HTML 页面,sitemap.xml 和 robots.txt 已添加并配置。为 PocketBase 管理后台 "/_" URL 添加排除规则,防止被爬虫索引。
 
-### Developer Experience
-- Vite dev mode with hot reload works seamlessly with PocketBase. No need to wait for PocketBase to compile. Vite and PocketBase proxy requests to and from each other while running on different ports.
-- Fully working ESlint configuration written in the new ESlint 9 format. Includes all the relevant plugins for React, Tailwind and Prettier. 
-- Single-command production builds.
-- Run project locally in Docker Compose without additional configuration.
-- Compatible with any Node.js runtime (default: Bun).
+### 开发体验
+- 带热重载的 Vite 开发模式可与 PocketBase 无缝协作。无需等待 PocketBase 编译。Vite 和 PocketBase 在不同端口运行时互相代理请求。
+- 使用新的 ESlint 9 格式编写的完整 ESlint 配置,包含所有相关的 React、Tailwind 和 Prettier 插件。
+- 单命令生产构建。
+- 无需额外配置即可在 Docker Compose 中本地运行项目。
+- 兼容任何 Node.js 运行时(默认:Bun)。
 
-### Deployment
-- Compile into a single executable binary or deploy using Docker containers.
-- Fully containerized, all the build steps happen in a multi-stage Dockerfile. Outputs a slim Alpine container that contains only the compiled binary.
-- Docker Compose deployment that works out of the box. Working health check endpoint included.
-- Ready for deployment on Dokploy, Coolify and similar platforms.
+### 部署
+- 编译为单个可执行二进制文件或使用 Docker 容器部署。
+- 完全容器化,所有构建步骤都在多阶段 Dockerfile 中完成。输出一个只包含编译后二进制的精简 Alpine 容器。
+- 开箱即用的 Docker Compose 部署,包含可用的健康检查端点。
+- 可直接部署到 Dokploy、Coolify 等平台。
 
-## Tech Stack
+## 技术栈
 
-- **Frontend**
-  - [TypeScript](https://www.typescriptlang.org/docs/) - Frontend language
-  - [React 19](https://react.dev/blog/2024/04/25/react-19) - Frontend framework
-  - [Vite](https://vite.dev/guide/) - Build tool
-  - [TanStack Router](https://tanstack.com/router/latest/docs/framework/react/overview) - Router
-  - [TanStack Query](https://tanstack.com/query/latest/docs/framework/react/overview) - Data fetching and state management
-  - [TanStack Table](https://tanstack.com/table/latest/docs/introduction) - Table / data grid library
-  - [React Hook Form](https://www.react-hook-form.com/api/) - Forms library for React
-  - [shadcn/ui](https://ui.shadcn.com/docs) - React component library based on TailwindCSS and Radix UI
-  - [TailwindCSS](https://tailwindcss.com/docs/installation) - Utility-first CSS framework
-  - [Zod](https://zod.dev/?id=table-of-contents) - Typescript schema validation
-  - [Date-fns](https://date-fns.org/docs/Getting-Started) - Date manipulation library
-- **Backend**
-  - [Go](https://go.dev/doc/) - Backend language
-  - [PocketBase](https://pocketbase.io/docs/) - Backend framework
-  - [Pond](https://github.com/alitto/pond) - Worker pool implementation in Go
-- **Deployment**
-  - [Docker](https://docs.docker.com/reference/) - Containerization tool
-  - [Dokploy](https://dokploy.com) - Open source hosting platform
+- **前端**
+  - [TypeScript](https://www.typescriptlang.org/docs/) - 前端语言
+  - [React 19](https://react.dev/blog/2024/04/19/react-19) - 前端框架
+  - [Vite](https://vite.dev/guide/) - 构建工具
+  - [TanStack Router](https://tanstack.com/router/latest/docs/framework/react/overview) - 路由
+  - [TanStack Query](https://tanstack.com/query/latest/docs/framework/react/overview) - 数据获取和状态管理
+  - [TanStack Table](https://tanstack.com/table/latest/docs/introduction) - 表格 / 数据网格库
+  - [React Hook Form](https://www.react-hook-form.com/api/) - 表单库
+  - [shadcn/ui](https://ui.shadcn.com/docs) - 基于 TailwindCSS 和 Radix UI 的 React 组件库
+  - [TailwindCSS](https://tailwindcss.com/docs/) - 工具类优先的 CSS 框架
+  - [Zod](https://zod.dev/?id=table-of-contents) - TypeScript schema 验证
+  - [Date-fns](https://date-fns.org/docs/Getting-Started) - 日期处理库
+- **后端**
+  - [Go](https://go.dev/doc/) - 后端语言
+  - [PocketBase](https://pocketbase.io/docs/) - 后端框架
+  - [Pond](https://github.com/alitto/pond) - Go 实现的 worker pool
+- **部署**
+  - [Docker](https://docs.docker.com/reference/) - 容器化工具
+  - [Dokploy](https://dokploy.com) - 开源托管平台
 
-## Getting Started
+## 快速开始
 
-### Prerequisites
+### 环境要求
 - Go 1.26+
-- Node.js 25+ or Bun 1.3+
-- Docker (optional)
+- Node.js 25+ 或 Bun 1.3+
+- Docker(可选)
 
-### Installation
+### 安装
 
-- Clone the repository `git clone https://github.com/s-petr/longhabit`
-- Install dependencies `npm install` or `bun install`.
-- Create a new superuser (admin) account for the Pocketbase admin dashboard. First compile the binary `npm run build` or `bun run build`. Then run the command `./longhabit superuser upsert {{admin email}} {{admin password}}`
-- Once the PocketBase backend is up and running you need to set up the database tables. Log in to the Pocketbase dashboard `http://localhost:8090/_/` using your superuser credentials. Go to Settings -> Import collections -> Load from JSON file. Select file [backend/pb_schema.json](backend/pb_schema.json) and import it.
-- In order for the "Sign in with Google" button to work you need to register with Google Cloud and get Google OAuth 2.0 API credentials (you can follow this [guide](https://support.google.com/googleapi/answer/6158849?hl=en)). After you get the credentials, go to the Pocketbase dashboard Collections -> Users -> Edit collection -> OAuth2 -> Add provider -> Google. Enter your Client ID and Client Secret and save.
-- A folder `/db` will be created in the root directory. This will contain the database files. Docker Compose has been configured with a volume to read/write data to the same folder. You may need to adjust file permissions for this folder if PocketBase cannot write to it from the Docker container.
+- 克隆仓库 `git clone https://github.com/s-petr/longhabit`
+- 安装依赖 `npm install` 或 `bun install`。
+- 为 Pocketbase 管理后台创建新的 superuser(管理员)账号。先编译二进制 `npm run build` 或 `bun run build`,然后运行命令 `./longhabit superuser upsert {{admin email}} {{admin password}}`
+- PocketBase 后端启动后,需要设置数据库表。使用 superuser 凭据登录 Pocketbase 管理后台 `http://localhost:8090/_/`,进入 Settings -> Import collections -> Load from JSON file,选择文件 [backend/pb_schema.json](backend/pb_schema.json) 并导入。
+- 要使 "Sign in with Google" 按钮生效,需要在 Google Cloud 注册并获取 Google OAuth 2.0 API 凭据(可参考此[指南](https://support.google.com/googleapi/answer/6158849?hl=zh-cn))。获取凭据后,进入 Pocketbase 管理后台 Collections -> Users -> Edit collection -> OAuth2 -> Add provider -> Google,输入 Client ID 和 Client Secret 并保存。
+- 根目录下会创建一个 `/db` 文件夹,其中包含数据库文件。Docker Compose 已配置卷以读写同一文件夹的数据。如果 PocketBase 无法从 Docker 容器写入该文件夹,可能需要调整该文件夹的文件权限。
 
-### Local Development
+### 本地开发
 
-- Start development servers `npm run dev` or `bun run dev`
- 
-### Production Build
+- 启动开发服务器 `npm run dev` 或 `bun run dev`
 
-- Build frontend and backend `npm run build` or `bun run build`
-- Run the compiled binary `npm run preview` or `bun run preview`
+### 生产构建
 
-### Docker Deployment
-- Build and run with Docker Compose `npm run compose` or `bun run compose`
+- 构建前端和后端 `npm run build` 或 `bun run build`
+- 运行编译后的二进制 `npm run preview` 或 `bun run preview`
 
-## License
+### Docker 部署
+- 使用 Docker Compose 构建并运行 `npm run compose` 或 `bun run compose`
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+## 许可证
+
+本项目基于 MIT 许可证授权 - 详情请参阅 [LICENSE.md](LICENSE.md) 文件。
