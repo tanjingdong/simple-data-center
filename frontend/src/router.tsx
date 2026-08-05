@@ -28,6 +28,7 @@ import EditTaskPage from './pages/tasks/edit-task'
 import NewTaskPage from './pages/tasks/new-task'
 import SettingsPage from './pages/tasks/settings'
 import TasksPage from './pages/tasks/tasks'
+import ToolsSettingsPage from './pages/tools-settings'
 import {
   resetPasswordParamsSchema,
   verifyEmailParamsSchema
@@ -100,6 +101,15 @@ const privacyPolicyRoute = createRoute({
   pendingComponent: Spinner,
   beforeLoad: () => {
     return { getTitle: () => '隐私政策' }
+  }
+})
+
+const toolsSettingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'tools-settings',
+  component: ToolsSettingsPage,
+  beforeLoad: () => {
+    return { getTitle: () => '工具设置' }
   }
 })
 
@@ -213,6 +223,7 @@ const editTaskRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   homeRoute,
   privacyPolicyRoute,
+  toolsSettingsRoute,
   authRoute.addChildren([
     loginRoute,
     registerRoute,

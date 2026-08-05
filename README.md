@@ -70,6 +70,33 @@ Long Habit 是一个用于追踪长期习惯和周期性任务的简单 CRUD 应
   - [Docker](https://docs.docker.com/reference/) - 容器化工具
   - [Dokploy](https://dokploy.com) - 开源托管平台
 
+## 内置 frp 服务(反向代理)
+
+本项目内置 frp 客户端(frp v0.70.1,以 Go 库方式嵌入,保持单二进制与跨平台编译)。管理员可开启 frpc 功能,通过 tcp 端口映射向 frps 服务器连接反代,将本服务(默认 8090 端口)暴露到公网或子网。
+
+### 使用步骤
+
+1. **导入数据库表**:在 admin 后台(`/_/`)登录后,进入 Settings → Import collections → Load from JSON file,选择 [backend/pb_schema.json](backend/pb_schema.json) 导入(`tools_settings` 表)。
+2. **填写配置**:服务启动后会自动补插 6 个 `frpc_*` 配置项(补插失败时检查第 1 步是否完成)。在 admin 后台 Collections → tools_settings 中填写:
+
+   | option | 说明 |
+   |---|---|
+   | frpc_server_addr | frps 服务器地址(IP 或域名),必填 |
+   | frpc_server_port | frps 服务端口(默认 7000) |
+   | frpc_token | frps 认证 token(未设置则留空) |
+   | frpc_proxy_name | 代理名称(默认 longhabit,在 frps 上须唯一) |
+   | frpc_local_port | 本地服务端口(默认 8090,与 `--http` 监听端口一致) |
+   | frpc_remote_port | frps 上暴露的远程端口(默认 8090) |
+
+3. **启停控制**:打开 `/tools-settings`(应用导航栏「工具设置」)。在 `/_/` 登录管理员后可直接操作,无需再次认证——点击「启动」连接 frps,「停止」断开,「重启」用最新配置重新连接。
+4. **生效方式**:修改配置后点击「重启」才生效;服务(主程序)重启后 frpc 一律不自动启动,需管理员手动开启。
+
+### 说明与限制
+
+- 当前仅支持 tcp 单代理;启动失败(如地址不可达、token 错误)时,工具页显示「失败」状态与错误信息(初始连接失败约 10 秒后判定,已连接后 frps 断线由 frp 内部自动重连)。
+- 工具页与 admin 后台共享登录会话;普通用户登录会顶掉 admin 会话,反之亦然,同一浏览器切换身份需重新登录。
+- 若用 `--http` 修改了服务监听端口,请同步修改 `frpc_local_port` 后重启。
+
 ## 快速开始
 
 ### 环境要求

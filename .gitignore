@@ -6,8 +6,9 @@ backend/dist
 .cursorrules
 .vscode/*
 .claude/*
-.doc/superpowers
-docs/superpowers
+docs/superpowers/
+CLAUDE.md
+
 
 # Compiled binary
 longhabit

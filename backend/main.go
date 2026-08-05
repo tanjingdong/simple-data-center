@@ -6,12 +6,14 @@ import (
 	"strconv"
 
 	"github.com/pocketbase/pocketbase"
+	"github.com/s-petr/longhabit/frpc"
 )
 
 // application holds the core application state and configuration.
 type application struct {
 	pb     *pocketbase.PocketBase
 	config appConfig
+	frpc   *frpc.Manager
 }
 
 // appConfig holds the application's configuration settings.
@@ -48,6 +50,9 @@ func main() {
 	app.setupAuthHooks()
 	app.disableHealthRouteLogging()
 	app.startNotifier()
+
+	app.frpc = frpc.NewManager(app.pb)
+	app.setupFrpc()
 
 	log.Fatal(app.pb.Start())
 }
