@@ -1,15 +1,15 @@
 services:
-  longhabit:
+  tans-pim:
     build:
       context: .
       dockerfile: Dockerfile
       args:
         - DOMAIN_NAME=${DOMAIN_NAME}
         - PLAUSIBLE_API_HOST=${PLAUSIBLE_API_HOST}
-    container_name: longhabit
+    container_name: tans-pim
     restart: unless-stopped
     environment:
-      - MAILER_CRON_SCHEDULE=${MAILER_CRON_SCHEDULE}
+      - PIM_ENC_KEY=${PIM_ENC_KEY}
     ports:
       - '8090:8090'
     volumes:

@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "longhabit",
+      "name": "tans-pim",
       "dependencies": {
         "@hookform/resolvers": "^5.4.0",
         "@radix-ui/react-avatar": "^1.2.0",

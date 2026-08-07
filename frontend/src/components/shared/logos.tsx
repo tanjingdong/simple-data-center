@@ -29,7 +29,7 @@ export function GoogleLogo() {
   )
 }
 
-export function LongHabitMainLogo() {
+export function TansPimMainLogo() {
   return (
     <figure className='flex w-48 items-center justify-center gap-x-1 select-none'>
       <div className='my-4 h-6'>
@@ -57,7 +57,7 @@ export function LongHabitMainLogo() {
         </svg>
       </div>
       <figcaption className='text-lg font-extrabold tracking-wider uppercase italic'>
-        Long Habit
+        tans-PIM
       </figcaption>
     </figure>
   )

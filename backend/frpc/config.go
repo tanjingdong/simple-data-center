@@ -24,7 +24,7 @@ const (
 // frpc 配置默认值
 const (
 	defaultServerPort = 7000
-	defaultProxyName  = "longhabit"
+	defaultProxyName  = "tans-pim"
 	defaultLocalPort  = 8090
 	defaultRemotePort = 8090
 	defaultLocalIP    = "127.0.0.1"

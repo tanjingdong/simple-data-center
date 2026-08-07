@@ -18,7 +18,7 @@ var defaultFrpcSettings = []struct {
 	{"frpc_server_addr", "frps 服务器地址(IP 或域名),用于反向代理连接", "string", ""},
 	{"frpc_server_port", "frps 服务端口", "number", "7000"},
 	{"frpc_token", "frps 认证 token(未设置则留空)", "string", ""},
-	{"frpc_proxy_name", "代理名称,在 frps 上须唯一", "string", "longhabit"},
+	{"frpc_proxy_name", "代理名称,在 frps 上须唯一", "string", "tans-pim"},
 	{"frpc_local_port", "本地服务端口(本服务监听端口)", "number", "8090"},
 	{"frpc_remote_port", "frps 上暴露的远程端口", "number", "8090"},
 }

@@ -1,82 +1,44 @@
-![License](https://img.shields.io/badge/license-MIT-green)
+![Version](https://img.shields.io/badge/version-0.6.0-blue) ![License](https://img.shields.io/badge/license-MIT-green)
 
-<a href="https://longhabit.com"><img src="https://longhabit.com/og-image.png" /></a>
+# tans-PIM
 
-# Long Habit
-
-Long Habit 是一个用于追踪长期习惯和周期性任务的简单 CRUD 应用。它是一个基于 PocketBase 和 React 构建的生产级全栈项目,是集成 PocketBase 到大型 Go 项目并将其与现代 React 前端结合的综合性示例。应用程序非常简单,可以作为新项目的模板。大部分样板配置已处理完毕,常见问题已被发现并修复。
-
-在线体验:https://longhabit.com
+**tans-PIM** 是一个个人社会关系与联系人信息管理(Personal Information Management)应用,用于管理您的社会关系、联系人信息与人脉资源。基于 PocketBase 和 React 构建的生产级全栈项目,单二进制部署,数据自持。
 
 ## 主要特性
 
-### 后端架构
-- 运行最新版 Pocketbase (v0.39)。
-- 单二进制构建。使用 Go 的 "embed" 包将 React 前端作为文件系统嵌入编译后的二进制文件中。
-- PocketBase 以 Go 包形式安装并作为框架使用。项目使用了许多扩展特性,包括:
-  - 自定义 hooks 和中间件
-  - 路由绑定
-  - 数据库操作
-  - 带 cron 的定时任务
-  - HTML 邮件模板
-  - 自定义日志配置
-- 使用 Pond 库实现的批量邮件处理 worker pool
-- 惯用的 Go 代码组织,职责分离清晰
+### 数据模型(5 个集合)
 
-### 前端实现
-- 使用 TypeScript 和 Vite 构建的现代 React 配置。
-- 基于 React 19 构建,支持 React Compiler。
-- 完整配置 TailwindCSS 与 ShadCN UI,带自定义主题。
-- 采用最佳实践实现响应式设计,支持浅色和深色模式,已在桌面和移动端测试。
-- 完整的认证流程,带自定义表单。支持邮箱 + 密码认证以及 Google OAuth。
-- 使用 TanStack Router 按最佳实践配置。所有认证逻辑和数据获取在页面加载前于路由中完成。基于路由的动态页面标题切换。
-- TanStack Query 与 PocketBase 和 TanStack Router 完全集成。数据在路由渲染前从后端获取并加载。TanStack Query 负责数据获取,确保客户端状态与服务器端数据保持同步。
-- 使用新的 React Suspense 边界实现加载状态。
-- 使用 React Hook Form 和 Zod 实现带验证和错误消息的动态表单。
-- SEO 优化,如 meta description 和社交媒体卡片 meta 标签已添加到根 HTML 页面,sitemap.xml 和 robots.txt 已添加并配置。为 PocketBase 管理后台 "/_" URL 添加排除规则,防止被爬虫索引。
+| 集合 | 用途 |
+|---|---|
+| `persons` | 人员档案:自然属性(性别/生日/民族/生肖/籍贯/出生地)、社会身份(政治面貌/行政职务/技术职称/毕业学校/学历/专业/继续教育)、联系方式、私人档案(兴趣/子女/禁忌/关注)、信任评级(1-5 星) |
+| `organizations` | 组织/实体:政府机关、企业、餐厅、学校、医疗机构等,含资源评级、地图链接、备注 |
+| `relations` | 人与人关系:描述特定纽带(大学舍友/夫妻等),唯一索引 + 服务端自动规范化 |
+| `person_org_links` | 人物-组织关联:法定代表人、股东、常客等 |
+| `events` | 事件记录:既记录"约了顿饭",也记录"他被纪委谈话";类型/日期/纪要,支持关联组织 |
 
-### 开发体验
-- 带热重载的 Vite 开发模式可与 PocketBase 无缝协作。无需等待 PocketBase 编译。Vite 和 PocketBase 在不同端口运行时互相代理请求。
-- 使用新的 ESlint 9 格式编写的完整 ESlint 配置,包含所有相关的 React、Tailwind 和 Prettier 插件。
-- 单命令生产构建。
-- 无需额外配置即可在 Docker Compose 中本地运行项目。
-- 兼容任何 Node.js 运行时(默认:Bun)。
+### 核心能力
 
-### 部署
-- 编译为单个可执行二进制文件或使用 Docker 容器部署。
-- 完全容器化,所有构建步骤都在多阶段 Dockerfile 中完成。输出一个只包含编译后二进制的精简 Alpine 容器。
-- 开箱即用的 Docker Compose 部署,包含可用的健康检查端点。
-- 可直接部署到 Dokploy、Coolify 等平台。
+- **id_card 静态加密**:身份证号以 AES-256-GCM 加密入库(Go 钩子实现,密钥 `PIM_ENC_KEY`),API 与管理后台经解密钩子返回明文。
+- **圈层检索**:按人脉标签、社会标签、籍贯(老乡圈)、毕业学校(校友圈)、专业(同行)等 LIKE 检索。
+- **对外 REST API**:PocketBase 原生接口(CRUD/过滤/分页/expand),供其他程序调用。集合规则公开——请部署在**可信网络边界内**(内网或受控 frps)。
+- **数据完整性**:关系唯一索引、评级 1-5 强制校验、级联删除、组织删除自动置空引用。
+- **完整认证**:邮箱 + 密码登录,支持 Google OAuth。
+- **内置 frpc 反向代理**:工具设置页一键启停,将本服务暴露到公网或子网。
+- **浅色/深色主题**、响应式布局。
 
 ## 技术栈
 
-- **前端**
-  - [TypeScript](https://www.typescriptlang.org/docs/) - 前端语言
-  - [React 19](https://react.dev/blog/2024/04/19/react-19) - 前端框架
-  - [Vite](https://vite.dev/guide/) - 构建工具
-  - [TanStack Router](https://tanstack.com/router/latest/docs/framework/react/overview) - 路由
-  - [TanStack Query](https://tanstack.com/query/latest/docs/framework/react/overview) - 数据获取和状态管理
-  - [TanStack Table](https://tanstack.com/table/latest/docs/introduction) - 表格 / 数据网格库
-  - [React Hook Form](https://www.react-hook-form.com/api/) - 表单库
-  - [shadcn/ui](https://ui.shadcn.com/docs) - 基于 TailwindCSS 和 Radix UI 的 React 组件库
-  - [TailwindCSS](https://tailwindcss.com/docs/) - 工具类优先的 CSS 框架
-  - [Zod](https://zod.dev/?id=table-of-contents) - TypeScript schema 验证
-  - [Date-fns](https://date-fns.org/docs/Getting-Started) - 日期处理库
-- **后端**
-  - [Go](https://go.dev/doc/) - 后端语言
-  - [PocketBase](https://pocketbase.io/docs/) - 后端框架
-  - [Pond](https://github.com/alitto/pond) - Go 实现的 worker pool
-- **部署**
-  - [Docker](https://docs.docker.com/reference/) - 容器化工具
-  - [Dokploy](https://dokploy.com) - 开源托管平台
+- **前端**:TypeScript、React 19、Vite、TanStack Router / Query / Table、React Hook Form、Zod、shadcn/ui、TailwindCSS、date-fns
+- **后端**:Go、PocketBase 0.39、SQLite
+- **部署**:单二进制(Go embed 内嵌前端)、Docker、frp 反向代理
 
 ## 内置 frp 服务(反向代理)
 
-本项目内置 frp 客户端(frp v0.70.1,以 Go 库方式嵌入,保持单二进制与跨平台编译)。管理员可开启 frpc 功能,通过 tcp 端口映射向 frps 服务器连接反代,将本服务(默认 8090 端口)暴露到公网或子网。
+内置 frp 客户端(frp v0.70.1,Go 库嵌入,保持单二进制与跨平台编译)。管理员可开启 frpc,通过 tcp 端口映射向 frps 服务器连接反代,将本服务(默认 8090 端口)暴露到公网或子网。
 
 ### 使用步骤
 
-1. **导入数据库表**:在 admin 后台(`/_/`)登录后,进入 Settings → Import collections → Load from JSON file,选择 [backend/pb_schema.json](backend/pb_schema.json) 导入(`tools_settings` 表)。
+1. **导入数据库表**:在 admin 后台(`/_/`)登录后,进入 Settings → Import collections → Load from JSON file,选择 [backend/pb_schema.json](backend/pb_schema.json) 导入。
 2. **填写配置**:服务启动后会自动补插 6 个 `frpc_*` 配置项(补插失败时检查第 1 步是否完成)。在 admin 后台 Collections → tools_settings 中填写:
 
    | option | 说明 |
@@ -84,11 +46,11 @@ Long Habit 是一个用于追踪长期习惯和周期性任务的简单 CRUD 应
    | frpc_server_addr | frps 服务器地址(IP 或域名),必填 |
    | frpc_server_port | frps 服务端口(默认 7000) |
    | frpc_token | frps 认证 token(未设置则留空) |
-   | frpc_proxy_name | 代理名称(默认 longhabit,在 frps 上须唯一) |
+   | frpc_proxy_name | 代理名称(默认 tans-pim,在 frps 上须唯一) |
    | frpc_local_port | 本地服务端口(默认 8090,与 `--http` 监听端口一致) |
    | frpc_remote_port | frps 上暴露的远程端口(默认 8090) |
 
-3. **启停控制**:打开 `/tools-settings`(应用导航栏「工具设置」)。在 `/_/` 登录管理员后可直接操作,无需再次认证——点击「启动」连接 frps,「停止」断开,「重启」用最新配置重新连接。
+3. **启停控制**:打开 `/tools-settings`(应用导航栏「工具设置」)。在 `/_/` 登录管理员后可直接操作——点击「启动」连接 frps,「停止」断开,「重启」用最新配置重新连接。
 4. **生效方式**:修改配置后点击「重启」才生效;服务(主程序)重启后 frpc 一律不自动启动,需管理员手动开启。
 
 ### 说明与限制
@@ -100,18 +62,21 @@ Long Habit 是一个用于追踪长期习惯和周期性任务的简单 CRUD 应
 ## 快速开始
 
 ### 环境要求
+
 - Go 1.26+
 - Node.js 25+ 或 Bun 1.3+
 - Docker(可选)
 
 ### 安装
 
-- 克隆仓库 `git clone https://github.com/s-petr/longhabit`
+- 克隆仓库(沿用原仓库,当前开发分支 `tans-PIM`):`git clone https://github.com/s-petr/longhabit`
 - 安装依赖 `npm install` 或 `bun install`。
-- 为 Pocketbase 管理后台创建新的 superuser(管理员)账号。先编译二进制 `npm run build` 或 `bun run build`,然后运行命令 `./longhabit superuser upsert {{admin email}} {{admin password}}`
-- PocketBase 后端启动后,需要设置数据库表。使用 superuser 凭据登录 Pocketbase 管理后台 `http://localhost:8090/_/`,进入 Settings -> Import collections -> Load from JSON file,选择文件 [backend/pb_schema.json](backend/pb_schema.json) 并导入。
-- 要使 "Sign in with Google" 按钮生效,需要在 Google Cloud 注册并获取 Google OAuth 2.0 API 凭据(可参考此[指南](https://support.google.com/googleapi/answer/6158849?hl=zh-cn))。获取凭据后,进入 Pocketbase 管理后台 Collections -> Users -> Edit collection -> OAuth2 -> Add provider -> Google,输入 Client ID 和 Client Secret 并保存。
-- 根目录下会创建一个 `/db` 文件夹,其中包含数据库文件。Docker Compose 已配置卷以读写同一文件夹的数据。如果 PocketBase 无法从 Docker 容器写入该文件夹,可能需要调整该文件夹的文件权限。
+- 为 PocketBase 管理后台创建 superuser(管理员)账号:先编译二进制 `npm run build` 或 `bun run build`,然后运行 `./tans-pim superuser upsert {{admin email}} {{admin password}}`。
+- 设置加密密钥 `PIM_ENC_KEY`(**必须 32 字符**;未设置时 id_card 将以明文存储,启动时打印警告):
+  - `export PIM_ENC_KEY='0123456789abcdef0123456789abcdef'`
+- 启动后端,设置数据库表:用 superuser 凭据登录管理后台 `http://localhost:8090/_/`,进入 Settings → Import collections → Load from JSON file,选择文件 [backend/pb_schema.json](backend/pb_schema.json) 导入。
+- (可选)启用 "Sign in with Google":在 Google Cloud 获取 OAuth 2.0 凭据后,进入管理后台 Collections → Users → Edit collection → OAuth2 → Add provider → Google,填入 Client ID 与 Client Secret 并保存。
+- 根目录下会创建 `/db` 文件夹存放数据库文件。Docker Compose 已配置卷读写同一文件夹。
 
 ### 本地开发
 
@@ -119,11 +84,16 @@ Long Habit 是一个用于追踪长期习惯和周期性任务的简单 CRUD 应
 
 ### 生产构建
 
-- 构建前端和后端 `npm run build` 或 `bun run build`
-- 运行编译后的二进制 `npm run preview` 或 `bun run preview`
+- 构建前端和后端 `npm run build` 或 `bun run build`(生成二进制 `tans-pim`)
+- 运行编译后的二进制 `npm run preview` 或 `bun run preview`(等价于 `./tans-pim serve`)
 
 ### Docker 部署
-- 使用 Docker Compose 构建并运行 `npm run compose` 或 `bun run compose`
+
+- 构建并运行 `npm run compose` 或 `bun run compose`(通过环境变量 `PIM_ENC_KEY` 传入加密密钥)
+
+## 版本
+
+当前版本 **v0.6.0**,更新日志见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 许可证
 

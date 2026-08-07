@@ -1,7 +1,7 @@
 import { usePlausible } from '@/context/plausible-context'
 import { errorToast, successToast } from '@/lib/toast'
 import { RegisterFields } from '@/schemas/auth-schema'
-import { User, UserWithSettings } from '@/schemas/user-schema'
+import { User } from '@/schemas/user-schema'
 import {
   authRefresh,
   confirmPasswordReset as confirmPasswordResetApi,
@@ -47,7 +47,7 @@ export default function useAuth() {
       trackEvent('login', { props: { method: 'password' } })
       subscribeToUserChanges(authResult.record.id, subscribeUserChangeCallback)
       queryClient.invalidateQueries({ queryKey: ['user'] })
-      router.navigate({ to: '/tasks' })
+      router.navigate({ to: '/' })
     } catch (error) {
       errorToast('登录失败', error)
     }
@@ -60,7 +60,7 @@ export default function useAuth() {
       subscribeToUserChanges(authResult.record.id, subscribeUserChangeCallback)
       queryClient.invalidateQueries({ queryKey: ['user'] })
       router.invalidate()
-      router.navigate({ to: '/tasks' })
+      router.navigate({ to: '/' })
     } catch (error) {
       errorToast('登录失败', error)
     }
@@ -138,7 +138,7 @@ export default function useAuth() {
   const verifyEmailByToken = async (token: string) => {
     try {
       await verifyEmailByTokenApi(token)
-      queryClient.setQueryData(['user'], (userData: UserWithSettings) =>
+      queryClient.setQueryData(['user'], (userData: User) =>
         userData
           ? {
               ...userData,

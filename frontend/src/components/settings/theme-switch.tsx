@@ -1,5 +1,5 @@
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { setTheme } from '@/lib/set-theme'
+import { setStoredTheme } from '@/lib/theme'
 import { Theme } from '@/schemas/settings-schema'
 import { DesktopIcon, MoonIcon, SunIcon } from '@radix-ui/react-icons'
 
@@ -12,7 +12,7 @@ export default function ThemeSwitch({
 }) {
   const handleThemeChange = (value: Theme) => {
     if (!value) return
-    setTheme(value)
+    setStoredTheme(value)
     onThemeChange(value)
   }
   return (

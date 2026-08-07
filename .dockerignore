@@ -7,7 +7,7 @@ backend/dist
 .vscode/*
 
 # Compiled binary
-longhabit
+tans-pim
 
 # Database
 db

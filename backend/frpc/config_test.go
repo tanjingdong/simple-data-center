@@ -67,7 +67,7 @@ func TestWithDefaults(t *testing.T) {
 	cfg := Config{}
 	cfg.WithDefaults()
 	assertEqual(t, cfg.ServerPort, 7000, "默认 ServerPort")
-	assertEqual(t, cfg.ProxyName, "longhabit", "默认 ProxyName")
+	assertEqual(t, cfg.ProxyName, "tans-pim", "默认 ProxyName")
 	assertEqual(t, cfg.LocalPort, 8090, "默认 LocalPort")
 	assertEqual(t, cfg.RemotePort, 8090, "默认 RemotePort")
 }
@@ -118,7 +118,7 @@ func TestBuildClientConfig(t *testing.T) {
 	if !ok {
 		t.Fatalf("代理类型应为 *v1.TCPProxyConfig,实际 %T", proxies[0])
 	}
-	assertEqual(t, proxy.Name, "longhabit", "代理名默认值")
+	assertEqual(t, proxy.Name, "tans-pim", "代理名默认值")
 	assertEqual(t, proxy.Type, "tcp", "代理类型")
 	assertEqual(t, proxy.LocalIP, "127.0.0.1", "本地 IP")
 	assertEqual(t, proxy.LocalPort, 8090, "本地端口默认值")

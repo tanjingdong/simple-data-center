@@ -7,11 +7,8 @@ export default function Footer() {
     <footer className='mt-auto flex w-full flex-col pt-4'>
       <ScrollToTopButton />
       <div className='text-muted-foreground grid grid-cols-1 gap-1 px-2 text-xs select-none md:grid-cols-3'>
-        <p className='text-center hover:underline md:text-left'>
-          © {new Date().getFullYear()}{' '}
-          <a target='_blank' rel='noreferrer' href='https://spweb.dev'>
-            SP Web Development
-          </a>
+        <p className='text-center md:text-left'>
+          © {new Date().getFullYear()} tans-PIM
         </p>{' '}
         <div className='text-center'>
           <a

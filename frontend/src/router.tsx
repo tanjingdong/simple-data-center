@@ -1,6 +1,5 @@
 import NotFoundPage from '@/pages/not-found'
 import RootLayout from '@/root-layout'
-import { taskQueryOptions, tasksQueryOptions } from '@/services/api-tasks'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import {
@@ -15,25 +14,20 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { useEffect } from 'react'
 import { z } from 'zod/v4'
 import Spinner from './components/shared/spinner'
-import { setTheme } from './lib/set-theme'
+import { applyTheme, getStoredTheme } from './lib/theme'
 import ForgotPasswordPage from './pages/auth/forgot-password'
 import LoginPage from './pages/auth/login'
 import RegisterPage from './pages/auth/register'
 import ResetPasswordPage from './pages/auth/reset-password'
 import VerifyEmailPage from './pages/auth/verify-email'
 import ErrorPage from './pages/error'
-import HomePage from './pages/home'
 import PrivacyPolicyPage from './pages/privacy-policy'
-import EditTaskPage from './pages/tasks/edit-task'
-import NewTaskPage from './pages/tasks/new-task'
-import SettingsPage from './pages/tasks/settings'
-import TasksPage from './pages/tasks/tasks'
 import ToolsSettingsPage from './pages/tools-settings'
+import WorkbenchPage from './pages/workbench'
 import {
   resetPasswordParamsSchema,
   verifyEmailParamsSchema
 } from './schemas/auth-schema'
-import { pbIdSchema } from './schemas/pb-schema'
 import {
   checkEmailIsVerified,
   checkUserIsLoggedIn,
@@ -76,21 +70,20 @@ const rootRoute = createRootRouteWithContext<RootContext>()({
 
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData(userQueryOptions),
-  beforeLoad: async ({ context: { queryClient } }) => {
-    const user = queryClient.getQueryData(userQueryOptions.queryKey)
-    setTheme(user?.settings?.theme)
-    return { getTitle: () => 'Long Habit' }
+  beforeLoad: async () => {
+    applyTheme(getStoredTheme())
+    return { getTitle: () => 'tans-PIM' }
   }
 })
 
 const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: HomePage,
+  component: WorkbenchPage,
   pendingComponent: Spinner,
   beforeLoad: async () => {
-    if (checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/tasks' })
-    return { getTitle: () => '' }
+    if (!checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/login' })
+    return { getTitle: () => '工作台' }
   }
 })
 
@@ -118,7 +111,7 @@ const authRoute = createRoute({
   id: 'auth',
   beforeLoad: ({ location }) => {
     if (location.pathname.includes('reset-password')) return
-    if (checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/tasks' })
+    if (checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/' })
     return { getTitle: () => '' }
   }
 })
@@ -174,52 +167,6 @@ const resetPasswordRoute = createRoute({
   beforeLoad: () => ({ getTitle: () => '重置密码' })
 })
 
-const tasksRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: 'tasks',
-  component: TasksPage,
-  pendingComponent: Spinner,
-  beforeLoad: () => {
-    if (!checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/login' })
-    return { getTitle: () => '任务' }
-  },
-  loader: ({ context: { queryClient } }) =>
-    queryClient.ensureQueryData(tasksQueryOptions)
-})
-
-const settingsRoute = createRoute({
-  getParentRoute: () => tasksRoute,
-  path: 'settings',
-  component: SettingsPage,
-  beforeLoad: () => ({ getTitle: () => '设置' })
-})
-
-const newTaskRoute = createRoute({
-  getParentRoute: () => tasksRoute,
-  path: 'new',
-  component: NewTaskPage,
-  beforeLoad: () => {
-    return { getTitle: () => '新建' }
-  }
-})
-
-const editTaskRoute = createRoute({
-  getParentRoute: () => tasksRoute,
-  path: '$taskId',
-  component: EditTaskPage,
-  beforeLoad: () => {
-    return { getTitle: () => '编辑' }
-  },
-  loader: async ({ context: { queryClient }, params: { taskId } }) => {
-    const taskIdValidationResult = pbIdSchema.safeParse(taskId)
-    if (taskIdValidationResult.error) throw redirect({ to: '/tasks' })
-    const task = await queryClient.ensureQueryData(
-      taskQueryOptions(taskIdValidationResult.data)
-    )
-    return task
-  }
-})
-
 const routeTree = rootRoute.addChildren([
   homeRoute,
   privacyPolicyRoute,
@@ -230,8 +177,7 @@ const routeTree = rootRoute.addChildren([
     verifyEmailRoute,
     forgotPasswordRoute,
     resetPasswordRoute
-  ]),
-  tasksRoute.addChildren([settingsRoute, newTaskRoute, editTaskRoute])
+  ])
 ])
 
 const queryClient = new QueryClient()

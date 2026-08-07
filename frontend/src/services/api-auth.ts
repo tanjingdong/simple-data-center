@@ -1,5 +1,4 @@
-import { setTheme } from '@/lib/set-theme'
-import { User, userSchema, userWithSettingsSchema } from '@/schemas/user-schema'
+import { User, userSchema } from '@/schemas/user-schema'
 import { queryOptions } from '@tanstack/react-query'
 import { pb } from './pocketbase'
 
@@ -111,16 +110,7 @@ export const userQueryOptions = queryOptions({
       return null
     }
 
-    const settings = await pb
-      .collection('settings')
-      .getFirstListItem(`user="${pb.authStore.record?.id}"`)
-
-    setTheme(settings.theme)
-
-    const userData = userWithSettingsSchema.parse({
-      ...pb.authStore.record,
-      settings
-    })
+    const userData = userSchema.parse(pb.authStore.record)
 
     return userData
   },

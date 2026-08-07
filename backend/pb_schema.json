@@ -1,177 +1,5 @@
 [
   {
-    "id": "pbc_3142635823",
-    "listRule": null,
-    "viewRule": null,
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
-    "name": "_superusers",
-    "type": "auth",
-    "fields": [
-      {
-        "autogeneratePattern": "[a-z0-9]{15}",
-        "hidden": false,
-        "id": "text3208210256",
-        "max": 15,
-        "min": 15,
-        "name": "id",
-        "pattern": "^[a-z0-9]+$",
-        "presentable": false,
-        "primaryKey": true,
-        "required": true,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "cost": 0,
-        "hidden": true,
-        "id": "password901924565",
-        "max": 0,
-        "min": 8,
-        "name": "password",
-        "pattern": "",
-        "presentable": false,
-        "required": true,
-        "system": true,
-        "type": "password"
-      },
-      {
-        "autogeneratePattern": "[a-zA-Z0-9]{50}",
-        "hidden": true,
-        "id": "text2504183744",
-        "max": 60,
-        "min": 30,
-        "name": "tokenKey",
-        "pattern": "",
-        "presentable": false,
-        "primaryKey": false,
-        "required": true,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "exceptDomains": null,
-        "hidden": false,
-        "id": "email3885137012",
-        "name": "email",
-        "onlyDomains": null,
-        "presentable": false,
-        "required": true,
-        "system": true,
-        "type": "email"
-      },
-      {
-        "hidden": false,
-        "id": "bool1547992806",
-        "name": "emailVisibility",
-        "presentable": false,
-        "required": false,
-        "system": true,
-        "type": "bool"
-      },
-      {
-        "hidden": false,
-        "id": "bool256245529",
-        "name": "verified",
-        "presentable": false,
-        "required": false,
-        "system": true,
-        "type": "bool"
-      },
-      {
-        "hidden": false,
-        "id": "autodate2990389176",
-        "name": "created",
-        "onCreate": true,
-        "onUpdate": false,
-        "presentable": false,
-        "system": true,
-        "type": "autodate"
-      },
-      {
-        "hidden": false,
-        "id": "autodate3332085495",
-        "name": "updated",
-        "onCreate": true,
-        "onUpdate": true,
-        "presentable": false,
-        "system": true,
-        "type": "autodate"
-      }
-    ],
-    "indexes": [
-      "CREATE UNIQUE INDEX `idx_tokenKey_pbc_3142635823` ON `_superusers` (`tokenKey`)",
-      "CREATE UNIQUE INDEX `idx_email_pbc_3142635823` ON `_superusers` (`email`) WHERE `email` != ''"
-    ],
-    "system": true,
-    "authRule": "",
-    "manageRule": null,
-    "authAlert": {
-      "enabled": true,
-      "emailTemplate": {
-        "subject": "\u65b0\u8bbe\u5907\u767b\u5f55",
-        "body": "<p>\u60a8\u597d,</p>\n<p>\u6211\u4eec\u6ce8\u610f\u5230\u60a8\u7684 {APP_NAME} \u8d26\u6237\u4ece\u65b0\u4f4d\u7f6e\u767b\u5f55\u3002</p>\n<p>\u5982\u679c\u662f\u60a8\u672c\u4eba\u64cd\u4f5c,\u53ef\u5ffd\u7565\u6b64\u90ae\u4ef6\u3002</p>\n<p><strong>If this wasn't you, you should immediately change your {APP_NAME} account password to revoke access from all other locations.</strong></p>\n<p>\n  \u8c22\u8c22,<br/>\n  {APP_NAME} \u56e2\u961f\n</p>"
-      }
-    },
-    "oauth2": {
-      "mappedFields": {
-        "id": "",
-        "name": "",
-        "username": "",
-        "avatarURL": ""
-      },
-      "enabled": false
-    },
-    "passwordAuth": {
-      "enabled": true,
-      "identityFields": [
-        "email"
-      ]
-    },
-    "mfa": {
-      "enabled": false,
-      "duration": 1800,
-      "rule": ""
-    },
-    "otp": {
-      "enabled": false,
-      "duration": 180,
-      "length": 8,
-      "emailTemplate": {
-        "subject": "{APP_NAME} \u7684\u4e00\u6b21\u6027\u9a8c\u8bc1\u7801",
-        "body": "<p>\u60a8\u597d,</p>\n<p>\u60a8\u7684\u4e00\u6b21\u6027\u9a8c\u8bc1\u7801\u662f: <strong>{OTP}</strong></p>\n<p><i>\u5982\u679c\u60a8\u6ca1\u6709\u8bf7\u6c42\u4e00\u6b21\u6027\u9a8c\u8bc1\u7801,\u53ef\u5ffd\u7565\u6b64\u90ae\u4ef6\u3002</i></p>\n<p>\n  \u8c22\u8c22,<br/>\n  {APP_NAME} \u56e2\u961f\n</p>"
-      }
-    },
-    "authToken": {
-      "duration": 1209600
-    },
-    "passwordResetToken": {
-      "duration": 1800
-    },
-    "emailChangeToken": {
-      "duration": 1800
-    },
-    "verificationToken": {
-      "duration": 259200
-    },
-    "fileToken": {
-      "duration": 120
-    },
-    "verificationTemplate": {
-      "subject": "\u9a8c\u8bc1\u60a8\u7684 {APP_NAME} \u90ae\u7bb1",
-      "body": "<p>\u60a8\u597d,</p>\n<p>\u611f\u8c22\u60a8\u52a0\u5165 {APP_NAME}\u3002</p>\n<p>\u8bf7\u70b9\u51fb\u4e0b\u65b9\u6309\u94ae\u9a8c\u8bc1\u60a8\u7684\u90ae\u7bb1\u5730\u5740\u3002</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-verification/{TOKEN}\" target=\"_blank\" rel=\"noopener\">\u9a8c\u8bc1</a>\n</p>\n<p>\n  \u8c22\u8c22,<br/>\n  {APP_NAME} \u56e2\u961f\n</p>"
-    },
-    "resetPasswordTemplate": {
-      "subject": "\u91cd\u7f6e\u60a8\u7684 {APP_NAME} \u5bc6\u7801",
-      "body": "<p>\u60a8\u597d,</p>\n<p>\u8bf7\u70b9\u51fb\u4e0b\u65b9\u6309\u94ae\u91cd\u7f6e\u60a8\u7684\u5bc6\u7801\u3002</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-password-reset/{TOKEN}\" target=\"_blank\" rel=\"noopener\">\u91cd\u7f6e\u5bc6\u7801</a>\n</p>\n<p><i>\u5982\u679c\u60a8\u6ca1\u6709\u8bf7\u6c42\u91cd\u7f6e\u5bc6\u7801,\u53ef\u5ffd\u7565\u6b64\u90ae\u4ef6\u3002</i></p>\n<p>\n  \u8c22\u8c22,<br/>\n  {APP_NAME} \u56e2\u961f\n</p>"
-    },
-    "confirmEmailChangeTemplate": {
-      "subject": "\u786e\u8ba4\u60a8\u7684 {APP_NAME} \u65b0\u90ae\u7bb1\u5730\u5740",
-      "body": "<p>\u60a8\u597d,</p>\n<p>\u8bf7\u70b9\u51fb\u4e0b\u65b9\u6309\u94ae\u786e\u8ba4\u60a8\u7684\u65b0\u90ae\u7bb1\u5730\u5740\u3002</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-email-change/{TOKEN}\" target=\"_blank\" rel=\"noopener\">\u786e\u8ba4\u65b0\u90ae\u7bb1</a>\n</p>\n<p><i>\u5982\u679c\u60a8\u6ca1\u6709\u8bf7\u6c42\u66f4\u6539\u90ae\u7bb1\u5730\u5740,\u8bf7\u5ffd\u7565\u6b64\u90ae\u4ef6\u3002</i></p>\n<p>\n  \u8c22\u8c22,<br/>\n  {APP_NAME} \u56e2\u961f\n</p>"
-    }
-  },
-  {
     "id": "_pb_users_auth_",
     "listRule": "id = @request.auth.id",
     "viewRule": "id = @request.auth.id",
@@ -277,7 +105,7 @@
       {
         "autogeneratePattern": "",
         "hidden": false,
-        "id": "users_name",
+        "id": "text1579384326",
         "max": 0,
         "min": 0,
         "name": "name",
@@ -290,7 +118,7 @@
       },
       {
         "hidden": false,
-        "id": "users_avatar",
+        "id": "file376926767",
         "maxSelect": 1,
         "maxSize": 5242880,
         "mimeTypes": [
@@ -340,8 +168,8 @@
     "authAlert": {
       "enabled": true,
       "emailTemplate": {
-        "subject": "\u65b0\u8bbe\u5907\u767b\u5f55",
-        "body": "<p>\u60a8\u597d,</p>\n<p>\u6211\u4eec\u6ce8\u610f\u5230\u60a8\u7684 {APP_NAME} \u8d26\u6237\u4ece\u65b0\u4f4d\u7f6e\u767b\u5f55\u3002</p>\n<p>\u5982\u679c\u662f\u60a8\u672c\u4eba\u64cd\u4f5c,\u53ef\u5ffd\u7565\u6b64\u90ae\u4ef6\u3002</p>\n<p><strong>If this wasn't you, you should immediately change your {APP_NAME} account password to revoke access from all other locations.</strong></p>\n<p>\n  \u8c22\u8c22,<br/>\n  {APP_NAME} \u56e2\u961f\n</p>"
+        "subject": "新设备登录",
+        "body": "<p>您好,</p>\n<p>我们注意到您的 {APP_NAME} 账户从新位置登录。</p>\n<p>如果是您本人操作,可忽略此邮件。</p>\n<p><strong>If this wasn't you, you should immediately change your {APP_NAME} account password to revoke access from all other locations.</strong></p>\n<p>\n  谢谢,<br/>\n  {APP_NAME} 团队\n</p>"
       }
     },
     "oauth2": {
@@ -370,8 +198,8 @@
       "duration": 180,
       "length": 8,
       "emailTemplate": {
-        "subject": "{APP_NAME} \u7684\u4e00\u6b21\u6027\u9a8c\u8bc1\u7801",
-        "body": "<p>\u60a8\u597d,</p>\n<p>\u60a8\u7684\u4e00\u6b21\u6027\u9a8c\u8bc1\u7801\u662f: <strong>{OTP}</strong></p>\n<p><i>\u5982\u679c\u60a8\u6ca1\u6709\u8bf7\u6c42\u4e00\u6b21\u6027\u9a8c\u8bc1\u7801,\u53ef\u5ffd\u7565\u6b64\u90ae\u4ef6\u3002</i></p>\n<p>\n  \u8c22\u8c22,<br/>\n  {APP_NAME} \u56e2\u961f\n</p>"
+        "subject": "{APP_NAME} 的一次性验证码",
+        "body": "<p>您好,</p>\n<p>您的一次性验证码是: <strong>{OTP}</strong></p>\n<p><i>如果您没有请求一次性验证码,可忽略此邮件。</i></p>\n<p>\n  谢谢,<br/>\n  {APP_NAME} 团队\n</p>"
       }
     },
     "authToken": {
@@ -390,26 +218,26 @@
       "duration": 120
     },
     "verificationTemplate": {
-      "subject": "{APP_NAME} - \u9a8c\u8bc1\u90ae\u7bb1",
-      "body": "<style>\n  body,\n  html {\n    padding: 0;\n    margin: 0;\n    border: 0;\n    color: #1a191a;\n    background: #fff;\n    font-size: 14px;\n    line-height: 20px;\n    font-weight: normal;\n    font-family: Inter, sans-serif, emoji;\n  }\n\n  body {\n    padding: 20px 30px;\n  }\n\n  strong {\n    font-weight: bold;\n  }\n\n  em,\n  i {\n    font-style: italic;\n  }\n\n  p {\n    display: block;\n    margin: 10px 0;\n    font-family: inherit;\n  }\n\n  small {\n    font-size: 12px;\n    line-height: 16px;\n  }\n\n  hr {\n    display: block;\n    height: 1px;\n    border: 0;\n    width: 100%;\n    background: #e1e6ea;\n    margin: 10px 0;\n  }\n\n  a {\n    color: inherit;\n  }\n\n  .hidden {\n    display: none !important;\n  }\n\n  .btn {\n    display: inline-block;\n    cursor: pointer;\n    color: #fff !important;\n    background: #8a40bf !important;\n    text-decoration: none !important;\n    width: auto;\n    min-width: 150px;\n    line-height: 40px;\n    height: 40px;\n    text-align: center;\n    padding: 0 20px;\n    margin: 5px 0;\n    font-family: Inter, sans-serif, emoji;\n    font-weight: normal;\n    font-size: 14px;\n    border-radius: 6px;\n    box-sizing: border-box;\n  }\n\n  .btn:hover {\n    opacity: 0.9;\n  }\n\n  .reminders {\n    margin-left: 16px;\n    padding-left: 0;\n  }\n\n  .reminders li {\n    margin-left: 0;\n    padding-left: 0;\n  }\n</style>\n\n<p>\u60a8\u597d,</p>\n<p>Thank you for signing up to {APP_NAME}.</p>\n<p>\u8bf7\u70b9\u51fb\u4e0b\u65b9\u6309\u94ae\u9a8c\u8bc1\u60a8\u7684\u90ae\u7bb1\u5730\u5740\u3002</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/verify-email?token={TOKEN}\" target=\"_blank\" rel=\"noopener\">\u9a8c\u8bc1</a>\n</p>\n\n<p>\u6216\u8005,\u60a8\u4e5f\u53ef\u4ee5\u590d\u5236\u4e0b\u65b9\u4ee4\u724c,\u5728\u6d4f\u89c8\u5668\u4e2d\u5b8c\u6210\u90ae\u7bb1\u9a8c\u8bc1\u3002</p>\n<p>{TOKEN}</p>\n\n<p>\n  \u8c22\u8c22,<br />\n  Long Habit\n</p>"
+      "subject": "{APP_NAME} - 验证邮箱",
+      "body": "<style>\n  body,\n  html {\n    padding: 0;\n    margin: 0;\n    border: 0;\n    color: #1a191a;\n    background: #fff;\n    font-size: 14px;\n    line-height: 20px;\n    font-weight: normal;\n    font-family: Inter, sans-serif, emoji;\n  }\n\n  body {\n    padding: 20px 30px;\n  }\n\n  strong {\n    font-weight: bold;\n  }\n\n  em,\n  i {\n    font-style: italic;\n  }\n\n  p {\n    display: block;\n    margin: 10px 0;\n    font-family: inherit;\n  }\n\n  small {\n    font-size: 12px;\n    line-height: 16px;\n  }\n\n  hr {\n    display: block;\n    height: 1px;\n    border: 0;\n    width: 100%;\n    background: #e1e6ea;\n    margin: 10px 0;\n  }\n\n  a {\n    color: inherit;\n  }\n\n  .hidden {\n    display: none !important;\n  }\n\n  .btn {\n    display: inline-block;\n    cursor: pointer;\n    color: #fff !important;\n    background: #8a40bf !important;\n    text-decoration: none !important;\n    width: auto;\n    min-width: 150px;\n    line-height: 40px;\n    height: 40px;\n    text-align: center;\n    padding: 0 20px;\n    margin: 5px 0;\n    font-family: Inter, sans-serif, emoji;\n    font-weight: normal;\n    font-size: 14px;\n    border-radius: 6px;\n    box-sizing: border-box;\n  }\n\n  .btn:hover {\n    opacity: 0.9;\n  }\n\n  .reminders {\n    margin-left: 16px;\n    padding-left: 0;\n  }\n\n  .reminders li {\n    margin-left: 0;\n    padding-left: 0;\n  }\n</style>\n\n<p>您好,</p>\n<p>Thank you for signing up to {APP_NAME}.</p>\n<p>请点击下方按钮验证您的邮箱地址。</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/verify-email?token={TOKEN}\" target=\"_blank\" rel=\"noopener\">验证</a>\n</p>\n\n<p>或者,您也可以复制下方令牌,在浏览器中完成邮箱验证。</p>\n<p>{TOKEN}</p>\n\n<p>\n  谢谢,<br />\n  tans-PIM\n</p>"
     },
     "resetPasswordTemplate": {
-      "subject": "{APP_NAME} - \u91cd\u7f6e\u5bc6\u7801",
-      "body": "<style>\n  body,\n  html {\n    padding: 0;\n    margin: 0;\n    border: 0;\n    color: #1a191a;\n    background: #fff;\n    font-size: 14px;\n    line-height: 20px;\n    font-weight: normal;\n    font-family: Inter, sans-serif, emoji;\n  }\n\n  body {\n    padding: 20px 30px;\n  }\n\n  strong {\n    font-weight: bold;\n  }\n\n  em,\n  i {\n    font-style: italic;\n  }\n\n  p {\n    display: block;\n    margin: 10px 0;\n    font-family: inherit;\n  }\n\n  small {\n    font-size: 12px;\n    line-height: 16px;\n  }\n\n  hr {\n    display: block;\n    height: 1px;\n    border: 0;\n    width: 100%;\n    background: #e1e6ea;\n    margin: 10px 0;\n  }\n\n  a {\n    color: inherit;\n  }\n\n  .hidden {\n    display: none !important;\n  }\n\n  .btn {\n    display: inline-block;\n    cursor: pointer;\n    color: #fff !important;\n    background: #8a40bf !important;\n    text-decoration: none !important;\n    width: auto;\n    min-width: 150px;\n    line-height: 40px;\n    height: 40px;\n    text-align: center;\n    padding: 0 20px;\n    margin: 5px 0;\n    font-family: Inter, sans-serif, emoji;\n    font-weight: normal;\n    font-size: 14px;\n    border-radius: 6px;\n    box-sizing: border-box;\n  }\n\n  .btn:hover {\n    opacity: 0.9;\n  }\n\n  .reminders {\n    margin-left: 16px;\n    padding-left: 0;\n  }\n\n  .reminders li {\n    margin-left: 0;\n    padding-left: 0;\n  }\n</style>\n\n<p>\u60a8\u597d,</p>\n<p>\u8bf7\u70b9\u51fb\u4e0b\u65b9\u6309\u94ae\u91cd\u7f6e\u60a8\u7684\u5bc6\u7801\u3002</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/reset-password?token={TOKEN}\" target=\"_blank\" rel=\"noopener\">\u91cd\u7f6e\u5bc6\u7801</a>\n</p>\n<p><i>\u5982\u679c\u60a8\u6ca1\u6709\u8bf7\u6c42\u91cd\u7f6e\u5bc6\u7801,\u53ef\u5ffd\u7565\u6b64\u90ae\u4ef6\u3002</i></p>\n\n<p>\n  \u8c22\u8c22,<br />\n  Long Habit\n</p>"
+      "subject": "{APP_NAME} - 重置密码",
+      "body": "<style>\n  body,\n  html {\n    padding: 0;\n    margin: 0;\n    border: 0;\n    color: #1a191a;\n    background: #fff;\n    font-size: 14px;\n    line-height: 20px;\n    font-weight: normal;\n    font-family: Inter, sans-serif, emoji;\n  }\n\n  body {\n    padding: 20px 30px;\n  }\n\n  strong {\n    font-weight: bold;\n  }\n\n  em,\n  i {\n    font-style: italic;\n  }\n\n  p {\n    display: block;\n    margin: 10px 0;\n    font-family: inherit;\n  }\n\n  small {\n    font-size: 12px;\n    line-height: 16px;\n  }\n\n  hr {\n    display: block;\n    height: 1px;\n    border: 0;\n    width: 100%;\n    background: #e1e6ea;\n    margin: 10px 0;\n  }\n\n  a {\n    color: inherit;\n  }\n\n  .hidden {\n    display: none !important;\n  }\n\n  .btn {\n    display: inline-block;\n    cursor: pointer;\n    color: #fff !important;\n    background: #8a40bf !important;\n    text-decoration: none !important;\n    width: auto;\n    min-width: 150px;\n    line-height: 40px;\n    height: 40px;\n    text-align: center;\n    padding: 0 20px;\n    margin: 5px 0;\n    font-family: Inter, sans-serif, emoji;\n    font-weight: normal;\n    font-size: 14px;\n    border-radius: 6px;\n    box-sizing: border-box;\n  }\n\n  .btn:hover {\n    opacity: 0.9;\n  }\n\n  .reminders {\n    margin-left: 16px;\n    padding-left: 0;\n  }\n\n  .reminders li {\n    margin-left: 0;\n    padding-left: 0;\n  }\n</style>\n\n<p>您好,</p>\n<p>请点击下方按钮重置您的密码。</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/reset-password?token={TOKEN}\" target=\"_blank\" rel=\"noopener\">重置密码</a>\n</p>\n<p><i>如果您没有请求重置密码,可忽略此邮件。</i></p>\n\n<p>\n  谢谢,<br />\n  tans-PIM\n</p>"
     },
     "confirmEmailChangeTemplate": {
-      "subject": "\u786e\u8ba4\u60a8\u7684 {APP_NAME} \u65b0\u90ae\u7bb1\u5730\u5740",
-      "body": "<p>\u60a8\u597d,</p>\n<p>\u8bf7\u70b9\u51fb\u4e0b\u65b9\u6309\u94ae\u786e\u8ba4\u60a8\u7684\u65b0\u90ae\u7bb1\u5730\u5740\u3002</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-email-change/{TOKEN}\" target=\"_blank\" rel=\"noopener\">\u786e\u8ba4\u65b0\u90ae\u7bb1</a>\n</p>\n<p><i>\u5982\u679c\u60a8\u6ca1\u6709\u8bf7\u6c42\u66f4\u6539\u90ae\u7bb1\u5730\u5740,\u8bf7\u5ffd\u7565\u6b64\u90ae\u4ef6\u3002</i></p>\n<p>\n  \u8c22\u8c22,<br/>\n  {APP_NAME} \u56e2\u961f\n</p>"
+      "subject": "确认您的 {APP_NAME} 新邮箱地址",
+      "body": "<p>您好,</p>\n<p>请点击下方按钮确认您的新邮箱地址。</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-email-change/{TOKEN}\" target=\"_blank\" rel=\"noopener\">确认新邮箱</a>\n</p>\n<p><i>如果您没有请求更改邮箱地址,请忽略此邮件。</i></p>\n<p>\n  谢谢,<br/>\n  {APP_NAME} 团队\n</p>"
     }
   },
   {
-    "id": "pbc_4275539003",
-    "listRule": "@request.auth.id != '' && recordRef = @request.auth.id && collectionRef = @request.auth.collectionId",
-    "viewRule": "@request.auth.id != '' && recordRef = @request.auth.id && collectionRef = @request.auth.collectionId",
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": "@request.auth.id != '' && recordRef = @request.auth.id && collectionRef = @request.auth.collectionId",
-    "name": "_authOrigins",
+    "id": "pbc_persons",
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "name": "persons",
     "type": "base",
     "fields": [
       {
@@ -429,450 +257,450 @@
       {
         "autogeneratePattern": "",
         "hidden": false,
-        "id": "text455797646",
+        "id": "f_last_name",
         "max": 0,
         "min": 0,
-        "name": "collectionRef",
+        "name": "last_name",
         "pattern": "",
-        "presentable": false,
+        "presentable": true,
         "primaryKey": false,
         "required": true,
-        "system": true,
+        "system": false,
         "type": "text"
       },
       {
         "autogeneratePattern": "",
         "hidden": false,
-        "id": "text127846527",
+        "id": "f_first_name",
         "max": 0,
         "min": 0,
-        "name": "recordRef",
+        "name": "first_name",
         "pattern": "",
-        "presentable": false,
+        "presentable": true,
         "primaryKey": false,
         "required": true,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "autogeneratePattern": "",
-        "hidden": false,
-        "id": "text4228609354",
-        "max": 0,
-        "min": 0,
-        "name": "fingerprint",
-        "pattern": "",
-        "presentable": false,
-        "primaryKey": false,
-        "required": true,
-        "system": true,
+        "system": false,
         "type": "text"
       },
       {
         "hidden": false,
-        "id": "autodate2990389176",
-        "name": "created",
-        "onCreate": true,
-        "onUpdate": false,
-        "presentable": false,
-        "system": true,
-        "type": "autodate"
-      },
-      {
-        "hidden": false,
-        "id": "autodate3332085495",
-        "name": "updated",
-        "onCreate": true,
-        "onUpdate": true,
-        "presentable": false,
-        "system": true,
-        "type": "autodate"
-      }
-    ],
-    "indexes": [
-      "CREATE UNIQUE INDEX `idx_authOrigins_unique_pairs` ON `_authOrigins` (collectionRef, recordRef, fingerprint)"
-    ],
-    "system": true
-  },
-  {
-    "id": "pbc_2281828961",
-    "listRule": "@request.auth.id != '' && recordRef = @request.auth.id && collectionRef = @request.auth.collectionId",
-    "viewRule": "@request.auth.id != '' && recordRef = @request.auth.id && collectionRef = @request.auth.collectionId",
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": "@request.auth.id != '' && recordRef = @request.auth.id && collectionRef = @request.auth.collectionId",
-    "name": "_externalAuths",
-    "type": "base",
-    "fields": [
-      {
-        "autogeneratePattern": "[a-z0-9]{15}",
-        "hidden": false,
-        "id": "text3208210256",
-        "max": 15,
-        "min": 15,
-        "name": "id",
-        "pattern": "^[a-z0-9]+$",
-        "presentable": false,
-        "primaryKey": true,
-        "required": true,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "autogeneratePattern": "",
-        "hidden": false,
-        "id": "text455797646",
-        "max": 0,
-        "min": 0,
-        "name": "collectionRef",
-        "pattern": "",
-        "presentable": false,
-        "primaryKey": false,
-        "required": true,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "autogeneratePattern": "",
-        "hidden": false,
-        "id": "text127846527",
-        "max": 0,
-        "min": 0,
-        "name": "recordRef",
-        "pattern": "",
-        "presentable": false,
-        "primaryKey": false,
-        "required": true,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "autogeneratePattern": "",
-        "hidden": false,
-        "id": "text2462348188",
-        "max": 0,
-        "min": 0,
-        "name": "provider",
-        "pattern": "",
-        "presentable": false,
-        "primaryKey": false,
-        "required": true,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "autogeneratePattern": "",
-        "hidden": false,
-        "id": "text1044722854",
-        "max": 0,
-        "min": 0,
-        "name": "providerId",
-        "pattern": "",
-        "presentable": false,
-        "primaryKey": false,
-        "required": true,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "hidden": false,
-        "id": "autodate2990389176",
-        "name": "created",
-        "onCreate": true,
-        "onUpdate": false,
-        "presentable": false,
-        "system": true,
-        "type": "autodate"
-      },
-      {
-        "hidden": false,
-        "id": "autodate3332085495",
-        "name": "updated",
-        "onCreate": true,
-        "onUpdate": true,
-        "presentable": false,
-        "system": true,
-        "type": "autodate"
-      }
-    ],
-    "indexes": [
-      "CREATE UNIQUE INDEX `idx_externalAuths_record_provider` ON `_externalAuths` (collectionRef, recordRef, provider)",
-      "CREATE UNIQUE INDEX `idx_externalAuths_collection_provider` ON `_externalAuths` (collectionRef, provider, providerId)"
-    ],
-    "system": true
-  },
-  {
-    "id": "pbc_2279338944",
-    "listRule": "@request.auth.id != '' && recordRef = @request.auth.id && collectionRef = @request.auth.collectionId",
-    "viewRule": "@request.auth.id != '' && recordRef = @request.auth.id && collectionRef = @request.auth.collectionId",
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
-    "name": "_mfas",
-    "type": "base",
-    "fields": [
-      {
-        "autogeneratePattern": "[a-z0-9]{15}",
-        "hidden": false,
-        "id": "text3208210256",
-        "max": 15,
-        "min": 15,
-        "name": "id",
-        "pattern": "^[a-z0-9]+$",
-        "presentable": false,
-        "primaryKey": true,
-        "required": true,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "autogeneratePattern": "",
-        "hidden": false,
-        "id": "text455797646",
-        "max": 0,
-        "min": 0,
-        "name": "collectionRef",
-        "pattern": "",
-        "presentable": false,
-        "primaryKey": false,
-        "required": true,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "autogeneratePattern": "",
-        "hidden": false,
-        "id": "text127846527",
-        "max": 0,
-        "min": 0,
-        "name": "recordRef",
-        "pattern": "",
-        "presentable": false,
-        "primaryKey": false,
-        "required": true,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "autogeneratePattern": "",
-        "hidden": false,
-        "id": "text1582905952",
-        "max": 0,
-        "min": 0,
-        "name": "method",
-        "pattern": "",
-        "presentable": false,
-        "primaryKey": false,
-        "required": true,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "hidden": false,
-        "id": "autodate2990389176",
-        "name": "created",
-        "onCreate": true,
-        "onUpdate": false,
-        "presentable": false,
-        "system": true,
-        "type": "autodate"
-      },
-      {
-        "hidden": false,
-        "id": "autodate3332085495",
-        "name": "updated",
-        "onCreate": true,
-        "onUpdate": true,
-        "presentable": false,
-        "system": true,
-        "type": "autodate"
-      }
-    ],
-    "indexes": [
-      "CREATE INDEX `idx_mfas_collectionRef_recordRef` ON `_mfas` (collectionRef,recordRef)"
-    ],
-    "system": true
-  },
-  {
-    "id": "pbc_1638494021",
-    "listRule": "@request.auth.id != '' && recordRef = @request.auth.id && collectionRef = @request.auth.collectionId",
-    "viewRule": "@request.auth.id != '' && recordRef = @request.auth.id && collectionRef = @request.auth.collectionId",
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
-    "name": "_otps",
-    "type": "base",
-    "fields": [
-      {
-        "autogeneratePattern": "[a-z0-9]{15}",
-        "hidden": false,
-        "id": "text3208210256",
-        "max": 15,
-        "min": 15,
-        "name": "id",
-        "pattern": "^[a-z0-9]+$",
-        "presentable": false,
-        "primaryKey": true,
-        "required": true,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "autogeneratePattern": "",
-        "hidden": false,
-        "id": "text455797646",
-        "max": 0,
-        "min": 0,
-        "name": "collectionRef",
-        "pattern": "",
-        "presentable": false,
-        "primaryKey": false,
-        "required": true,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "autogeneratePattern": "",
-        "hidden": false,
-        "id": "text127846527",
-        "max": 0,
-        "min": 0,
-        "name": "recordRef",
-        "pattern": "",
-        "presentable": false,
-        "primaryKey": false,
-        "required": true,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "cost": 8,
-        "hidden": true,
-        "id": "password901924565",
-        "max": 0,
-        "min": 0,
-        "name": "password",
-        "pattern": "",
-        "presentable": false,
-        "required": true,
-        "system": true,
-        "type": "password"
-      },
-      {
-        "autogeneratePattern": "",
-        "hidden": true,
-        "id": "text3866985172",
-        "max": 0,
-        "min": 0,
-        "name": "sentTo",
-        "pattern": "",
-        "presentable": false,
-        "primaryKey": false,
-        "required": false,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "hidden": false,
-        "id": "autodate2990389176",
-        "name": "created",
-        "onCreate": true,
-        "onUpdate": false,
-        "presentable": false,
-        "system": true,
-        "type": "autodate"
-      },
-      {
-        "hidden": false,
-        "id": "autodate3332085495",
-        "name": "updated",
-        "onCreate": true,
-        "onUpdate": true,
-        "presentable": false,
-        "system": true,
-        "type": "autodate"
-      }
-    ],
-    "indexes": [
-      "CREATE INDEX `idx_otps_collectionRef_recordRef` ON `_otps` (collectionRef, recordRef)"
-    ],
-    "system": true
-  },
-  {
-    "id": "cjmk3aqfksj2u7r",
-    "listRule": "@request.auth.id = user.id",
-    "viewRule": "@request.auth.id = user.id",
-    "createRule": "@request.auth.id = user.id",
-    "updateRule": "@request.auth.id = user.id",
-    "deleteRule": null,
-    "name": "settings",
-    "type": "base",
-    "fields": [
-      {
-        "autogeneratePattern": "[a-z0-9]{15}",
-        "hidden": false,
-        "id": "text3208210256",
-        "max": 15,
-        "min": 15,
-        "name": "id",
-        "pattern": "^[a-z0-9]+$",
-        "presentable": false,
-        "primaryKey": true,
-        "required": true,
-        "system": true,
-        "type": "text"
-      },
-      {
-        "cascadeDelete": true,
-        "collectionId": "_pb_users_auth_",
-        "hidden": false,
-        "id": "ulhz0nv4",
+        "id": "f_gender",
         "maxSelect": 1,
-        "minSelect": 0,
-        "name": "user",
-        "presentable": false,
-        "required": true,
-        "system": false,
-        "type": "relation"
-      },
-      {
-        "exceptDomains": null,
-        "hidden": false,
-        "id": "erm50flt",
-        "name": "remindEmail",
-        "onlyDomains": null,
+        "name": "gender",
         "presentable": false,
         "required": false,
-        "system": false,
-        "type": "email"
-      },
-      {
-        "hidden": false,
-        "id": "ilomka2f",
-        "name": "remindByEmailEnabled",
-        "presentable": false,
-        "required": false,
-        "system": false,
-        "type": "bool"
-      },
-      {
-        "hidden": false,
-        "id": "ielqe5v7",
-        "maxSelect": 1,
-        "name": "theme",
-        "presentable": false,
-        "required": true,
         "system": false,
         "type": "select",
         "values": [
-          "system",
-          "light",
-          "dark"
+          "男",
+          "女"
         ]
       },
       {
         "hidden": false,
-        "id": "autodate2990389176",
+        "id": "f_birthday",
+        "name": "birthday",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "date"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_id_card",
+        "max": 0,
+        "min": 0,
+        "name": "id_card",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_ethnicity",
+        "max": 0,
+        "min": 0,
+        "name": "ethnicity",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "f_blood_type",
+        "maxSelect": 1,
+        "name": "blood_type",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "select",
+        "values": [
+          "A",
+          "B",
+          "AB",
+          "O"
+        ]
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_zodiac",
+        "max": 0,
+        "min": 0,
+        "name": "zodiac",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_native_place",
+        "max": 0,
+        "min": 0,
+        "name": "native_place",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_birth_place",
+        "max": 0,
+        "min": 0,
+        "name": "birth_place",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_political_status",
+        "max": 0,
+        "min": 0,
+        "name": "political_status",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_person_tags",
+        "max": 0,
+        "min": 0,
+        "name": "person_tags",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_social_tags",
+        "max": 0,
+        "min": 0,
+        "name": "social_tags",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_nickname",
+        "max": 0,
+        "min": 0,
+        "name": "nickname",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "cascadeDelete": false,
+        "collectionId": "pbc_organizations",
+        "hidden": false,
+        "id": "f_current_org_id",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "current_org_id",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_admin_position",
+        "max": 0,
+        "min": 0,
+        "name": "admin_position",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_tech_title",
+        "max": 0,
+        "min": 0,
+        "name": "tech_title",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_legal_info",
+        "max": 0,
+        "min": 0,
+        "name": "legal_info",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_graduate_school",
+        "max": 0,
+        "min": 0,
+        "name": "graduate_school",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "f_degree",
+        "maxSelect": 1,
+        "name": "degree",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "select",
+        "values": [
+          "专科",
+          "本科",
+          "硕士",
+          "博士"
+        ]
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_major",
+        "max": 0,
+        "min": 0,
+        "name": "major",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_continuing_edu",
+        "max": 0,
+        "min": 0,
+        "name": "continuing_edu",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_mobile",
+        "max": 0,
+        "min": 0,
+        "name": "mobile",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_office_phone",
+        "max": 0,
+        "min": 0,
+        "name": "office_phone",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_email",
+        "max": 0,
+        "min": 0,
+        "name": "email",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_office_address",
+        "max": 0,
+        "min": 0,
+        "name": "office_address",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_home_address",
+        "max": 0,
+        "min": 0,
+        "name": "home_address",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_interests",
+        "max": 0,
+        "min": 0,
+        "name": "interests",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_children_info",
+        "max": 0,
+        "min": 0,
+        "name": "children_info",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_taboo",
+        "max": 0,
+        "min": 0,
+        "name": "taboo",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_concern",
+        "max": 0,
+        "min": 0,
+        "name": "concern",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "f_trust_level",
+        "max": 5,
+        "min": 1,
+        "name": "trust_level",
+        "onlyInt": true,
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "hidden": false,
+        "id": "autodate_created",
         "name": "created",
         "onCreate": true,
         "onUpdate": false,
@@ -882,7 +710,7 @@
       },
       {
         "hidden": false,
-        "id": "autodate3332085495",
+        "id": "autodate_updated",
         "name": "updated",
         "onCreate": true,
         "onUpdate": true,
@@ -891,17 +719,19 @@
         "type": "autodate"
       }
     ],
-    "indexes": [],
+    "indexes": [
+      "CREATE INDEX `idx_persons_name` ON `persons` (`last_name`, `first_name`)"
+    ],
     "system": false
   },
   {
-    "id": "z1jvm19uwrqnu8j",
-    "listRule": "@request.auth.id = user.id",
-    "viewRule": "@request.auth.id = user.id",
-    "createRule": "@request.auth.id = user.id",
-    "updateRule": "@request.auth.id = user.id",
-    "deleteRule": "@request.auth.id = user.id",
-    "name": "tasks",
+    "id": "pbc_organizations",
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "name": "organizations",
     "type": "base",
     "fields": [
       {
@@ -919,23 +749,10 @@
         "type": "text"
       },
       {
-        "cascadeDelete": true,
-        "collectionId": "_pb_users_auth_",
-        "hidden": false,
-        "id": "uv3bevsy",
-        "maxSelect": 1,
-        "minSelect": 0,
-        "name": "user",
-        "presentable": false,
-        "required": true,
-        "system": false,
-        "type": "relation"
-      },
-      {
         "autogeneratePattern": "",
         "hidden": false,
-        "id": "bhqcvzg5",
-        "max": 255,
+        "id": "f_name",
+        "max": 0,
         "min": 0,
         "name": "name",
         "pattern": "",
@@ -948,10 +765,36 @@
       {
         "autogeneratePattern": "",
         "hidden": false,
-        "id": "tcqes8su",
-        "max": 1024,
+        "id": "f_type",
+        "max": 0,
         "min": 0,
-        "name": "description",
+        "name": "type",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "f_importance_level",
+        "max": 5,
+        "min": 1,
+        "name": "importance_level",
+        "onlyInt": true,
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_phone",
+        "max": 0,
+        "min": 0,
+        "name": "phone",
         "pattern": "",
         "presentable": false,
         "primaryKey": false,
@@ -962,10 +805,49 @@
       {
         "autogeneratePattern": "",
         "hidden": false,
-        "id": "bgnwnv3b",
-        "max": 100,
-        "min": 1,
-        "name": "category",
+        "id": "f_email",
+        "max": 0,
+        "min": 0,
+        "name": "email",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "exceptDomains": null,
+        "hidden": false,
+        "id": "f_map",
+        "name": "map",
+        "onlyDomains": null,
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "url"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_address",
+        "max": 0,
+        "min": 0,
+        "name": "address",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_notes",
+        "max": 0,
+        "min": 0,
+        "name": "notes",
         "pattern": "",
         "presentable": false,
         "primaryKey": false,
@@ -975,59 +857,7 @@
       },
       {
         "hidden": false,
-        "id": "bool3516879812",
-        "name": "repeatGoalEnabled",
-        "presentable": false,
-        "required": false,
-        "system": false,
-        "type": "bool"
-      },
-      {
-        "hidden": false,
-        "id": "n0dovftw",
-        "max": 3650,
-        "min": 0,
-        "name": "daysRepeat",
-        "onlyInt": true,
-        "presentable": false,
-        "required": false,
-        "system": false,
-        "type": "number"
-      },
-      {
-        "hidden": false,
-        "id": "fuwwbrft",
-        "max": 3650,
-        "min": 0,
-        "name": "daysRemind",
-        "onlyInt": true,
-        "presentable": false,
-        "required": false,
-        "system": false,
-        "type": "number"
-      },
-      {
-        "hidden": false,
-        "id": "hbzzlxyf",
-        "name": "remindByEmail",
-        "presentable": false,
-        "required": false,
-        "system": false,
-        "type": "bool"
-      },
-      {
-        "hidden": false,
-        "id": "hatjwde8",
-        "maxSize": 2000000,
-        "name": "history",
-        "presentable": false,
-        "required": false,
-        "system": false,
-        "type": "json"
-      },
-      {
-        "hidden": false,
-        "id": "autodate2990389176",
+        "id": "autodate_created",
         "name": "created",
         "onCreate": true,
         "onUpdate": false,
@@ -1037,7 +867,187 @@
       },
       {
         "hidden": false,
-        "id": "autodate3332085495",
+        "id": "autodate_updated",
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      }
+    ],
+    "indexes": [
+      "CREATE INDEX `idx_organizations_name` ON `organizations` (`name`)"
+    ],
+    "system": false
+  },
+  {
+    "id": "pbc_relations",
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "name": "relations",
+    "type": "base",
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "hidden": false,
+        "id": "text3208210256",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "cascadeDelete": true,
+        "collectionId": "pbc_persons",
+        "hidden": false,
+        "id": "f_person_a",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "person_a",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "cascadeDelete": true,
+        "collectionId": "pbc_persons",
+        "hidden": false,
+        "id": "f_person_b",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "person_b",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_relation_description",
+        "max": 0,
+        "min": 0,
+        "name": "relation_description",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "autodate_created",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      },
+      {
+        "hidden": false,
+        "id": "autodate_updated",
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      }
+    ],
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_relations_ab` ON `relations` (`person_a`, `person_b`)"
+    ],
+    "system": false
+  },
+  {
+    "id": "pbc_person_org_links",
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "name": "person_org_links",
+    "type": "base",
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "hidden": false,
+        "id": "text3208210256",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "cascadeDelete": true,
+        "collectionId": "pbc_persons",
+        "hidden": false,
+        "id": "f_person_id",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "person_id",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "cascadeDelete": true,
+        "collectionId": "pbc_organizations",
+        "hidden": false,
+        "id": "f_org_id",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "org_id",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_link_description",
+        "max": 0,
+        "min": 0,
+        "name": "link_description",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "autodate_created",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      },
+      {
+        "hidden": false,
+        "id": "autodate_updated",
         "name": "updated",
         "onCreate": true,
         "onUpdate": true,
@@ -1047,6 +1057,121 @@
       }
     ],
     "indexes": [],
+    "system": false
+  },
+  {
+    "id": "pbc_events",
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "name": "events",
+    "type": "base",
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "hidden": false,
+        "id": "text3208210256",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "cascadeDelete": true,
+        "collectionId": "pbc_persons",
+        "hidden": false,
+        "id": "f_person_id",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "person_id",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "cascadeDelete": false,
+        "collectionId": "pbc_organizations",
+        "hidden": false,
+        "id": "f_org_id",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "org_id",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "hidden": false,
+        "id": "f_happen_at",
+        "name": "happen_at",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "date"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_type",
+        "max": 0,
+        "min": 0,
+        "name": "type",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_summary",
+        "max": 0,
+        "min": 0,
+        "name": "summary",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "autodate_created",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      },
+      {
+        "hidden": false,
+        "id": "autodate_updated",
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      }
+    ],
+    "indexes": [
+      "CREATE INDEX `idx_events_person` ON `events` (`person_id`)",
+      "CREATE INDEX `idx_events_org` ON `events` (`org_id`)",
+      "CREATE INDEX `idx_events_date` ON `events` (`happen_at` DESC)"
+    ],
     "system": false
   },
   {
