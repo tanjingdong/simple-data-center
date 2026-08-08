@@ -30,6 +30,28 @@ export const emptyPersonFilters: PersonFilters = {
   trustLevel: ''
 }
 
+// 检索视图:「全部」= 数据库默认序;「最近更新」= 30 天内更新 + 时间倒序
+export type PersonViewMode = 'all' | 'recent'
+
+// 30 天前时间戳(可注入 now 便于测试)
+export function oneMonthAgoIso(now: Date = new Date()): string {
+  return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString()
+}
+
+// 组合基础过滤与「最近更新」时间条件;无任何条件时返回 undefined(走数据库默认序)
+export function buildPersonListFilter(
+  filters: PersonFilters,
+  viewMode: PersonViewMode
+): string | undefined {
+  const parts: string[] = []
+  const base = buildPersonFilter(filters)
+  if (base) parts.push(base)
+  if (viewMode === 'recent') {
+    parts.push(`updated >= '${oneMonthAgoIso()}'`)
+  }
+  return parts.length ? parts.join(' && ') : undefined
+}
+
 // 纯函数:构造 persons 列表 filter 表达式(供检索栏与测试复用)
 export function buildPersonFilter(filters: PersonFilters): string {
   const parts: string[] = []
@@ -37,7 +59,7 @@ export function buildPersonFilter(filters: PersonFilters): string {
 
   if (q) {
     parts.push(
-      `(last_name~'${q}' || first_name~'${q}' || nickname~'${q}' || mobile~'${q}')`
+      `last_name~'${q}' || first_name~'${q}' || nickname~'${q}' || mobile~'${q}'`
     )
   }
   if (filters.personTags.trim()) {
@@ -59,15 +81,17 @@ export function buildPersonFilter(filters: PersonFilters): string {
   return parts.length ? parts.map((p) => `(${p})`).join(' && ') : ''
 }
 
-// 列表查询(空 filter 时返回全部,按更新时间倒序)
-export function personsQueryOptions(filters: PersonFilters) {
+// 列表查询(viewMode:all 不传 sort 走默认序;recent 过滤 30 天内并按更新时间倒序)
+export function personsQueryOptions(
+  filters: PersonFilters,
+  viewMode: PersonViewMode = 'all'
+) {
   return queryOptions({
-    queryKey: ['persons', 'list', filters],
+    queryKey: ['persons', 'list', viewMode, filters],
     queryFn: async () => {
-      const filter = buildPersonFilter(filters)
       const result = await pb.collection('persons').getList(1, 50, {
-        filter: filter || undefined,
-        sort: '-updated',
+        filter: buildPersonListFilter(filters, viewMode),
+        sort: viewMode === 'recent' ? '-updated' : undefined,
         expand: 'current_org_id'
       })
       return result.items.map(
