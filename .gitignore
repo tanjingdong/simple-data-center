@@ -14,6 +14,10 @@ CLAUDE.md
 tans-pim
 tans-pim*.exe
 
+# Build output & server log
+release/
+server.log
+
 # Database
 db
 

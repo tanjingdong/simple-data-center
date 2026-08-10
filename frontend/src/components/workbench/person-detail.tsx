@@ -1,18 +1,20 @@
 import { Button } from '@/components/ui/button'
 import { errorToast, successToast } from '@/lib/toast'
+import { buildVCard } from '@/lib/vcard'
 import { deletePerson, personDetailQueryOptions } from '@/services/api-persons'
 import {
   useMutation,
   useQueryClient,
   useSuspenseQuery
 } from '@tanstack/react-query'
-import { PencilIcon, Trash2Icon } from 'lucide-react'
+import { PencilIcon, QrCodeIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
 import ExperiencePanel from './experience-panel'
 import PersonEventsTab from './person-events-tab'
 import PersonForm from './person-form'
 import PersonLinksTab from './person-links-tab'
 import PersonOverview from './person-overview'
+import PersonQrDialog from './person-qr-dialog'
 import PersonRelationsTab from './person-relations-tab'
 import { SimpleTabs } from './simple-tabs'
 
@@ -27,6 +29,7 @@ export default function PersonDetail({
 }) {
   const { data: person } = useSuspenseQuery(personDetailQueryOptions(personId))
   const [editing, setEditing] = useState(false)
+  const [showQr, setShowQr] = useState(false)
   const queryClient = useQueryClient()
 
   const deleteMutation = useMutation({
@@ -50,6 +53,10 @@ export default function PersonDetail({
     )
   }
 
+  if (showQr) {
+    return <PersonQrDialog person={person} onClose={() => setShowQr(false)} />
+  }
+
   const expandedOrgName = person.expand?.current_org_id?.name
 
   return (
@@ -60,6 +67,19 @@ export default function PersonDetail({
           {person.first_name}
         </h1>
         <div className='flex items-center gap-2'>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => {
+              // 姓名双空时 buildVCard 返回空串,无法生成二维码
+              if (!buildVCard(person)) {
+                errorToast('该联系人缺少姓名', '无法生成二维码')
+                return
+              }
+              setShowQr(true)
+            }}>
+            <QrCodeIcon className='size-4' /> 二维码
+          </Button>
           <Button variant='outline' size='sm' onClick={() => setEditing(true)}>
             <PencilIcon className='size-4' /> 编辑
           </Button>
