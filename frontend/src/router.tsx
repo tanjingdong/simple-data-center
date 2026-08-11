@@ -16,11 +16,15 @@ import { useEffect } from 'react'
 import { z } from 'zod/v4'
 import Spinner from './components/shared/spinner'
 import { setTheme } from './lib/set-theme'
+import AdminHomePage from './pages/admin/admin-home'
+import AdminLayout from './pages/admin/admin-layout'
+import { adminTools } from './pages/admin/admin-tools'
 import ForgotPasswordPage from './pages/auth/forgot-password'
 import LoginPage from './pages/auth/login'
 import RegisterPage from './pages/auth/register'
 import ResetPasswordPage from './pages/auth/reset-password'
 import VerifyEmailPage from './pages/auth/verify-email'
+import CenterPage from './pages/center'
 import ErrorPage from './pages/error'
 import HomePage from './pages/home'
 import PrivacyPolicyPage from './pages/privacy-policy'
@@ -28,7 +32,7 @@ import EditTaskPage from './pages/tasks/edit-task'
 import NewTaskPage from './pages/tasks/new-task'
 import SettingsPage from './pages/tasks/settings'
 import TasksPage from './pages/tasks/tasks'
-import ToolsSettingsPage from './pages/tools-settings'
+import UserSettingPage from './pages/user-setting'
 import {
   resetPasswordParamsSchema,
   verifyEmailParamsSchema
@@ -79,7 +83,7 @@ const rootRoute = createRootRouteWithContext<RootContext>()({
   beforeLoad: async ({ context: { queryClient } }) => {
     const user = queryClient.getQueryData(userQueryOptions.queryKey)
     setTheme(user?.settings?.theme)
-    return { getTitle: () => 'Long Habit' }
+    return { getTitle: () => 'Simple Data Center' }
   }
 })
 
@@ -88,8 +92,9 @@ const homeRoute = createRoute({
   path: '/',
   component: HomePage,
   pendingComponent: Spinner,
+  // 已登录用户访问首页跳转到用户中心(数据大厅);未登录展示静态首页(0 数据库也能打开)
   beforeLoad: async () => {
-    if (checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/tasks' })
+    if (checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/center' })
     return { getTitle: () => '' }
   }
 })
@@ -104,21 +109,12 @@ const privacyPolicyRoute = createRoute({
   }
 })
 
-const toolsSettingsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: 'tools-settings',
-  component: ToolsSettingsPage,
-  beforeLoad: () => {
-    return { getTitle: () => '工具设置' }
-  }
-})
-
 const authRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'auth',
   beforeLoad: ({ location }) => {
     if (location.pathname.includes('reset-password')) return
-    if (checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/tasks' })
+    if (checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/center' })
     return { getTitle: () => '' }
   }
 })
@@ -174,6 +170,28 @@ const resetPasswordRoute = createRoute({
   beforeLoad: () => ({ getTitle: () => '重置密码' })
 })
 
+const centerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'center',
+  component: CenterPage,
+  pendingComponent: Spinner,
+  beforeLoad: () => {
+    if (!checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/login' })
+    return { getTitle: () => '数据大厅' }
+  }
+})
+
+const userSettingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'user-setting',
+  component: UserSettingPage,
+  pendingComponent: Spinner,
+  beforeLoad: () => {
+    if (!checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/login' })
+    return { getTitle: () => '用户设置' }
+  }
+})
+
 const tasksRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'tasks',
@@ -185,6 +203,41 @@ const tasksRoute = createRoute({
   },
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData(tasksQueryOptions)
+})
+
+const adminRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'admin',
+  component: AdminLayout,
+  beforeLoad: () => ({ getTitle: () => '管理工具' })
+})
+
+// /admin 默认显示工具选择页(不再自动跳入第一个工具)
+const adminIndexRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: '/',
+  component: AdminHomePage,
+  beforeLoad: () => ({ getTitle: () => '管理工具' })
+})
+
+// 各工具路由:与 adminTools 注册表一一对应,新增工具时需在此同步加一行。
+// (map 动态生成会丢失 path 字面量类型,导致 typed routes 无法包含 /admin/frpc,故用显式声明。)
+const adminToolRoutes = [
+  createRoute({
+    getParentRoute: () => adminRoute,
+    path: 'frpc',
+    component: adminTools[0].component,
+    beforeLoad: () => ({ getTitle: () => adminTools[0].label })
+  })
+]
+
+// 兜底:不存在的工具路径跳回 /admin 工具选择页
+const adminCatchAllRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: '*',
+  beforeLoad: () => {
+    throw redirect({ to: '/admin' })
+  }
 })
 
 const settingsRoute = createRoute({
@@ -223,7 +276,6 @@ const editTaskRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   homeRoute,
   privacyPolicyRoute,
-  toolsSettingsRoute,
   authRoute.addChildren([
     loginRoute,
     registerRoute,
@@ -231,7 +283,14 @@ const routeTree = rootRoute.addChildren([
     forgotPasswordRoute,
     resetPasswordRoute
   ]),
-  tasksRoute.addChildren([settingsRoute, newTaskRoute, editTaskRoute])
+  centerRoute,
+  userSettingRoute,
+  tasksRoute.addChildren([settingsRoute, newTaskRoute, editTaskRoute]),
+  adminRoute.addChildren([
+    adminIndexRoute,
+    ...adminToolRoutes,
+    adminCatchAllRoute
+  ])
 ])
 
 const queryClient = new QueryClient()

@@ -1,112 +1,155 @@
+import InputField from '@/components/form/input-field'
+import PasswordField from '@/components/form/password-field'
 import { Button } from '@/components/ui/button'
+import { Form } from '@/components/ui/form'
+import useAuth from '@/hooks/use-auth'
+import { useThrottle } from '@/hooks/use-throttle'
+import { LoginFields, loginSchema } from '@/schemas/auth-schema'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Link } from '@tanstack/react-router'
-import { BrainCircuitIcon, CircleHelpIcon, ListTodoIcon } from 'lucide-react'
+import {
+  BookOpenIcon,
+  ChevronDownIcon,
+  LogInIcon,
+  UserPlusIcon
+} from 'lucide-react'
+import { useForm } from 'react-hook-form'
 
+// 通用静态首页:不依赖任何数据库数据,空库(0 数据库)也能正常打开。
+// 提供内嵌登录表单、注册入口、使用说明(默认折叠)与版权说明。
 export default function HomePage() {
+  const { loginWithPassword } = useAuth()
+
+  const form = useForm<LoginFields>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' }
+  })
+
+  const [handleLogin, isLoggingIn] = useThrottle(
+    ({ email, password }: LoginFields) => loginWithPassword(email, password)
+  )
+
   return (
-    <main className='mx-auto flex max-w-3xl flex-col items-center gap-y-12 px-4'>
+    <main className='mx-auto flex w-full max-w-3xl flex-col items-center gap-y-8 px-4'>
       <section className='w-full space-y-3 text-center'>
-        <h1 className='my-6 text-5xl font-bold'>
-          Long<span className='text-primary'> Habit</span>
+        <h1 className='my-4 text-4xl font-bold'>
+          Simple<span className='text-primary'> Data Center</span>
         </h1>
-        <h2 className='text-2xl font-semibold'>长期习惯的高效追踪</h2>
-        <p className='text-muted-foreground text-xl font-light'>
-          受 James Clear 畅销书{' '}
-          <a
-            target='_blank'
-            rel='noreferrer'
-            className='hover:underline'
-            href='https://jamesclear.com/atomic-habits'>
-            掌控习惯
-          </a>
-          的启发,Long Habit
-          让周期性任务的管理变得简单而愉快,帮助您轻松建立持久的习惯。
+        <p className='text-muted-foreground text-lg font-light'>
+          基于 PocketBase 构建的自托管数据管理服务,内置 frp
+          反向代理等管理工具,数据由您自己掌控。
         </p>
       </section>
 
-      <section className='flex w-full flex-col justify-center gap-4 sm:flex-row'>
-        <Button asChild size='lg' className='w-full sm:w-40'>
-          <Link to='/register'>开始使用</Link>
-        </Button>
-        <Button asChild variant='outline' size='lg' className='w-full sm:w-40'>
-          <Link to='/login'>登录</Link>
-        </Button>
-      </section>
-
-      <section className='bg-popover w-full space-y-2 rounded-lg p-4'>
-        <h2 className='flex items-center gap-x-2 text-2xl font-semibold'>
-          <ListTodoIcon className='text-primary/80 size-6' /> 使用方式
+      <section className='bg-popover w-full max-w-sm rounded-lg border p-4'>
+        <h2 className='flex items-center gap-x-2 text-lg font-semibold'>
+          <LogInIcon className='text-primary/80 size-5' /> 登录
         </h2>
-        <ol className='text-muted-foreground list-decimal space-y-2 pl-4 text-sm'>
-          <li>将你想追踪的任务添加到列表</li>
-          <li>设置目标:你希望多久重复一次该任务?</li>
-          <li>在完成任务的当天将其标记为完成</li>
-          <li>错过目标、任务逾期时收到提醒</li>
-        </ol>
-      </section>
-
-      <section className='bg-popover w-full space-y-4 rounded-lg p-4'>
-        <h2 className='flex items-center gap-x-2 text-2xl font-semibold'>
-          <BrainCircuitIcon className='text-primary/80 size-6' /> 智能功能
-        </h2>
-        <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-          <div className='space-y-1'>
-            <h4 className='font-semibold'>简单追踪</h4>
-            <p className='text-muted-foreground text-sm'>
-              查看每个任务上次完成的时间及已过去的天数
-            </p>
-          </div>
-          <div className='space-y-1'>
-            <h4 className='font-semibold'>灵活目标</h4>
-            <p className='text-muted-foreground text-sm'>
-              为每个周期性任务设置间隔
-            </p>
-          </div>
-          <div className='space-y-1'>
-            <h4 className='font-semibold'>智能提醒</h4>
-            <p className='text-muted-foreground text-sm'>
-              通过邮件接收可定制的通知
-            </p>
-          </div>
-          <div className='space-y-1'>
-            <h4 className='font-semibold'>便捷导航</h4>
-            <p className='text-muted-foreground text-sm'>
-              按分类排序、搜索、筛选和分组任务
-            </p>
-          </div>
+        <Form {...form}>
+          <form
+            className='mt-3 flex flex-col gap-3'
+            onSubmit={form.handleSubmit(handleLogin)}>
+            <InputField form={form} name='email' type='email' label='邮箱' />
+            <PasswordField form={form} name='password' label='密码' />
+            <Button
+              type='submit'
+              disabled={!form.formState.isDirty || isLoggingIn}>
+              登录
+            </Button>
+          </form>
+        </Form>
+        <div className='mt-3 border-t pt-3'>
+          <p className='text-muted-foreground mb-2 text-center text-sm'>
+            还没有账号?
+          </p>
+          <Button asChild variant='secondary' className='w-full'>
+            <Link to='/register'>
+              <UserPlusIcon className='size-4' />
+              注册用户
+            </Link>
+          </Button>
         </div>
       </section>
 
-      <section className='bg-popover mb-16 w-full space-y-4 rounded-lg p-4'>
-        <h2 className='flex items-center gap-x-2 text-2xl font-semibold'>
-          <CircleHelpIcon className='text-primary/80 size-6' /> 为什么选择 Long
-          Habit?
-        </h2>
-        <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-          <div className='space-y-1'>
-            <h4 className='font-semibold'>极简设计</h4>
-            <p className='text-muted-foreground text-sm'>
-              轻量、快速,聚焦于核心功能
-            </p>
+      <section className='w-full space-y-4'>
+        <details className='bg-popover w-full rounded-lg p-4'>
+          <summary className='flex cursor-pointer list-none items-center gap-x-2 text-base font-semibold [&::-webkit-details-marker]:hidden'>
+            <BookOpenIcon className='text-primary/80 size-5' /> 使用说明
+            <ChevronDownIcon className='text-muted-foreground ml-auto size-4 transition-transform group-open:rotate-180' />
+          </summary>
+
+          <div className='text-muted-foreground mt-3 space-y-4 text-sm'>
+            <div className='space-y-1.5'>
+              <h3 className='text-foreground font-semibold'>忘记了其他操作?</h3>
+              <p>
+                本系统所有命令行操作(创建/重置超级管理员、启动参数、数据备份等)详见项目文档
+                <code className='bg-muted rounded px-1'>
+                  docs/superpowers/users/users.md
+                </code>
+                ;也可以在程序目录执行{' '}
+                <code className='bg-muted rounded px-1'>
+                  tans-pim.exe --help
+                </code>{' '}
+                或{' '}
+                <code className='bg-muted rounded px-1'>
+                  tans-pim.exe serve --help
+                </code>{' '}
+                查看命令行帮助。
+              </p>
+            </div>
+
+            <div className='space-y-1.5'>
+              <h3 className='text-foreground font-semibold'>数据准备</h3>
+              <p>
+                首次使用需由超级管理员在「数据管理」后台导入数据结构文件(
+                <code className='bg-muted rounded px-1'>
+                  backend/pb_schema.json
+                </code>
+                ),注册的新用户也需管理员在 users 表中将 verified 设为
+                true(或配置邮件自动认证)后方可登录。
+              </p>
+            </div>
+
+            <div className='space-y-1.5'>
+              <h3 className='text-foreground font-semibold'>备份与恢复</h3>
+              <p>
+                数据全部存放在数据目录(默认 db 文件夹)中,停止服务后复制整个 db
+                文件夹即可完成备份;恢复时把备份复制回去。
+              </p>
+            </div>
           </div>
-          <div className='space-y-1'>
-            <h4 className='font-semibold'>完全免费</h4>
-            <p className='text-muted-foreground text-sm'>
-              无广告、无垃圾信息、无乞讨
-            </p>
-          </div>
-          <div className='space-y-1'>
-            <h4 className='font-semibold'>隐私优先</h4>
-            <p className='text-muted-foreground text-sm'>开源且可自托管</p>
-          </div>
-          <div className='space-y-1'>
-            <h4 className='font-semibold'>随处访问</h4>
-            <p className='text-muted-foreground text-sm'>
-              基于网页,任何设备、任何时间均可使用
-            </p>
-          </div>
-        </div>
+        </details>
       </section>
+
+      <footer className='text-muted-foreground w-full space-y-1 border-t pt-4 pb-6 text-center text-xs'>
+        <p>
+          Simple Data Center 基于{' '}
+          <a
+            href='https://github.com/s-petr/longhabit'
+            target='_blank'
+            rel='noreferrer'
+            className='hover:underline'>
+            Long Habit
+          </a>{' '}
+          (MIT License) 二次开发;后端基于{' '}
+          <a
+            href='https://pocketbase.io'
+            target='_blank'
+            rel='noreferrer'
+            className='hover:underline'>
+            PocketBase
+          </a>{' '}
+          (MIT License);反向代理功能基于{' '}
+          <a
+            href='https://github.com/fatedier/frp'
+            target='_blank'
+            rel='noreferrer'
+            className='hover:underline'>
+            frp
+          </a>{' '}
+          (Apache License 2.0)。
+        </p>
+      </footer>
     </main>
   )
 }

@@ -47,7 +47,7 @@ export default function useAuth() {
       trackEvent('login', { props: { method: 'password' } })
       subscribeToUserChanges(authResult.record.id, subscribeUserChangeCallback)
       queryClient.invalidateQueries({ queryKey: ['user'] })
-      router.navigate({ to: '/tasks' })
+      router.navigate({ to: '/center' })
     } catch (error) {
       errorToast('登录失败', error)
     }
@@ -60,7 +60,7 @@ export default function useAuth() {
       subscribeToUserChanges(authResult.record.id, subscribeUserChangeCallback)
       queryClient.invalidateQueries({ queryKey: ['user'] })
       router.invalidate()
-      router.navigate({ to: '/tasks' })
+      router.navigate({ to: '/center' })
     } catch (error) {
       errorToast('登录失败', error)
     }

@@ -24,7 +24,7 @@ const (
 // frpc 配置默认值
 const (
 	defaultServerPort = 7000
-	defaultProxyName  = "longhabit"
+	defaultProxyName  = "simple-data-center"
 	defaultLocalPort  = 8090
 	defaultRemotePort = 8090
 	defaultLocalIP    = "127.0.0.1"
@@ -158,4 +158,63 @@ func (c Config) BuildClientConfig() (*v1.ClientCommonConfig, []v1.ProxyConfigure
 	}
 
 	return common, []v1.ProxyConfigurer{proxy}, nil
+}
+
+// ConfigItem 是待保存的单个配置项(option → value),来自前端配置表单。
+type ConfigItem struct {
+	Option string `json:"option"`
+	Value  string `json:"value"`
+}
+
+// ValidateConfigItems 校验一组待保存的配置项,返回规范化后的 option→value 映射。
+// 任一 option 未知、值为非法格式、或整体配置无效(如 server_addr 为空)时返回错误。
+// 全有全无:调用方应在全部校验通过后再写库。
+func ValidateConfigItems(items []ConfigItem) (map[string]string, error) {
+	cfg := Config{}
+	normalized := make(map[string]string, len(items))
+	for _, item := range items {
+		recognized, err := cfg.ApplyOption(item.Option, item.Value)
+		if err != nil {
+			return nil, err
+		}
+		if !recognized {
+			return nil, fmt.Errorf("未知配置项:%s", item.Option)
+		}
+		normalized[item.Option] = item.Value
+	}
+	cfg.WithDefaults()
+	if err := cfg.Validate(); err != nil {
+		return nil, err
+	}
+	return normalized, nil
+}
+
+// SaveConfig 将配置项逐条 upsert 到 tools_settings 表(按 option 唯一索引)。
+// 调用方须先用 ValidateConfigItems 完成校验(全有全无),本函数只负责写入。
+func SaveConfig(pb *pocketbase.PocketBase, items []ConfigItem) error {
+	collection, err := pb.FindCollectionByNameOrId("tools_settings")
+	if err != nil {
+		return fmt.Errorf("tools_settings 表不存在: %w", err)
+	}
+	for _, item := range items {
+		// option 唯一索引,已有记录则更新,否则创建
+		existing, err := pb.FindRecordsByFilter(
+			"tools_settings", "option={:option}", "", 0, 1,
+			map[string]any{"option": item.Option},
+		)
+		if err != nil {
+			return fmt.Errorf("查询配置项 %s 失败: %w", item.Option, err)
+		}
+		rec := core.NewRecord(collection)
+		if len(existing) > 0 {
+			rec = existing[0]
+		} else {
+			rec.Set("option", item.Option)
+		}
+		rec.Set("value", item.Value)
+		if err := pb.Save(rec); err != nil {
+			return fmt.Errorf("保存配置项 %s 失败: %w", item.Option, err)
+		}
+	}
+	return nil
 }

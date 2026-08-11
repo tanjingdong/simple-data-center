@@ -1,101 +1,75 @@
+# Simple Data Center
+
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-<a href="https://longhabit.com"><img src="https://longhabit.com/og-image.png" /></a>
+**Simple Data Center** 是一个轻量级 **CRUD 应用基座**:基于 PocketBase 与 React 构建的生产级全栈项目,编译为**单个可执行文件**,可部署到各类平台。您可以在此基座上快速开发自己的 CRUD 业务应用——认证、用户管理、数据后台、反向代理等基础设施已全部就绪,业务开发只需添加数据集合与页面。
 
-# Long Habit
+## 定位
 
-Long Habit 是一个用于追踪长期习惯和周期性任务的简单 CRUD 应用。它是一个基于 PocketBase 和 React 构建的生产级全栈项目,是集成 PocketBase 到大型 Go 项目并将其与现代 React 前端结合的综合性示例。应用程序非常简单,可以作为新项目的模板。大部分样板配置已处理完毕,常见问题已被发现并修复。
-
-在线体验:https://longhabit.com
+- **应用基座,而非单一应用**:内置的「任务」模块仅为示例 CRUD 业务,演示如何在基座上组织一个业务(集合定义 + 路由 + 页面 + 服务函数),可直接复制此模式开发您的业务。
+- **单文件部署**:前端构建产物以 `embed` 方式打包进 Go 二进制,一个文件包含全部前后端,复制到任意平台即可运行。
+- **数据自主**:使用 PocketBase 作为后端框架与数据层,数据存放在本地 SQLite 数据库,完全由您掌控。
 
 ## 主要特性
 
 ### 后端架构
-- 运行最新版 Pocketbase (v0.39)。
-- 单二进制构建。使用 Go 的 "embed" 包将 React 前端作为文件系统嵌入编译后的二进制文件中。
-- PocketBase 以 Go 包形式安装并作为框架使用。项目使用了许多扩展特性,包括:
-  - 自定义 hooks 和中间件
+- 运行最新版 PocketBase (v0.39)。
+- 单二进制构建:使用 Go 的 `embed` 包将 React 前端嵌入编译后的二进制中。
+- PocketBase 以 Go 包形式安装并作为框架使用,已启用大量扩展特性:
+  - 自定义 hooks 与中间件
   - 路由绑定
   - 数据库操作
   - 带 cron 的定时任务
   - HTML 邮件模板
   - 自定义日志配置
-- 使用 Pond 库实现的批量邮件处理 worker pool
-- 惯用的 Go 代码组织,职责分离清晰
+- 内置 frp 客户端(frp v0.70.1 以 Go 库方式嵌入,保持单二进制与跨平台编译),可通过 tcp 端口映射将本服务暴露到公网或子网。
+- 惯用的 Go 代码组织,职责分离清晰。
 
 ### 前端实现
-- 使用 TypeScript 和 Vite 构建的现代 React 配置。
+- 使用 TypeScript 与 Vite 构建的现代 React 配置。
 - 基于 React 19 构建,支持 React Compiler。
 - 完整配置 TailwindCSS 与 ShadCN UI,带自定义主题。
-- 采用最佳实践实现响应式设计,支持浅色和深色模式,已在桌面和移动端测试。
-- 完整的认证流程,带自定义表单。支持邮箱 + 密码认证以及 Google OAuth。
-- 使用 TanStack Router 按最佳实践配置。所有认证逻辑和数据获取在页面加载前于路由中完成。基于路由的动态页面标题切换。
-- TanStack Query 与 PocketBase 和 TanStack Router 完全集成。数据在路由渲染前从后端获取并加载。TanStack Query 负责数据获取,确保客户端状态与服务器端数据保持同步。
-- 使用新的 React Suspense 边界实现加载状态。
-- 使用 React Hook Form 和 Zod 实现带验证和错误消息的动态表单。
-- SEO 优化,如 meta description 和社交媒体卡片 meta 标签已添加到根 HTML 页面,sitemap.xml 和 robots.txt 已添加并配置。为 PocketBase 管理后台 "/_" URL 添加排除规则,防止被爬虫索引。
+- 响应式设计,支持浅色与深色模式。
+- 完整认证流程:邮箱 + 密码认证、Google OAuth、密码重置、邮箱验证。
+- TanStack Router:路由内完成认证与数据预取,动态页面标题。
+- TanStack Query 与 PocketBase、Router 全集成,数据在路由渲染前获取。
+- React Hook Form + Zod 动态表单验证。
+- SEO 基础配置(meta 描述、sitemap、robots)。
+
+### 内置功能
+- **数据大厅**(`/center`):登录后落地页,集中提供各业务功能入口。
+- **用户设置**(`/user-setting`):头像、昵称、用户名、邮箱(邮件确认流程)、邮箱可见开关、修改密码、退出登录。
+- **管理工具**(`/admin`):管理员区域,目前含 **frpc 反向代理工具**(启动/停止/重启、连接配置、状态查看)。
+- **数据管理**(`/_/`):PocketBase 管理后台,集合管理、数据编辑、导入导出。
+- **示例业务 —— 任务模块**(`/tasks`):周期性任务追踪,演示基座上开发业务的标准模式。
 
 ### 开发体验
-- 带热重载的 Vite 开发模式可与 PocketBase 无缝协作。无需等待 PocketBase 编译。Vite 和 PocketBase 在不同端口运行时互相代理请求。
-- 使用新的 ESlint 9 格式编写的完整 ESlint 配置,包含所有相关的 React、Tailwind 和 Prettier 插件。
+- 带热重载的 Vite 开发模式与 PocketBase 无缝协作。
+- 完整 ESlint 9 配置(React、Tailwind、Prettier 插件)。
 - 单命令生产构建。
-- 无需额外配置即可在 Docker Compose 中本地运行项目。
-- 兼容任何 Node.js 运行时(默认:Bun)。
+- Docker Compose 本地运行。
 
 ### 部署
-- 编译为单个可执行二进制文件或使用 Docker 容器部署。
-- 完全容器化,所有构建步骤都在多阶段 Dockerfile 中完成。输出一个只包含编译后二进制的精简 Alpine 容器。
-- 开箱即用的 Docker Compose 部署,包含可用的健康检查端点。
-- 可直接部署到 Dokploy、Coolify 等平台。
+- 编译为单个可执行二进制,或使用 Docker 容器部署。
+- 多阶段 Dockerfile 输出精简 Alpine 容器。
+- 可直接部署到 Dokploy、Coolify、自有服务器等平台。
 
 ## 技术栈
 
-- **前端**
-  - [TypeScript](https://www.typescriptlang.org/docs/) - 前端语言
-  - [React 19](https://react.dev/blog/2024/04/19/react-19) - 前端框架
-  - [Vite](https://vite.dev/guide/) - 构建工具
-  - [TanStack Router](https://tanstack.com/router/latest/docs/framework/react/overview) - 路由
-  - [TanStack Query](https://tanstack.com/query/latest/docs/framework/react/overview) - 数据获取和状态管理
-  - [TanStack Table](https://tanstack.com/table/latest/docs/introduction) - 表格 / 数据网格库
-  - [React Hook Form](https://www.react-hook-form.com/api/) - 表单库
-  - [shadcn/ui](https://ui.shadcn.com/docs) - 基于 TailwindCSS 和 Radix UI 的 React 组件库
-  - [TailwindCSS](https://tailwindcss.com/docs/) - 工具类优先的 CSS 框架
-  - [Zod](https://zod.dev/?id=table-of-contents) - TypeScript schema 验证
-  - [Date-fns](https://date-fns.org/docs/Getting-Started) - 日期处理库
-- **后端**
-  - [Go](https://go.dev/doc/) - 后端语言
-  - [PocketBase](https://pocketbase.io/docs/) - 后端框架
-  - [Pond](https://github.com/alitto/pond) - Go 实现的 worker pool
-- **部署**
-  - [Docker](https://docs.docker.com/reference/) - 容器化工具
-  - [Dokploy](https://dokploy.com) - 开源托管平台
+- **前端**:TypeScript、React 19、Vite、TanStack Router、TanStack Query、TanStack Table、React Hook Form、shadcn/ui、TailwindCSS、Zod、Date-fns
+- **后端**:Go、PocketBase、Pond(worker pool)
+- **部署**:Docker、Dokploy
 
-## 内置 frp 服务(反向代理)
+## 在此基座上开发业务(快速上手)
 
-本项目内置 frp 客户端(frp v0.70.1,以 Go 库方式嵌入,保持单二进制与跨平台编译)。管理员可开启 frpc 功能,通过 tcp 端口映射向 frps 服务器连接反代,将本服务(默认 8090 端口)暴露到公网或子网。
+基座已完成全部基础设施,开发一个新 CRUD 业务只需四步(以「图书管理」为例):
 
-### 使用步骤
+1. **定义数据集合**:在数据管理后台(`/_/`)创建集合,或编辑 `backend/pb_schema.json` 后导入(Settings → Import collections)。
+2. **添加服务函数**:在 `frontend/src/services/` 新建 `api-books.ts`,封装集合的增删改查(参照 `api-tasks.ts`)。
+3. **创建页面**:在 `frontend/src/pages/` 新建页面组件,在 `router.tsx` 注册路由(参照 `pages/tasks/` 与任务路由)。
+4. **加入入口**:在数据大厅 `center.tsx` 添加功能入口链接。
 
-1. **导入数据库表**:在 admin 后台(`/_/`)登录后,进入 Settings → Import collections → Load from JSON file,选择 [backend/pb_schema.json](backend/pb_schema.json) 导入(`tools_settings` 表)。
-2. **填写配置**:服务启动后会自动补插 6 个 `frpc_*` 配置项(补插失败时检查第 1 步是否完成)。在 admin 后台 Collections → tools_settings 中填写:
-
-   | option | 说明 |
-   |---|---|
-   | frpc_server_addr | frps 服务器地址(IP 或域名),必填 |
-   | frpc_server_port | frps 服务端口(默认 7000) |
-   | frpc_token | frps 认证 token(未设置则留空) |
-   | frpc_proxy_name | 代理名称(默认 longhabit,在 frps 上须唯一) |
-   | frpc_local_port | 本地服务端口(默认 8090,与 `--http` 监听端口一致) |
-   | frpc_remote_port | frps 上暴露的远程端口(默认 8090) |
-
-3. **启停控制**:打开 `/tools-settings`(应用导航栏「工具设置」)。在 `/_/` 登录管理员后可直接操作,无需再次认证——点击「启动」连接 frps,「停止」断开,「重启」用最新配置重新连接。
-4. **生效方式**:修改配置后点击「重启」才生效;服务(主程序)重启后 frpc 一律不自动启动,需管理员手动开启。
-
-### 说明与限制
-
-- 当前仅支持 tcp 单代理;启动失败(如地址不可达、token 错误)时,工具页显示「失败」状态与错误信息(初始连接失败约 10 秒后判定,已连接后 frps 断线由 frp 内部自动重连)。
-- 工具页与 admin 后台共享登录会话;普通用户登录会顶掉 admin 会话,反之亦然,同一浏览器切换身份需重新登录。
-- 若用 `--http` 修改了服务监听端口,请同步修改 `frpc_local_port` 后重启。
+无需改动任何后端 Go 代码——集合、权限规则、数据校验均由 PocketBase 提供。
 
 ## 快速开始
 
@@ -106,24 +80,52 @@ Long Habit 是一个用于追踪长期习惯和周期性任务的简单 CRUD 应
 
 ### 安装
 
-- 克隆仓库 `git clone https://github.com/s-petr/longhabit`
-- 安装依赖 `npm install` 或 `bun install`。
-- 为 Pocketbase 管理后台创建新的 superuser(管理员)账号。先编译二进制 `npm run build` 或 `bun run build`,然后运行命令 `./longhabit superuser upsert {{admin email}} {{admin password}}`
-- PocketBase 后端启动后,需要设置数据库表。使用 superuser 凭据登录 Pocketbase 管理后台 `http://localhost:8090/_/`,进入 Settings -> Import collections -> Load from JSON file,选择文件 [backend/pb_schema.json](backend/pb_schema.json) 并导入。
-- 要使 "Sign in with Google" 按钮生效,需要在 Google Cloud 注册并获取 Google OAuth 2.0 API 凭据(可参考此[指南](https://support.google.com/googleapi/answer/6158849?hl=zh-cn))。获取凭据后,进入 Pocketbase 管理后台 Collections -> Users -> Edit collection -> OAuth2 -> Add provider -> Google,输入 Client ID 和 Client Secret 并保存。
-- 根目录下会创建一个 `/db` 文件夹,其中包含数据库文件。Docker Compose 已配置卷以读写同一文件夹的数据。如果 PocketBase 无法从 Docker 容器写入该文件夹,可能需要调整该文件夹的文件权限。
+1. 克隆仓库 `git clone https://github.com/s-petr/longhabit`
+2. 安装依赖 `npm install` 或 `bun install`。
+3. 编译二进制并创建管理员账号(先 `npm run build`,再运行 `./simple-data-center superuser upsert {{admin email}} {{admin password}}`)。
+4. 启动后,使用管理员凭据登录 PocketBase 管理后台 `http://localhost:8090/_/`,进入 Settings → Import collections → Load from JSON file,选择 [backend/pb_schema.json](backend/pb_schema.json) 导入(users/settings/tasks/tools_settings 等集合)。
+5. 可选:启用 Google OAuth(在 Collections → Users → Edit collection → OAuth2 中配置)。
+6. 数据库文件位于 `/db` 目录。
 
 ### 本地开发
 
-- 启动开发服务器 `npm run dev` 或 `bun run dev`
+- 启动开发服务器 `npm run dev`(Vite 热重载 + PocketBase 同起)
 
 ### 生产构建
 
-- 构建前端和后端 `npm run build` 或 `bun run build`
-- 运行编译后的二进制 `npm run preview` 或 `bun run preview`
+- 构建前端和后端 `npm run build`
+- 运行编译后的二进制 `npm run preview`(即 `./simple-data-center serve`)
 
 ### Docker 部署
-- 使用 Docker Compose 构建并运行 `npm run compose` 或 `bun run compose`
+
+- 使用 Docker Compose 构建并运行 `npm run compose`
+
+## 内置 frp 服务(反向代理)
+
+管理员可在管理工具(`/admin`)中开启 frpc 功能,通过 tcp 端口映射向 frps 服务器连接反代,将本服务(默认 8090 端口)暴露到公网或子网。
+
+### 使用步骤
+
+1. **导入数据库表**:在数据管理后台(`/_/`)进入 Settings → Import collections → Load from JSON file,选择 [backend/pb_schema.json](backend/pb_schema.json) 导入(`tools_settings` 表)。
+2. **填写配置**:服务启动后会自动补插 `frpc_*` 配置项(补插失败时检查第 1 步是否完成)。在数据管理后台 Collections → tools_settings 中填写:
+
+   | option | 说明 |
+   |---|---|
+   | frpc_server_addr | frps 服务器地址(IP 或域名),必填 |
+   | frpc_server_port | frps 服务端口(默认 7000) |
+   | frpc_token | frps 认证 token(未设置则留空) |
+   | frpc_proxy_name | 代理名称(默认 simple-data-center,在 frps 上须唯一) |
+   | frpc_local_port | 本地服务端口(默认 8090,与 `--http` 监听端口一致) |
+   | frpc_remote_port | frps 上暴露的远程端口(默认 8090) |
+
+3. **启停控制与配置**:打开 `/admin`(导航栏「管理工具」)。未登录时显示管理员登录表单,登录后即可操作——点击「启动」连接 frps,「停止」断开,「重启」用最新配置重新连接;「连接配置」表单可修改 frps 地址、端口、token 等,保存后自动重启生效。右上角「数据管理」可打开 PocketBase 管理后台(`/_`)。
+4. **生效方式**:修改配置后点击「重启」才生效;服务(主程序)重启后 frpc 一律不自动启动,需管理员手动开启。
+
+### 说明与限制
+
+- 当前仅支持 tcp 单代理;启动失败(如地址不可达、token 错误)时,工具页显示「失败」状态与错误信息。
+- 工具页与数据管理后台共享登录会话。
+- 若用 `--http` 修改了服务监听端口,请同步修改 `frpc_local_port` 后重启。
 
 ## 许可证
 

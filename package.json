@@ -1,6 +1,6 @@
 {
-  "name": "longhabit",
-  "description": "The long-term habit tracker",
+  "name": "simple-data-center",
+  "description": "轻量级 CRUD 应用基座(PocketBase + React 全栈)",
   "author": {
     "name": "Sergei Petrov",
     "github": "s-petr"
@@ -10,17 +10,16 @@
     "type": "git",
     "url": "https://github.com/s-petr/longhabit"
   },
-  "homepage": "https://longhabit.com",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "type": "module",
   "scripts": {
     "dev:client": "vite dev",
     "dev:server": "cd backend && go run . --dir=../db serve",
     "dev": "npm run dev:client & npm run dev:server",
     "build:client": "npm run lint && vite build",
-    "build:server": "cd backend && CGO_ENABLED=0 go build -tags production -o ../longhabit",
+    "build:server": "cd backend && CGO_ENABLED=0 go build -tags production -o ../simple-data-center",
     "build": "npm run build:client && npm run build:server",
-    "preview": "./longhabit serve",
+    "preview": "./simple-data-center serve",
     "compose": "docker compose up --build -d",
     "pretty": "prettier frontend/src --write",
     "lint": "tsc --noEmit && eslint frontend/src"

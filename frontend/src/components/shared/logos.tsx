@@ -1,3 +1,5 @@
+import { ServerIcon } from 'lucide-react'
+
 export function GoogleLogo() {
   return (
     <figure className='size-4'>
@@ -29,35 +31,12 @@ export function GoogleLogo() {
   )
 }
 
-export function LongHabitMainLogo() {
+export function MainLogo() {
   return (
-    <figure className='flex w-48 items-center justify-center gap-x-1 select-none'>
-      <div className='my-4 h-6'>
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          version='1.1'
-          width='100%'
-          height='100%'
-          viewBox='11.254003524780273 32.167354583740234 77.49298858642578 35.664310455322266'>
-          <g fill='url(#SvgjsLinearGradient1000)'>
-            <path d='M88.727 49.043a17.404 17.404 0 0 0-11.281-15.598 17.902 17.902 0 0 0-10.285-.902 17.885 17.885 0 0 0-9.067 4.937l-5.879 5.88 4.426 4.425 5.88-5.879v.004a11.724 11.724 0 0 1 12.663-2.629 11.09 11.09 0 0 1 7.29 10.047 15.1 15.1 0 0 1-.001 1.348 11.089 11.089 0 0 1-7.289 10.043 11.723 11.723 0 0 1-12.664-2.625L41.907 37.48a17.885 17.885 0 0 0-9.066-4.938 17.902 17.902 0 0 0-10.285.903 17.399 17.399 0 0 0-7.993 6.097 17.395 17.395 0 0 0-3.289 9.5c-.015.317-.02.637-.02.957s.009.641.02.958a17.404 17.404 0 0 0 11.282 15.597 18.469 18.469 0 0 0 6.687 1.27 17.836 17.836 0 0 0 12.664-5.305l5.88-5.879-4.427-4.426-5.879 5.88a11.73 11.73 0 0 1-12.664 2.624 11.089 11.089 0 0 1-7.289-10.043 13.669 13.669 0 0 1-.015-.672c0-.226.004-.449.015-.675v-.004a11.089 11.089 0 0 1 7.29-10.043 12.346 12.346 0 0 1 4.425-.82 11.455 11.455 0 0 1 8.238 3.445L58.094 62.52a17.885 17.885 0 0 0 9.067 4.937 17.91 17.91 0 0 0 10.285-.902 17.415 17.415 0 0 0 11.281-15.598c.016-.316.02-.637.02-.957s-.008-.64-.02-.957z' />
-          </g>
-          <defs>
-            <linearGradient
-              gradientUnits='userSpaceOnUse'
-              id='SvgjsLinearGradient1000'
-              x1='21.71117305755615'
-              y1='78.2888345718384'
-              x2='78.28982257843018'
-              y2='21.71018505096436'>
-              <stop stopColor='#bf4ff8' offset='0.05' />
-              <stop stopColor='#7c08c0' offset='0.95' />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-      <figcaption className='text-lg font-extrabold tracking-wider uppercase italic'>
-        Long Habit
+    <figure className='flex items-center gap-x-2 select-none'>
+      <ServerIcon className='text-primary size-6 shrink-0' />
+      <figcaption className='text-sm font-extrabold tracking-wider whitespace-nowrap uppercase italic'>
+        Simple Data Center
       </figcaption>
     </figure>
   )

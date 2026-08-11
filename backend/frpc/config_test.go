@@ -67,7 +67,7 @@ func TestWithDefaults(t *testing.T) {
 	cfg := Config{}
 	cfg.WithDefaults()
 	assertEqual(t, cfg.ServerPort, 7000, "默认 ServerPort")
-	assertEqual(t, cfg.ProxyName, "longhabit", "默认 ProxyName")
+	assertEqual(t, cfg.ProxyName, "simple-data-center", "默认 ProxyName")
 	assertEqual(t, cfg.LocalPort, 8090, "默认 LocalPort")
 	assertEqual(t, cfg.RemotePort, 8090, "默认 RemotePort")
 }
@@ -118,7 +118,7 @@ func TestBuildClientConfig(t *testing.T) {
 	if !ok {
 		t.Fatalf("代理类型应为 *v1.TCPProxyConfig,实际 %T", proxies[0])
 	}
-	assertEqual(t, proxy.Name, "longhabit", "代理名默认值")
+	assertEqual(t, proxy.Name, "simple-data-center", "代理名默认值")
 	assertEqual(t, proxy.Type, "tcp", "代理类型")
 	assertEqual(t, proxy.LocalIP, "127.0.0.1", "本地 IP")
 	assertEqual(t, proxy.LocalPort, 8090, "本地端口默认值")
@@ -130,5 +130,62 @@ func TestBuildClientConfig_Invalid(t *testing.T) {
 	cfg := Config{} // ServerAddr 为空
 	if _, _, err := cfg.BuildClientConfig(); err == nil {
 		t.Error("无效配置应报错")
+	}
+}
+
+// ValidateConfigItems:全部合法时通过并返回规范化映射
+func TestValidateConfigItems_OK(t *testing.T) {
+	items := []ConfigItem{
+		{Option: optionServerAddr, Value: "frps.example.com"},
+		{Option: optionServerPort, Value: "7001"},
+		{Option: optionToken, Value: "tk"},
+		{Option: optionProxyName, Value: "habit"},
+		{Option: optionLocalPort, Value: "8080"},
+		{Option: optionRemotePort, Value: "9000"},
+	}
+	normalized, err := ValidateConfigItems(items)
+	if err != nil {
+		t.Fatalf("合法配置不应报错:%v", err)
+	}
+	assertEqual(t, normalized[optionServerAddr], "frps.example.com", "ServerAddr")
+	assertEqual(t, normalized[optionServerPort], "7001", "ServerPort")
+	assertEqual(t, normalized[optionToken], "tk", "Token")
+}
+
+// ValidateConfigItems:未知 option 报错
+func TestValidateConfigItems_UnknownOption(t *testing.T) {
+	items := []ConfigItem{{Option: "frpc_unknown", Value: "x"}}
+	if _, err := ValidateConfigItems(items); err == nil {
+		t.Error("未知 option 应报错")
+	}
+}
+
+// ValidateConfigItems:非法端口报错
+func TestValidateConfigItems_InvalidPort(t *testing.T) {
+	items := []ConfigItem{
+		{Option: optionServerAddr, Value: "x"},
+		{Option: optionServerPort, Value: "abc"},
+	}
+	if _, err := ValidateConfigItems(items); err == nil {
+		t.Error("非数字端口应报错")
+	}
+}
+
+// ValidateConfigItems:server_addr 为空报错
+func TestValidateConfigItems_EmptyAddr(t *testing.T) {
+	items := []ConfigItem{{Option: optionServerPort, Value: "7000"}}
+	if _, err := ValidateConfigItems(items); err == nil {
+		t.Error("server_addr 为空应报错")
+	}
+}
+
+// ValidateConfigItems:至少一项非法则整体失败(全有全无)
+func TestValidateConfigItems_Atomic(t *testing.T) {
+	items := []ConfigItem{
+		{Option: optionServerAddr, Value: "frps.example.com"},
+		{Option: optionLocalPort, Value: "99999"}, // 越界
+	}
+	if _, err := ValidateConfigItems(items); err == nil {
+		t.Error("含非法项时整体应报错")
 	}
 }

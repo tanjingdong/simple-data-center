@@ -62,7 +62,7 @@ func (n *Notifier) constructNotificationEmails(userSettings []*core.Record) []*E
 // constructEmail creates a notification email with reminders.
 func (n *Notifier) constructEmail(emailAddress, userID string,
 	reminders []TaskReminder) (*EmailNotification, error) {
-	title := "Long Habit - Reminder"
+	title := "Simple Data Center - 提醒"
 
 	html, err := n.renderHTMLTemplate(reminders, title)
 	if err != nil {
@@ -71,8 +71,8 @@ func (n *Notifier) constructEmail(emailAddress, userID string,
 
 	message := &mailer.Message{
 		From: mail.Address{
-			Address: "noreply@longhabit.com",
-			Name:    "Long Habit",
+			Address: "noreply@simple-data-center",
+			Name:    "Simple Data Center",
 		},
 		To:      []mail.Address{{Address: emailAddress}},
 		Subject: title,
