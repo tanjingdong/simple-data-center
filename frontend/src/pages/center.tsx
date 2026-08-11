@@ -15,9 +15,9 @@ export default function CenterPage() {
 
       <div className='w-full space-y-3'>
         <Button asChild size='lg' className='w-full justify-start'>
-          <Link to='/tasks'>
+          <Link to='/tans-PIM'>
             <LayoutDashboardIcon className='size-5' />
-            习惯追踪
+            tans-PIM
           </Link>
         </Button>
       </div>

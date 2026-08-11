@@ -6,7 +6,6 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import useAuth from '@/hooks/use-auth'
-import useTheme from '@/hooks/use-theme'
 import { Link, useLocation } from '@tanstack/react-router'
 import {
   DatabaseIcon,
@@ -21,7 +20,6 @@ export default function Navigation() {
   const { user, logout } = useAuth()
   const { avatar, id: userId, verified } = user ?? {}
   const location = useLocation()
-  const { theme, changeTheme } = useTheme()
 
   return (
     <nav className='flex items-center justify-between gap-4'>

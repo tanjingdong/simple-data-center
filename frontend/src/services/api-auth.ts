@@ -1,17 +1,6 @@
-import { setTheme } from '@/lib/set-theme'
-import { Settings } from '@/schemas/settings-schema'
-import { User, userSchema, userWithSettingsSchema } from '@/schemas/user-schema'
+import { User, userSchema } from '@/schemas/user-schema'
 import { queryOptions } from '@tanstack/react-query'
 import { pb } from './pocketbase'
-
-// settings 表缺失或查询失败时使用的默认设置。
-// 保证已登录用户访问入口页(/、/center)时不因业务表未导入而整站报错。
-const defaultSettings: Settings = {
-  id: '000000000000000',
-  remindEmail: 'user@example.com',
-  remindByEmailEnabled: false,
-  theme: 'system'
-}
 
 export function checkUserIsLoggedIn() {
   return pb.authStore.isValid
@@ -121,23 +110,7 @@ export const userQueryOptions = queryOptions({
       return null
     }
 
-    // settings 表缺失或查询失败(如数据库未导入完整结构)时使用默认设置,
-    // 不阻塞整站;具体业务页面的错误由各业务页面自行报错。
-    let settings: Settings
-    try {
-      settings = await pb
-        .collection('settings')
-        .getFirstListItem(`user="${pb.authStore.record?.id}"`)
-    } catch {
-      settings = defaultSettings
-    }
-
-    setTheme(settings.theme)
-
-    const userData = userWithSettingsSchema.parse({
-      ...pb.authStore.record,
-      settings
-    })
+    const userData = userSchema.parse(pb.authStore.record)
 
     return userData
   },

@@ -14,7 +14,7 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { useEffect } from 'react'
 import { z } from 'zod/v4'
 import Spinner from './components/shared/spinner'
-import { setTheme } from './lib/set-theme'
+import { applyTheme, getStoredTheme } from './lib/theme'
 import AdminHomePage from './pages/admin/admin-home'
 import AdminLayout from './pages/admin/admin-layout'
 import { adminTools } from './pages/admin/admin-tools'
@@ -26,12 +26,10 @@ import ResetPasswordPage from './pages/auth/reset-password'
 import VerifyEmailPage from './pages/auth/verify-email'
 import CenterPage from './pages/center'
 import ErrorPage from './pages/error'
+import HomePage from './pages/home'
 import PrivacyPolicyPage from './pages/privacy-policy'
-import EditTaskPage from './pages/tasks/edit-task'
-import NewTaskPage from './pages/tasks/new-task'
-import SettingsPage from './pages/tasks/settings'
-import TasksPage from './pages/tasks/tasks'
 import UserSettingPage from './pages/user-setting'
+import WorkbenchPage from './pages/workbench'
 import {
   resetPasswordParamsSchema,
   verifyEmailParamsSchema
@@ -78,22 +76,35 @@ const rootRoute = createRootRouteWithContext<RootContext>()({
 
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData(userQueryOptions),
-  beforeLoad: async ({ context: { queryClient } }) => {
-    const user = queryClient.getQueryData(userQueryOptions.queryKey)
-    setTheme(user?.settings?.theme)
-    return { getTitle: () => 'Simple Data Center' }
+  beforeLoad: async () => {
+    applyTheme(getStoredTheme())
+    return { getTitle: () => 'tans-PIM' }
   }
 })
 
+// 首页:未登录展示静态首页(不依赖数据库,0 数据库也能打开);
+// 已登录用户访问根路径跳转到数据大厅(/center)。
 const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: WorkbenchPage,
+  component: HomePage,
   pendingComponent: Spinner,
-  // 已登录用户访问首页跳转到用户中心(数据大厅);未登录展示静态首页(0 数据库也能打开)
   beforeLoad: async () => {
     if (checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/center' })
     return { getTitle: () => '' }
+  }
+})
+
+// PIM 工作台独立路由:与根路由分离,登录用户经数据大厅业务入口进入。
+// 集合访问规则公开,登录仅作界面入口(与 PIM 设计决策一致)。
+const tansPimRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/tans-PIM',
+  component: WorkbenchPage,
+  pendingComponent: Spinner,
+  beforeLoad: () => {
+    if (!checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/login' })
+    return { getTitle: () => 'tans-PIM' }
   }
 })
 
@@ -190,19 +201,6 @@ const userSettingRoute = createRoute({
   }
 })
 
-const tasksRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: 'tasks',
-  component: TasksPage,
-  pendingComponent: Spinner,
-  beforeLoad: () => {
-    if (!checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/login' })
-    return { getTitle: () => '任务' }
-  },
-  loader: ({ context: { queryClient } }) =>
-    queryClient.ensureQueryData(tasksQueryOptions)
-})
-
 // /admin 的管理端认证统一由 PB Dashboard(/_ )负责:
 // 未登录超级管理员时整页跳转到 /_ 登录,登录后同一会话对 /admin 可见
 // 注意:相对路径 href 必须带 reloadDocument,否则 TanStack 会按内部路由导航,
@@ -247,41 +245,9 @@ const adminCatchAllRoute = createRoute({
   }
 })
 
-const settingsRoute = createRoute({
-  getParentRoute: () => tasksRoute,
-  path: 'settings',
-  component: SettingsPage,
-  beforeLoad: () => ({ getTitle: () => '设置' })
-})
-
-const newTaskRoute = createRoute({
-  getParentRoute: () => tasksRoute,
-  path: 'new',
-  component: NewTaskPage,
-  beforeLoad: () => {
-    return { getTitle: () => '新建' }
-  }
-})
-
-const editTaskRoute = createRoute({
-  getParentRoute: () => tasksRoute,
-  path: '$taskId',
-  component: EditTaskPage,
-  beforeLoad: () => {
-    return { getTitle: () => '编辑' }
-  },
-  loader: async ({ context: { queryClient }, params: { taskId } }) => {
-    const taskIdValidationResult = pbIdSchema.safeParse(taskId)
-    if (taskIdValidationResult.error) throw redirect({ to: '/tasks' })
-    const task = await queryClient.ensureQueryData(
-      taskQueryOptions(taskIdValidationResult.data)
-    )
-    return task
-  }
-})
-
 const routeTree = rootRoute.addChildren([
   homeRoute,
+  tansPimRoute,
   privacyPolicyRoute,
   authRoute.addChildren([
     loginRoute,
@@ -292,7 +258,6 @@ const routeTree = rootRoute.addChildren([
   ]),
   centerRoute,
   userSettingRoute,
-  tasksRoute.addChildren([settingsRoute, newTaskRoute, editTaskRoute]),
   adminRoute.addChildren([
     adminIndexRoute,
     ...adminToolRoutes,
