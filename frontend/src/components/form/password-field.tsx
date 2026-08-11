@@ -16,13 +16,15 @@ export default function PasswordField<T extends FieldValues>({
   name,
   label,
   disabled = false,
-  hidden = false
+  hidden = false,
+  autoComplete
 }: {
   form: UseFormReturn<T>
   name: Path<T>
   label?: string
   disabled?: boolean
   hidden?: boolean
+  autoComplete?: string
 }) {
   const [isVisible, setIsVisible] = useState(false)
 
@@ -46,6 +48,7 @@ export default function PasswordField<T extends FieldValues>({
                 type={isVisible ? 'text' : 'password'}
                 {...field}
                 disabled={disabled}
+                autoComplete={autoComplete}
               />
             </FormControl>
             {!!field.value.length && (

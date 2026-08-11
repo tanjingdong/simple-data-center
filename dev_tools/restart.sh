@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# tans-PIM 重启脚本:停止现有服务进程,重新后台启动项目根目录的 tans-pim
+# simple-data-center 重启脚本:停止现有服务进程,重新后台启动项目根目录的 simple-data-center
 # 用法:./restart.sh
-# 启动方式与现状一致:./tans-pim serve --http=0.0.0.0:8090(相对路径 db/),日志写 server.log
+# 启动方式与现状一致:./simple-data-center serve --http=0.0.0.0:8090(相对路径 db/),日志写 server.log
 
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BIN="$ROOT_DIR/tans-pim"
+BIN="$ROOT_DIR/simple-data-center"
 PORT=8090
 
 # 1. 检查二进制存在
@@ -17,10 +17,11 @@ fi
 
 # 2. 停止现有进程(SIGTERM,3 秒未退再 SIGKILL)
 # 按进程名(comm)精确匹配,避免 pkill -f 误杀命令行中恰好含
-# "tans-pim serve" 字符串的其他进程(如执行环境的 shell)
+# "simple-data-center serve" 字符串的其他进程(如执行环境的 shell)
+# 注意:Linux 进程 comm 截断为 15 字符,故匹配 "simple-data-cen" 而非全名
 service_pids() {
-  for pid in $(pgrep -f "tans-pim serve" 2>/dev/null || true); do
-    if [ "$(ps -o comm= -p "$pid" 2>/dev/null)" = "tans-pim" ]; then
+  for pid in $(pgrep -f "simple-data-center serve" 2>/dev/null || true); do
+    if [ "$(ps -o comm= -p "$pid" 2>/dev/null)" = "simple-data-cen" ]; then
       echo "$pid"
     fi
   done
@@ -47,7 +48,7 @@ fi
 
 # 3. 后台启动
 cd "$ROOT_DIR"
-nohup ./tans-pim serve --http=0.0.0.0:${PORT} > server.log 2>&1 &
+nohup ./simple-data-center serve --http=0.0.0.0:${PORT} > server.log 2>&1 &
 NEW_PID=$!
 sleep 1
 

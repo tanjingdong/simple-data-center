@@ -35,7 +35,7 @@ export default function PrivacyPolicyPage() {
           <li>
             <strong>公司</strong>
             (在本协议中称为&quot;公司&quot;、&quot;我们&quot;、&quot;我方&quot;)指
-            tans-PIM。
+            Simple Data Center。
           </li>
           <li>
             <strong>Cookies</strong>
@@ -60,7 +60,7 @@ export default function PrivacyPolicyPage() {
             指通过使用服务或服务基础设施本身自动收集的数据(例如页面访问时长)。
           </li>
           <li>
-            <strong>网站</strong>指 tans-PIM(自部署的个人关系管理实例)
+            <strong>网站</strong>指 Simple Data Center,可通过部署者提供的服务地址访问
           </li>
           <li>
             <strong>您</strong>

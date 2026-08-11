@@ -7,10 +7,17 @@ backend/dist
 .vscode/*
 .claude/*
 docs/superpowers/
+docs/users/
+release/
 CLAUDE.md
-
+server.log
 
 # Compiled binary
+longhabit
+longhabit*.exe
+simple-data-center
+tans-pim
+simple-data-center.exe
 tans-pim
 tans-pim*.exe
 

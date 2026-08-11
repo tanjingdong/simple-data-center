@@ -1,6 +1,6 @@
 {
-  "name": "tans-pim",
-  "description": "个人社会关系与联系人信息管理(PIM)应用",
+  "name": "simple-data-center",
+  "description": "轻量级 CRUD 应用基座(PocketBase + React 全栈)",
   "author": {
     "name": "Sergei Petrov",
     "github": "s-petr"
@@ -17,9 +17,9 @@
     "dev:server": "cd backend && go run . --dir=../db serve",
     "dev": "npm run dev:client & npm run dev:server",
     "build:client": "npm run lint && vite build",
-    "build:server": "cd backend && CGO_ENABLED=0 go build -tags production -o ../tans-pim",
+    "build:server": "cd backend && CGO_ENABLED=0 go build -tags production -o ../simple-data-center",
     "build": "npm run build:client && npm run build:server",
-    "preview": "./tans-pim serve",
+    "preview": "./simple-data-center serve",
     "compose": "docker compose up --build -d",
     "pretty": "prettier frontend/src --write",
     "test": "vitest run",

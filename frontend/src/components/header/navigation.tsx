@@ -3,15 +3,19 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import ThemeSwitch from '@/components/settings/theme-switch'
 import useAuth from '@/hooks/use-auth'
 import useTheme from '@/hooks/use-theme'
 import { Link, useLocation } from '@tanstack/react-router'
-import { DefaultUserAvatarLogo, TansPimMainLogo } from '../shared/logos'
+import {
+  DatabaseIcon,
+  HomeIcon,
+  LogOutIcon,
+  SettingsIcon,
+  WrenchIcon
+} from 'lucide-react'
+import { DefaultUserAvatarLogo, MainLogo } from '../shared/logos'
 
 export default function Navigation() {
   const { user, logout } = useAuth()
@@ -22,19 +26,37 @@ export default function Navigation() {
   return (
     <nav className='flex items-center justify-between gap-4'>
       <Link to='/' className='focus:outline-hidden'>
-        <TansPimMainLogo />
+        <MainLogo />
       </Link>
       <div className='flex items-center gap-4'>
         <Link
-          to='/tools-settings'
-          className='text-muted-foreground hover:text-foreground text-sm transition-colors focus:outline-hidden'>
-          工具设置
+          to='/center'
+          className='text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm transition-colors focus:outline-hidden'>
+          <HomeIcon className='size-4' />
+          首页
         </Link>
-        <ThemeSwitch theme={theme} onThemeChange={changeTheme} />
+        <a
+          href='/_/'
+          target='_blank'
+          rel='noreferrer'
+          className='text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm transition-colors focus:outline-hidden'>
+          <DatabaseIcon className='size-4' />
+          数据管理
+        </a>
+        <Link
+          to='/admin'
+          className='text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm transition-colors focus:outline-hidden'>
+          <WrenchIcon className='size-4' />
+          管理工具
+        </Link>
         {verified ? (
+          /* 已登录:头像点击弹出「用户设置 / 退出登录」菜单 */
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button aria-label='用户菜单' className='focus:outline-hidden'>
+              <button
+                type='button'
+                aria-label='用户账号'
+                className='cursor-pointer focus:outline-hidden'>
                 <Avatar className='flex size-10 items-center justify-center'>
                   {avatar && !location.search.logout ? (
                     <AvatarImage
@@ -48,18 +70,32 @@ export default function Navigation() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end'>
-              <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => logout()}>
+              <DropdownMenuItem asChild>
+                <Link
+                  to='/user-setting'
+                  preload={false}
+                  className='flex w-full items-center gap-2'>
+                  <SettingsIcon className='size-4' />
+                  用户设置
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={logout}
+                className='flex w-full cursor-pointer items-center gap-2'>
+                <LogOutIcon className='size-4' />
                 退出登录
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
+          // 未登录:头像点击跳转登录页
           <Link
             to='/login'
-            className='text-muted-foreground hover:text-foreground text-sm transition-colors'>
-            登录
+            aria-label='用户账号或登录'
+            className='focus:outline-hidden'>
+            <Avatar className='flex size-10 items-center justify-center'>
+              <DefaultUserAvatarLogo />
+            </Avatar>
           </Link>
         )}
       </div>
