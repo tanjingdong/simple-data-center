@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { Form } from '@/components/ui/form'
 import { errorToast, successToast } from '@/lib/toast'
 import {
   FrpcStatus,
@@ -19,7 +20,6 @@ import { ClientResponseError } from 'pocketbase'
 import { useEffect, useRef } from 'react'
 import { Resolver, useForm } from 'react-hook-form'
 import { z } from 'zod/v4'
-import AdminLoginCard from './admin-login-card'
 
 // 状态徽章的展示文案与配色
 const statusMeta: Record<FrpcStatus, { label: string; className: string }> = {
@@ -73,7 +73,7 @@ function isNumberField(option: keyof ConfigFields) {
 
 export default function FrpcToolPage() {
   const queryClient = useQueryClient()
-  // 认证状态取自隔离的管理会话(在登录卡片登录后即为 superuser)
+  // 认证状态取自与 PB Dashboard(/_ )共享的 superuser 会话
   const authed = isSuperuserAuthed()
 
   // 已登录时轮询状态,实时反映启动/停止/重启结果
@@ -84,11 +84,12 @@ export default function FrpcToolPage() {
     refetchInterval: authed ? 3000 : false
   })
 
-  // 会话中途失效(如清库重建后残留旧 token)时回到未登录提示
+  // 会话中途失效(如 token 过期或清库重建后残留旧 token):清除管理会话,
+  // 由 admin-layout 的 authStore 监听统一跳转 /_ 重新登录
   const sessionInvalid =
     error instanceof ClientResponseError && error.status === 403
 
-  // 会话失效:清除管理会话,回到登录卡片(本地标记,避免重复清除)
+  // 会话失效:清除管理会话(本地标记,避免重复清除)
   const sessionInvalidRef = useRef(false)
   useEffect(() => {
     if (!sessionInvalid || sessionInvalidRef.current) return
@@ -172,18 +173,9 @@ export default function FrpcToolPage() {
     onError: (error) => errorToast('保存配置失败', error)
   })
 
-  // 未登录或会话失效:显示登录卡片
-  if (!authed || sessionInvalid) {
-    return (
-      <div className='flex flex-col gap-4'>
-        {sessionInvalid && (
-          <p className='text-destructive text-sm'>
-            管理员会话已失效,请重新登录。
-          </p>
-        )}
-        <AdminLoginCard />
-      </div>
-    )
+  // 未登录(如跨标签页退出):由 admin-layout 的监听跳转 /_,此处不渲染
+  if (!authed) {
+    return null
   }
 
   const current = status?.status ?? 'unused'
@@ -237,47 +229,50 @@ export default function FrpcToolPage() {
       {/* 连接配置 */}
       <div className='max-w-md rounded-lg border p-6'>
         <h2 className='font-semibold'>连接配置(保存后自动重启生效)</h2>
-        <form
-          className='mt-4 flex flex-col gap-4'
-          onSubmit={form.handleSubmit((fields) =>
-            saveMutation.mutate(fields)
-          )}>
-          {configFieldOrder.map((field) => {
-            // 数字字段与文本字段分开渲染,保证 InputField 联合 props 的类型收窄
-            if (isNumberField(field.option)) {
+        {/* 必须用 Form(FormProvider)包裹,InputField 内的 FormMessage 依赖表单上下文 */}
+        <Form {...form}>
+          <form
+            className='mt-4 flex flex-col gap-4'
+            onSubmit={form.handleSubmit((fields) =>
+              saveMutation.mutate(fields)
+            )}>
+            {configFieldOrder.map((field) => {
+              // 数字字段与文本字段分开渲染,保证 InputField 联合 props 的类型收窄
+              if (isNumberField(field.option)) {
+                return (
+                  <InputField
+                    key={field.option}
+                    form={form}
+                    name={field.option}
+                    type='number'
+                    label={field.label}
+                    min={1}
+                    max={65535}
+                    disabled={saveMutation.isPending}
+                  />
+                )
+              }
               return (
                 <InputField
                   key={field.option}
                   form={form}
                   name={field.option}
-                  type='number'
+                  type='text'
                   label={field.label}
-                  min={1}
-                  max={65535}
                   disabled={saveMutation.isPending}
                 />
               )
-            }
-            return (
-              <InputField
-                key={field.option}
-                form={form}
-                name={field.option}
-                type='text'
-                label={field.label}
-                disabled={saveMutation.isPending}
-              />
-            )
-          })}
-          <Button
-            type='submit'
-            className='w-fit'
-            disabled={
-              !form.formState.isDirty || saveMutation.isPending
-            }>
-            保存配置
-          </Button>
-        </form>
+            })}
+            <Button
+              type='submit'
+              className='w-fit'
+              disabled={
+                !form.formState.isDirty || saveMutation.isPending
+              }>
+              保存配置
+            </Button>
+          </form>
+        </Form>
       </div>
     </div>
   )

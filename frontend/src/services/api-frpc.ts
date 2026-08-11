@@ -1,12 +1,28 @@
 import PocketBase, { LocalAuthStore } from 'pocketbase'
 
-// 管理客户端使用独立存储键,与主站用户会话(pb,默认键 pocketbase_auth)完全隔离。
-// 修复历史问题:共用默认键时,主站 authRefresh 会误把 superuser token 当普通用户刷新,
-// 403 后 logout() 清空共用存储,导致「登录后持续回到登录页」的循环。
-export const adminPb = new PocketBase(
-  '/',
-  new LocalAuthStore('pocketbase_admin_auth')
-)
+// PB Dashboard(/_ )的 superuser 会话存储在 localStorage,键为
+// "__pb_superusers__" + dashboard 页面 pathname(去尾斜杠),即固定为
+// "__pb_superusers__/_"。adminPb 使用同一存储键即可与 /_ 会话双向同步:
+// 在 Dashboard 登录后 /admin 直接可用,任一侧退出则双方同时失效;
+// LocalAuthStore 自带 storage 事件监听,跨标签页登录/退出也会自动同步。
+// 注意:键名前缀是 PB 内部实现细节,升级 PB 版本后需回归验证。
+const SUPERUSER_KEY_PREFIX = '__pb_superusers__'
+
+// 动态查找 Dashboard 写入的存储键(优先 /_ 结尾者,兼容 pathname 变体)
+function findDashboardAuthKey(): string {
+  const candidates: string[] = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key?.startsWith(SUPERUSER_KEY_PREFIX)) candidates.push(key)
+  }
+  return (
+    candidates.find((k) => k.endsWith('/_')) ??
+    candidates[0] ??
+    SUPERUSER_KEY_PREFIX + '/_'
+  )
+}
+
+export const adminPb = new PocketBase('/', new LocalAuthStore(findDashboardAuthKey()))
 
 export type FrpcStatus =
   | 'unused'
@@ -34,10 +50,6 @@ export interface FrpcConfigInfo {
 // 当前会话是否为 superuser(在 /admin 登录卡片登录后即为 true)
 export function isSuperuserAuthed() {
   return adminPb.authStore.isValid && adminPb.authStore.isSuperuser
-}
-
-export async function loginSuperuser(email: string, password: string) {
-  await adminPb.collection('_superusers').authWithPassword(email, password)
 }
 
 export function logoutSuperuser() {

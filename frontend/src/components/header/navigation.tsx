@@ -9,6 +9,7 @@ import useAuth from '@/hooks/use-auth'
 import { Link, useLocation } from '@tanstack/react-router'
 import {
   DatabaseIcon,
+  HomeIcon,
   LogOutIcon,
   SettingsIcon,
   WrenchIcon
@@ -27,10 +28,10 @@ export default function Navigation() {
       </Link>
       <div className='flex items-center gap-4'>
         <Link
-          to='/admin'
+          to='/center'
           className='text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm transition-colors focus:outline-hidden'>
-          <WrenchIcon className='size-4' />
-          管理工具
+          <HomeIcon className='size-4' />
+          首页
         </Link>
         <a
           href='/_/'
@@ -40,47 +41,50 @@ export default function Navigation() {
           <DatabaseIcon className='size-4' />
           数据管理
         </a>
+        <Link
+          to='/admin'
+          className='text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm transition-colors focus:outline-hidden'>
+          <WrenchIcon className='size-4' />
+          管理工具
+        </Link>
         {verified ? (
-          <>
-            <button
-              type='button'
-              onClick={logout}
-              className='text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-1.5 text-sm transition-colors focus:outline-hidden'>
-              <LogOutIcon className='size-4' />
-              退出
-            </button>
-            {/* 已登录:头像点击弹出「用户设置」菜单 */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type='button'
-                  aria-label='用户账号'
-                  className='cursor-pointer focus:outline-hidden'>
-                  <Avatar className='flex size-10 items-center justify-center'>
-                    {avatar && !location.search.logout ? (
-                      <AvatarImage
-                        src={`/api/files/users/${userId}/${avatar}?thumb=100x100`}
-                        alt='用户头像'
-                      />
-                    ) : (
-                      <DefaultUserAvatarLogo />
-                    )}
-                  </Avatar>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align='end'>
-                <DropdownMenuItem asChild>
-                  <Link
-                    to='/user-setting'
-                    preload={false}
-                    className='flex w-full items-center gap-2'>
-                    <SettingsIcon className='size-4' />
-                    用户设置
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </>
+          /* 已登录:头像点击弹出「用户设置 / 退出登录」菜单 */
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type='button'
+                aria-label='用户账号'
+                className='cursor-pointer focus:outline-hidden'>
+                <Avatar className='flex size-10 items-center justify-center'>
+                  {avatar && !location.search.logout ? (
+                    <AvatarImage
+                      src={`/api/files/users/${userId}/${avatar}?thumb=100x100`}
+                      alt='用户头像'
+                    />
+                  ) : (
+                    <DefaultUserAvatarLogo />
+                  )}
+                </Avatar>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end'>
+              <DropdownMenuItem asChild>
+                <Link
+                  to='/user-setting'
+                  preload={false}
+                  className='flex w-full items-center gap-2'>
+                  <SettingsIcon className='size-4' />
+                  用户设置
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={logout}
+                className='flex w-full cursor-pointer items-center gap-2'>
+                <LogOutIcon className='size-4' />
+                退出登录
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         ) : (
           // 未登录:头像点击跳转登录页
           <Link

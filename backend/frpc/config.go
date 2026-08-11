@@ -189,6 +189,16 @@ func ValidateConfigItems(items []ConfigItem) (map[string]string, error) {
 	return normalized, nil
 }
 
+// optionSettingType 返回各配置项的 tools_settings.type 取值,与 ensureFrpcSettings 的预置类型一致。
+func optionSettingType(option string) string {
+	switch option {
+	case optionServerPort, optionLocalPort, optionRemotePort:
+		return "number"
+	default:
+		return "string"
+	}
+}
+
 // SaveConfig 将配置项逐条 upsert 到 tools_settings 表(按 option 唯一索引)。
 // 调用方须先用 ValidateConfigItems 完成校验(全有全无),本函数只负责写入。
 func SaveConfig(pb *pocketbase.PocketBase, items []ConfigItem) error {
@@ -198,8 +208,9 @@ func SaveConfig(pb *pocketbase.PocketBase, items []ConfigItem) error {
 	}
 	for _, item := range items {
 		// option 唯一索引,已有记录则更新,否则创建
+		// 注意参数顺序:(filter, sort, limit, offset);limit=1 取一条匹配记录
 		existing, err := pb.FindRecordsByFilter(
-			"tools_settings", "option={:option}", "", 0, 1,
+			"tools_settings", "option={:option}", "", 1, 0,
 			map[string]any{"option": item.Option},
 		)
 		if err != nil {
@@ -210,6 +221,8 @@ func SaveConfig(pb *pocketbase.PocketBase, items []ConfigItem) error {
 			rec = existing[0]
 		} else {
 			rec.Set("option", item.Option)
+			// type 为必填字段,新记录须一并写入(与 ensureFrpcSettings 补插保持一致)
+			rec.Set("type", optionSettingType(item.Option))
 		}
 		rec.Set("value", item.Value)
 		if err := pb.Save(rec); err != nil {

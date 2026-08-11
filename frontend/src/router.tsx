@@ -19,6 +19,7 @@ import { setTheme } from './lib/set-theme'
 import AdminHomePage from './pages/admin/admin-home'
 import AdminLayout from './pages/admin/admin-layout'
 import { adminTools } from './pages/admin/admin-tools'
+import { isSuperuserAuthed } from './services/api-frpc'
 import ForgotPasswordPage from './pages/auth/forgot-password'
 import LoginPage from './pages/auth/login'
 import RegisterPage from './pages/auth/register'
@@ -205,11 +206,20 @@ const tasksRoute = createRoute({
     queryClient.ensureQueryData(tasksQueryOptions)
 })
 
+// /admin 的管理端认证统一由 PB Dashboard(/_ )负责:
+// 未登录超级管理员时整页跳转到 /_ 登录,登录后同一会话对 /admin 可见
+// 注意:相对路径 href 必须带 reloadDocument,否则 TanStack 会按内部路由导航,
+// 而路由树中无 /_/ 匹配,会渲染本项目的 404 页而非 Dashboard。
 const adminRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'admin',
   component: AdminLayout,
-  beforeLoad: () => ({ getTitle: () => '管理工具' })
+  beforeLoad: () => {
+    if (!isSuperuserAuthed()) {
+      throw redirect({ href: '/_/', reloadDocument: true })
+    }
+    return { getTitle: () => '管理工具' }
+  }
 })
 
 // /admin 默认显示工具选择页(不再自动跳入第一个工具)
