@@ -30,6 +30,12 @@ import HomePage from './pages/home'
 import PrivacyPolicyPage from './pages/privacy-policy'
 import UserSettingPage from './pages/user-setting'
 import WorkbenchPage from './pages/workbench'
+import EventListPage from './pages/health/event-list'
+import EventFormPage from './pages/health/event-form'
+import EventDetailPage from './pages/health/event-detail'
+import EventSummaryPage, {
+  eventSummarySearchSchema
+} from './pages/health/event-summary'
 import {
   resetPasswordParamsSchema,
   verifyEmailParamsSchema
@@ -106,6 +112,48 @@ const tansPimRoute = createRoute({
     if (!checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/login' })
     return { getTitle: () => 'tans-PIM' }
   }
+})
+
+// 个人健康信息管理:独立业务路由,登录用户经数据大厅入口进入。
+// 集合访问规则仅登录用户(健康数据敏感,与 PIM 公开规则不同)。
+const healthRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'health',
+  beforeLoad: () => {
+    if (!checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/login' })
+    return { getTitle: () => '个人健康' }
+  }
+})
+const healthIndexRoute = createRoute({
+  getParentRoute: () => healthRoute,
+  path: '/',
+  component: EventListPage,
+  beforeLoad: () => ({ getTitle: () => '健康事件' })
+})
+const healthNewRoute = createRoute({
+  getParentRoute: () => healthRoute,
+  path: 'events/new',
+  component: EventFormPage,
+  beforeLoad: () => ({ getTitle: () => '新建事件' })
+})
+const healthDetailRoute = createRoute({
+  getParentRoute: () => healthRoute,
+  path: 'events/$eventId',
+  component: EventDetailPage,
+  beforeLoad: () => ({ getTitle: () => '事件详情' })
+})
+const healthEditRoute = createRoute({
+  getParentRoute: () => healthRoute,
+  path: 'events/$eventId/edit',
+  component: EventFormPage,
+  beforeLoad: () => ({ getTitle: () => '编辑事件' })
+})
+const healthSummaryRoute = createRoute({
+  getParentRoute: () => healthRoute,
+  path: 'summary',
+  component: EventSummaryPage,
+  validateSearch: eventSummarySearchSchema,
+  beforeLoad: () => ({ getTitle: () => '归集' })
 })
 
 const privacyPolicyRoute = createRoute({
@@ -248,6 +296,13 @@ const adminCatchAllRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   homeRoute,
   tansPimRoute,
+  healthRoute.addChildren([
+    healthIndexRoute,
+    healthNewRoute,
+    healthDetailRoute,
+    healthEditRoute,
+    healthSummaryRoute
+  ]),
   privacyPolicyRoute,
   authRoute.addChildren([
     loginRoute,

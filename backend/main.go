@@ -38,6 +38,8 @@ func main() {
 	app.mountFs()
 	app.setupAuthHooks()
 	app.setupPimHooks()
+	app.setupHealthHooks()
+	app.setupHealthRoutes()
 	app.disableHealthRouteLogging()
 
 	app.frpc = frpc.NewManager(app.pb)

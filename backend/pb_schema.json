@@ -1280,5 +1280,205 @@
       "CREATE UNIQUE INDEX `idx_sys_option` ON `tools_settings` (`option`)"
     ],
     "system": false
+  },
+  {
+    "id": "pbc_health_events",
+    "listRule": "@request.auth.id != \"\"",
+    "viewRule": "@request.auth.id != \"\"",
+    "createRule": "@request.auth.id != \"\"",
+    "updateRule": "@request.auth.id != \"\"",
+    "deleteRule": "@request.auth.id != \"\"",
+    "name": "health_events",
+    "type": "base",
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "hidden": false,
+        "id": "he_id",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "he_person",
+        "max": 0,
+        "min": 0,
+        "name": "person",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "he_happen_at",
+        "name": "happen_at",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "date"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "he_event_type",
+        "max": 0,
+        "min": 0,
+        "name": "event_type",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "he_item",
+        "max": 0,
+        "min": 0,
+        "name": "item",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "he_department",
+        "max": 0,
+        "min": 0,
+        "name": "department",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "he_institution",
+        "max": 0,
+        "min": 0,
+        "name": "institution",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "he_doctor",
+        "max": 0,
+        "min": 0,
+        "name": "doctor",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "he_conclusion",
+        "max": 0,
+        "min": 0,
+        "name": "conclusion",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "he_detail",
+        "max": 0,
+        "min": 0,
+        "name": "detail",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "he_receipt",
+        "maxSelect": 10,
+        "maxSize": 10485760,
+        "mimeTypes": [
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+          "application/pdf"
+        ],
+        "name": "receipt",
+        "pattern": "",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "file"
+      },
+      {
+        "hidden": false,
+        "id": "he_referenced_by",
+        "maxSize": 0,
+        "name": "referenced_by",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "json"
+      },
+      {
+        "hidden": false,
+        "id": "autodate_created",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      },
+      {
+        "hidden": false,
+        "id": "autodate_updated",
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      }
+    ],
+    "indexes": [
+      "CREATE INDEX `idx_health_events_person` ON `health_events` (`person`)",
+      "CREATE INDEX `idx_health_events_date` ON `health_events` (`happen_at` DESC)"
+    ],
+    "system": false
   }
 ]

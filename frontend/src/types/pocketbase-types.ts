@@ -11,7 +11,8 @@ export enum Collections {
   PersonOrgLinks = 'person_org_links',
   Events = 'events',
   ToolsSettings = 'tools_settings',
-  Users = 'users'
+  Users = 'users',
+  HealthEvents = 'health_events'
 }
 
 export type IsoDateString = string
@@ -104,6 +105,21 @@ export type EventsRecord = {
   summary: string
 }
 
+// —— health_events ——
+export type HealthEventsRecord = {
+  person: string
+  happen_at: string
+  event_type: string
+  item?: string
+  department?: string
+  institution?: string
+  doctor?: string
+  conclusion?: string
+  detail?: string
+  receipt?: string[]
+  referenced_by?: string[]
+}
+
 // —— tools_settings ——
 export type ToolsSettingsRecord = {
   option: string
@@ -130,6 +146,8 @@ export type PersonOrgLinksResponse<Texpand = unknown> = Required<PersonOrgLinksR
   BaseSystemFields<Texpand>
 export type EventsResponse<Texpand = unknown> = Required<EventsRecord> &
   BaseSystemFields<Texpand>
+export type HealthEventsResponse<Texpand = unknown> = Required<HealthEventsRecord> &
+  BaseSystemFields<Texpand>
 export type ToolsSettingsResponse<Texpand = unknown> = Required<ToolsSettingsRecord> &
   BaseSystemFields<Texpand>
 export type UsersResponse<Texpand = unknown> = Required<UsersRecord> &
@@ -143,6 +161,7 @@ export type CollectionRecords = {
   events: EventsRecord
   tools_settings: ToolsSettingsRecord
   users: UsersRecord
+  health_events: HealthEventsRecord
 }
 
 export type CollectionResponses = {
@@ -153,6 +172,7 @@ export type CollectionResponses = {
   events: EventsResponse
   tools_settings: ToolsSettingsResponse
   users: UsersResponse
+  health_events: HealthEventsResponse
 }
 
 export type TypedPocketBase = PocketBase & {
@@ -163,4 +183,5 @@ export type TypedPocketBase = PocketBase & {
   collection(idOrName: 'events'): RecordService<EventsResponse>
   collection(idOrName: 'tools_settings'): RecordService<ToolsSettingsResponse>
   collection(idOrName: 'users'): RecordService<UsersResponse>
+  collection(idOrName: 'health_events'): RecordService<HealthEventsResponse>
 }
