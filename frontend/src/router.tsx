@@ -15,6 +15,7 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { useEffect } from 'react'
 import { z } from 'zod/v4'
 import Spinner from './components/shared/spinner'
+import { requireVerifiedUser } from './lib/route-guards'
 import { setTheme } from './lib/set-theme'
 import AdminHomePage from './pages/admin/admin-home'
 import AdminLayout from './pages/admin/admin-layout'
@@ -30,6 +31,7 @@ import ErrorPage from './pages/error'
 import HomePage from './pages/home'
 import PrivacyPolicyPage from './pages/privacy-policy'
 import EditTaskPage from './pages/tasks/edit-task'
+import FilesPage from './pages/files/files-page'
 import NewTaskPage from './pages/tasks/new-task'
 import SettingsPage from './pages/tasks/settings'
 import TasksPage from './pages/tasks/tasks'
@@ -176,10 +178,15 @@ const centerRoute = createRoute({
   path: 'center',
   component: CenterPage,
   pendingComponent: Spinner,
-  beforeLoad: () => {
-    if (!checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/login' })
-    return { getTitle: () => '数据大厅' }
-  }
+  beforeLoad: requireVerifiedUser('数据大厅')
+})
+
+const filesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'files',
+  component: FilesPage,
+  pendingComponent: Spinner,
+  beforeLoad: requireVerifiedUser('我的文件')
 })
 
 const userSettingRoute = createRoute({
@@ -187,10 +194,7 @@ const userSettingRoute = createRoute({
   path: 'user-setting',
   component: UserSettingPage,
   pendingComponent: Spinner,
-  beforeLoad: () => {
-    if (!checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/login' })
-    return { getTitle: () => '用户设置' }
-  }
+  beforeLoad: requireVerifiedUser('用户设置')
 })
 
 const tasksRoute = createRoute({
@@ -198,10 +202,7 @@ const tasksRoute = createRoute({
   path: 'tasks',
   component: TasksPage,
   pendingComponent: Spinner,
-  beforeLoad: () => {
-    if (!checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/login' })
-    return { getTitle: () => '任务' }
-  },
+  beforeLoad: requireVerifiedUser('任务'),
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData(tasksQueryOptions)
 })
@@ -238,6 +239,12 @@ const adminToolRoutes = [
     path: 'frpc',
     component: adminTools[0].component,
     beforeLoad: () => ({ getTitle: () => adminTools[0].label })
+  }),
+  createRoute({
+    getParentRoute: () => adminRoute,
+    path: 'filestore',
+    component: adminTools[1].component,
+    beforeLoad: () => ({ getTitle: () => adminTools[1].label })
   })
 ]
 
@@ -294,6 +301,7 @@ const routeTree = rootRoute.addChildren([
     resetPasswordRoute
   ]),
   centerRoute,
+  filesRoute,
   userSettingRoute,
   tasksRoute.addChildren([settingsRoute, newTaskRoute, editTaskRoute]),
   adminRoute.addChildren([

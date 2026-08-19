@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/s-petr/longhabit"
   },
-  "version": "0.6.0",
+  "version": "0.7.0",
   "type": "module",
   "scripts": {
     "dev:client": "vite dev",

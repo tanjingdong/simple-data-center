@@ -1,25 +1,41 @@
-import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card'
+import { businessModules } from '@/lib/business-modules'
 import { Link } from '@tanstack/react-router'
-import { LayoutDashboardIcon } from 'lucide-react'
 
 // 数据大厅:普通用户登录后的落地页,与数据库状态无关。
-// 集中提供系统各业务功能的入口,将来新增功能只需在此追加链接;
+// 集中提供系统各业务功能的入口,新增业务只需在 business-modules 追加一项;
 // 业务数据有误时,报错由具体业务页面呈现,不影响本页。
 export default function CenterPage() {
   return (
-    <main className='mx-auto flex w-full max-w-xl flex-col items-center gap-y-6 px-4 py-8'>
+    <main className='mx-auto flex w-full max-w-5xl flex-col items-center gap-y-8 px-4 py-8'>
       <h1 className='text-3xl font-bold'>数据大厅</h1>
       <p className='text-muted-foreground text-center text-sm'>
         欢迎回来,请选择要使用的功能。
       </p>
 
-      <div className='w-full space-y-3'>
-        <Button asChild size='lg' className='w-full justify-start'>
-          <Link to='/tasks'>
-            <LayoutDashboardIcon className='size-5' />
-            习惯追踪
-          </Link>
-        </Button>
+      <div className='grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+        {businessModules.map((item) => {
+          const Icon = item.icon
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className='group focus:outline-hidden'>
+              <Card className='hover:border-foreground/30 group-focus-visible:ring-ring h-full transition group-focus-visible:ring-2 group-focus-visible:ring-offset-2 hover:-translate-y-0.5 hover:shadow-md'>
+                <CardHeader>
+                  <Icon className='size-6' />
+                  <CardTitle className='text-base'>{item.title}</CardTitle>
+                  <CardDescription>{item.description}</CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+          )
+        })}
       </div>
     </main>
   )

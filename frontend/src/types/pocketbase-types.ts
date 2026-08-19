@@ -6,6 +6,7 @@ import type PocketBase from 'pocketbase'
 import type { RecordService } from 'pocketbase'
 
 export enum Collections {
+  FilestoreFiles = 'filestore_files',
   Settings = 'settings',
   Tasks = 'tasks',
   Users = 'users'
@@ -58,6 +59,15 @@ export type TasksRecord<Thistory = unknown> = {
   user: RecordIdString
 }
 
+export type FilestoreFilesRecord = {
+  owner: RecordIdString
+  storage_key: string
+  original_name: string
+  mime: string
+  size: number
+  visibility: 'private' | 'public'
+}
+
 export type UsersRecord = {
   authWithPasswordAvailable?: boolean
   avatar?: string
@@ -73,16 +83,20 @@ export type TasksResponse<Thistory = unknown, Texpand = unknown> = Required<
   BaseSystemFields<Texpand>
 export type UsersResponse<Texpand = unknown> = Required<UsersRecord> &
   AuthSystemFields<Texpand>
+export type FilestoreFilesResponse<Texpand = unknown> = Required<FilestoreFilesRecord> &
+  BaseSystemFields<Texpand>
 
 // Types containing all Records and Responses, useful for creating typing helper functions
 
 export type CollectionRecords = {
+  filestore_files: FilestoreFilesRecord
   settings: SettingsRecord
   tasks: TasksRecord
   users: UsersRecord
 }
 
 export type CollectionResponses = {
+  filestore_files: FilestoreFilesResponse
   settings: SettingsResponse
   tasks: TasksResponse
   users: UsersResponse
@@ -92,6 +106,7 @@ export type CollectionResponses = {
 // https://github.com/pocketbase/js-sdk#specify-typescript-definitions
 
 export type TypedPocketBase = PocketBase & {
+  collection(idOrName: 'filestore_files'): RecordService<FilestoreFilesResponse>
   collection(idOrName: 'settings'): RecordService<SettingsResponse>
   collection(idOrName: 'tasks'): RecordService<TasksResponse>
   collection(idOrName: 'users'): RecordService<UsersResponse>

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # simple-data-center 菜单式编译脚本
-# 对话式选择操作系统与架构,编译单可执行文件:
+# 对话式选择操作系统与架构,全量编译单可执行文件:
+#   - 每次运行均先构建前端(npm run build:client,含 lint;vite 产物输出至
+#     backend/dist,经 Go embed 打包进二进制),避免嵌入陈旧前端导致新页面 404;
 #   - 产物保存至 release/simple-data-center-<os>-<arch>-<版本>[.exe](归档)
 #   - 成功后自动复制到项目根目录 simple-data-center[.exe](运行使用相对路径 db/)
 # 版本号自动读取 package.json,无需输入。
@@ -81,7 +83,21 @@ case "$arch_choice" in
   *) echo "无效输入,已退出。" >&2; exit 1 ;;
 esac
 
-# 5. 编译
+# 5. 构建前端产物(全量编译:每次运行都重建,产物输出至 backend/dist 供 Go embed)
+if ! command -v npm >/dev/null 2>&1; then
+  echo "错误:未找到 npm,无法构建前端。" >&2
+  echo "请安装 Node.js(https://nodejs.org/)后重试。" >&2
+  exit 1
+fi
+echo
+echo "构建前端产物(npm run build:client,含 lint)..."
+(
+  cd "$ROOT_DIR"
+  npm run build:client
+)
+echo "前端构建完成。"
+
+# 6. 编译后端
 EXT=""
 if [ "$GOOS" = "windows" ]; then EXT=".exe"; fi
 OUT_NAME="simple-data-center-${GOOS}-${GOARCH}-${VERSION}${EXT}"
@@ -97,7 +113,7 @@ echo "输出:$OUT_PATH"
 )
 echo "编译成功。"
 
-# 6. 复制到项目根目录(与现有 simple-data-center 相同位置,运行使用相对路径 db/)
+# 7. 复制到项目根目录(与现有 simple-data-center 相同位置,运行使用相对路径 db/)
 DEST_PATH="$ROOT_DIR/simple-data-center${EXT}"
 # 先复制到临时名再原子 mv:服务运行中二进制被占用,直接 cp 覆盖会报"文本文件忙"
 TMP_DEST="$ROOT_DIR/.simple-data-center.tmp${EXT}"
