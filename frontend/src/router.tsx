@@ -14,7 +14,7 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { useEffect } from 'react'
 import { z } from 'zod/v4'
 import Spinner from './components/shared/spinner'
-import { applyTheme, getStoredTheme } from './lib/theme'
+import { requireVerifiedUser } from './lib/route-guards'
 import AdminHomePage from './pages/admin/admin-home'
 import AdminLayout from './pages/admin/admin-layout'
 import { adminTools } from './pages/admin/admin-tools'
@@ -28,6 +28,7 @@ import CenterPage from './pages/center'
 import ErrorPage from './pages/error'
 import HomePage from './pages/home'
 import PrivacyPolicyPage from './pages/privacy-policy'
+import FilesPage from './pages/files/files-page'
 import UserSettingPage from './pages/user-setting'
 import WorkbenchPage from './pages/workbench'
 import EventListPage from './pages/health/event-list'
@@ -83,7 +84,6 @@ const rootRoute = createRootRouteWithContext<RootContext>()({
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData(userQueryOptions),
   beforeLoad: async () => {
-    applyTheme(getStoredTheme())
     return { getTitle: () => 'tans-PIM' }
   }
 })
@@ -101,16 +101,16 @@ const homeRoute = createRoute({
   }
 })
 
-// PIM 工作台独立路由:与根路由分离,登录用户经数据大厅业务入口进入。
+// 联系人管理(原 tans-PIM 业务):独立路由,登录用户经数据大厅入口进入。
 // 集合访问规则公开,登录仅作界面入口(与 PIM 设计决策一致)。
-const tansPimRoute = createRoute({
+const socialRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/tans-PIM',
+  path: '/social',
   component: WorkbenchPage,
   pendingComponent: Spinner,
   beforeLoad: () => {
     if (!checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/login' })
-    return { getTitle: () => 'tans-PIM' }
+    return { getTitle: () => '联系人管理' }
   }
 })
 
@@ -232,10 +232,15 @@ const centerRoute = createRoute({
   path: 'center',
   component: CenterPage,
   pendingComponent: Spinner,
-  beforeLoad: () => {
-    if (!checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/login' })
-    return { getTitle: () => '数据大厅' }
-  }
+  beforeLoad: requireVerifiedUser('数据大厅')
+})
+
+const filesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'files',
+  component: FilesPage,
+  pendingComponent: Spinner,
+  beforeLoad: requireVerifiedUser('我的文件')
 })
 
 const userSettingRoute = createRoute({
@@ -243,10 +248,7 @@ const userSettingRoute = createRoute({
   path: 'user-setting',
   component: UserSettingPage,
   pendingComponent: Spinner,
-  beforeLoad: () => {
-    if (!checkVerifiedUserIsLoggedIn()) throw redirect({ to: '/login' })
-    return { getTitle: () => '用户设置' }
-  }
+  beforeLoad: requireVerifiedUser('用户设置')
 })
 
 // /admin 的管理端认证统一由 PB Dashboard(/_ )负责:
@@ -281,6 +283,12 @@ const adminToolRoutes = [
     path: 'frpc',
     component: adminTools[0].component,
     beforeLoad: () => ({ getTitle: () => adminTools[0].label })
+  }),
+  createRoute({
+    getParentRoute: () => adminRoute,
+    path: 'filestore',
+    component: adminTools[1].component,
+    beforeLoad: () => ({ getTitle: () => adminTools[1].label })
   })
 ]
 
@@ -295,7 +303,7 @@ const adminCatchAllRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   homeRoute,
-  tansPimRoute,
+  socialRoute,
   healthRoute.addChildren([
     healthIndexRoute,
     healthNewRoute,
@@ -312,6 +320,7 @@ const routeTree = rootRoute.addChildren([
     resetPasswordRoute
   ]),
   centerRoute,
+  filesRoute,
   userSettingRoute,
   adminRoute.addChildren([
     adminIndexRoute,

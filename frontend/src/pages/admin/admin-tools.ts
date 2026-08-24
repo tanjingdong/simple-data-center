@@ -1,5 +1,6 @@
-import { NetworkIcon, type LucideIcon } from 'lucide-react'
+import { HardDriveIcon, NetworkIcon, type LucideIcon } from 'lucide-react'
 import type { ComponentType } from 'react'
+import FilestoreToolPage from './filestore-tool'
 import FrpcToolPage from './frpc-tool'
 
 export interface AdminTool {
@@ -20,5 +21,12 @@ export const adminTools = [
     icon: NetworkIcon,
     path: '/admin/frpc',
     component: FrpcToolPage
+  },
+  {
+    id: 'filestore',
+    label: '文件存储管理',
+    icon: HardDriveIcon,
+    path: '/admin/filestore',
+    component: FilestoreToolPage
   }
 ] as const satisfies readonly AdminTool[]

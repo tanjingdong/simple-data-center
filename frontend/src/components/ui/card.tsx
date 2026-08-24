@@ -1,7 +1,7 @@
-import { cn } from '@/lib/shadcn'
 import * as React from 'react'
 
-// 轻量 Card 组件(shadcn 风格,无第三方依赖):纯 Tailwind 类实现
+import { cn } from '@/lib/shadcn'
+
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -9,7 +9,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm',
+      'bg-card text-card-foreground rounded-lg border shadow-sm',
       className
     )}
     {...props}
@@ -23,10 +23,7 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn(
-      '@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6',
-      className
-    )}
+    className={cn('flex flex-col space-y-1.5 p-6', className)}
     {...props}
   />
 ))
@@ -38,7 +35,10 @@ const CardTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('leading-none font-semibold', className)}
+    className={cn(
+      'text-2xl leading-none font-semibold tracking-tight',
+      className
+    )}
     {...props}
   />
 ))
@@ -60,7 +60,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn('px-6', className)} {...props} />
+  <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
 ))
 CardContent.displayName = 'CardContent'
 
@@ -70,17 +70,10 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('flex items-center px-6 [.border-t]:pt-6', className)}
+    className={cn('flex items-center p-6 pt-0', className)}
     {...props}
   />
 ))
 CardFooter.displayName = 'CardFooter'
 
-export {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle
-}
+export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }

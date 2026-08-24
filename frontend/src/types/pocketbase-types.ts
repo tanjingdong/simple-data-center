@@ -5,15 +5,18 @@ import type PocketBase from 'pocketbase'
 import type { RecordService } from 'pocketbase'
 
 export enum Collections {
+  FilestoreFiles = 'filestore_files',
+  Users = 'users',
   Persons = 'persons',
   Organizations = 'organizations',
   Relations = 'relations',
   PersonOrgLinks = 'person_org_links',
   Events = 'events',
   ToolsSettings = 'tools_settings',
-  Users = 'users',
   HealthEvents = 'health_events'
 }
+
+// Alias types for improved usability
 
 export type IsoDateString = string
 export type RecordIdString = string
@@ -116,6 +119,7 @@ export type HealthEventsRecord = {
   doctor?: string
   conclusion?: string
   detail?: string
+  /** receipt: filestore_files 记录 ID 数组(凭证经 filestore 服务存储,不再用 PB file 字段) */
   receipt?: string[]
   referenced_by?: string[]
 }
@@ -126,6 +130,15 @@ export type ToolsSettingsRecord = {
   description?: string
   type: 'string' | 'number' | 'bool'
   value?: string
+}
+
+export type FilestoreFilesRecord = {
+  owner: RecordIdString
+  storage_key: string
+  original_name: string
+  mime: string
+  size: number
+  visibility: 'private' | 'public'
 }
 
 // —— users ——
@@ -152,8 +165,11 @@ export type ToolsSettingsResponse<Texpand = unknown> = Required<ToolsSettingsRec
   BaseSystemFields<Texpand>
 export type UsersResponse<Texpand = unknown> = Required<UsersRecord> &
   AuthSystemFields<Texpand>
+export type FilestoreFilesResponse<Texpand = unknown> = Required<FilestoreFilesRecord> &
+  BaseSystemFields<Texpand>
 
 export type CollectionRecords = {
+  filestore_files: FilestoreFilesRecord
   persons: PersonsRecord
   organizations: OrganizationsRecord
   relations: RelationsRecord
@@ -165,6 +181,7 @@ export type CollectionRecords = {
 }
 
 export type CollectionResponses = {
+  filestore_files: FilestoreFilesResponse
   persons: PersonsResponse
   organizations: OrganizationsResponse
   relations: RelationsResponse
@@ -176,6 +193,7 @@ export type CollectionResponses = {
 }
 
 export type TypedPocketBase = PocketBase & {
+  collection(idOrName: 'filestore_files'): RecordService<FilestoreFilesResponse>
   collection(idOrName: 'persons'): RecordService<PersonsResponse>
   collection(idOrName: 'organizations'): RecordService<OrganizationsResponse>
   collection(idOrName: 'relations'): RecordService<RelationsResponse>

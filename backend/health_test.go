@@ -80,7 +80,8 @@ func newTestHealthApp(t *testing.T) *application {
 	app.setupHealthHooks()
 
 	collection := core.NewBaseCollection(healthCollection)
-	if err := collection.Fields.Add(
+	// 注意:PocketBase v0.39 的 FieldsList.Add 返回无值(void),不能接 err
+	collection.Fields.Add(
 		&core.TextField{Name: "person", Required: true},
 		&core.DateField{Name: "happen_at", Required: true},
 		&core.TextField{Name: "event_type", Required: true},
@@ -90,12 +91,27 @@ func newTestHealthApp(t *testing.T) *application {
 		&core.TextField{Name: "doctor"},
 		&core.TextField{Name: "conclusion"},
 		&core.TextField{Name: "detail"},
+		&core.JSONField{Name: "receipt"},
 		&core.JSONField{Name: "referenced_by"},
-	); err != nil {
-		t.Fatalf("创建测试集合字段失败: %v", err)
-	}
+		// created/updated autodate 字段(rebuildHealthReferencedBy 按 -created 排序)
+		&core.AutodateField{Name: "created", OnCreate: true},
+		&core.AutodateField{Name: "updated", OnCreate: true, OnUpdate: true},
+	)
 	if err := app.pb.Save(collection); err != nil {
 		t.Fatalf("创建测试集合失败: %v", err)
+	}
+
+	// filestore_files 集合(级联删测试需要;DeleteFile 只读 storage_key)
+	fsCol := core.NewBaseCollection("filestore_files")
+	fsCol.Fields.Add(
+		&core.TextField{Name: "owner"},
+		&core.TextField{Name: "storage_key"},
+		&core.TextField{Name: "original_name"},
+		&core.TextField{Name: "mime"},
+		&core.NumberField{Name: "size"},
+	)
+	if err := app.pb.Save(fsCol); err != nil {
+		t.Fatalf("保存 filestore_files 集合失败: %v", err)
 	}
 	return app
 }
@@ -300,5 +316,74 @@ func TestSetupHealthRoutes_RebuildHandlerRequiresAuth(t *testing.T) {
 	}
 	if !rebuildRouteAllowed(&core.Record{}) {
 		t.Error("登录用户应被允许")
+	}
+}
+
+func TestParseReceiptIDs(t *testing.T) {
+	cases := []struct {
+		name string
+		raw  string
+		want []string
+	}{
+		{"空串", "", nil},
+		{"非法 json", "not-json", nil},
+		{"单元素", `["f1"]`, []string{"f1"}},
+		{"多元素", `["f1","f2","f3"]`, []string{"f1", "f2", "f3"}},
+		{"非字符串数组", `[1,2,3]`, nil},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got := parseReceiptIDs(c.raw)
+			if !reflect.DeepEqual(got, c.want) {
+				t.Errorf("parseReceiptIDs(%q) = %v, want %v", c.raw, got, c.want)
+			}
+		})
+	}
+}
+
+// TestDeleteEvent_CascadesReceiptFiles 删事件应级联删除 receipt 引用的 filestore_files 记录。
+// 测试 app 未配真实 Alist,DeleteFile 对 Alist 调用失败被容错,DB 记录仍删除。
+func TestDeleteEvent_CascadesReceiptFiles(t *testing.T) {
+	app := newTestHealthApp(t)
+
+	fsCol, err := app.pb.FindCollectionByNameOrId("filestore_files")
+	if err != nil {
+		t.Fatalf("查找 filestore_files 集合失败: %v", err)
+	}
+	file1 := core.NewRecord(fsCol)
+	file1.Set("storage_key", "/simple-data-center/2026/08/u1/a.jpg")
+	file1.Set("original_name", "a.jpg")
+	if err := app.pb.Save(file1); err != nil {
+		t.Fatalf("保存 filestore_files 记录失败: %v", err)
+	}
+	file2 := core.NewRecord(fsCol)
+	file2.Set("storage_key", "/simple-data-center/2026/08/u1/b.jpg")
+	file2.Set("original_name", "b.jpg")
+	if err := app.pb.Save(file2); err != nil {
+		t.Fatalf("保存 filestore_files 记录失败: %v", err)
+	}
+
+	rec := saveHealthEvent(t, app, map[string]any{
+		"event_type": "门诊",
+		"receipt":    []string{file1.Id, file2.Id},
+	})
+
+	if err := app.pb.Delete(rec); err != nil {
+		t.Fatalf("删除事件失败: %v", err)
+	}
+	for _, id := range []string{file1.Id, file2.Id} {
+		_, err := app.pb.FindRecordById("filestore_files", id)
+		if err == nil {
+			t.Errorf("filestore_files 记录 %s 应被级联删除,但仍存在", id)
+		}
+	}
+}
+
+// TestDeleteEvent_NoReceiptNoOp 事件无凭证时删除不应报错。
+func TestDeleteEvent_NoReceiptNoOp(t *testing.T) {
+	app := newTestHealthApp(t)
+	rec := saveHealthEvent(t, app, map[string]any{"event_type": "门诊"})
+	if err := app.pb.Delete(rec); err != nil {
+		t.Fatalf("删无凭证事件失败: %v", err)
 	}
 }

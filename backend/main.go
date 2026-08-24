@@ -45,6 +45,8 @@ func main() {
 	app.frpc = frpc.NewManager(app.pb)
 	app.setupFrpc()
 
+	app.setupFilestore()
+
 	if err := app.pb.Start(); err != nil {
 		log.Fatal(err)
 	}

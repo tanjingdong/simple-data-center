@@ -61,9 +61,15 @@ export function filterHealthEvents(
 ): HealthEvent[] {
   const kw = filters.keyword.trim().toLowerCase()
   return events.filter((e) => {
-    if (filters.person.trim() && e.person !== filters.person.trim()) return false
-    if (filters.eventTypes.length && !filters.eventTypes.includes(e.event_type)) return false
-    if (filters.departments.length && !filters.departments.includes(e.department)) return false
+    if (filters.person.trim() && e.person !== filters.person.trim())
+      return false
+    if (filters.eventTypes.length && !filters.eventTypes.includes(e.event_type))
+      return false
+    if (
+      filters.departments.length &&
+      !filters.departments.includes(e.department)
+    )
+      return false
     if (filters.from && e.happen_at < filters.from) return false
     if (filters.to && e.happen_at > filters.to) return false
     if (kw) {
@@ -94,34 +100,26 @@ export function departmentOptionsOf(events: HealthEvent[]): string[] {
   return [...new Set(events.map((e) => e.department).filter(Boolean))].sort()
 }
 
-// 创建事件:字段 + 凭证文件(FormData)
+// 创建事件:字段 + 凭证 file ID 数组(JSON body,凭证经 filestore 服务存储)
 export async function createHealthEvent(
   data: HealthEventFormFields,
-  files: File[]
+  receiptIds: string[]
 ): Promise<HealthEvent> {
-  const fd = new FormData()
-  for (const [k, v] of Object.entries(data)) fd.set(k, v)
-  files.forEach((f) => fd.append('receipt', f))
-  const record = await pb.collection('health_events').create(fd)
+  const record = await pb
+    .collection('health_events')
+    .create({ ...data, receipt: receiptIds })
   return healthEventResponseSchema.parse(record)
 }
 
-// 更新事件:字段 + 凭证(既有文件名 + 新增文件;全部移除时传空串)
+// 更新事件:字段 + 凭证 file ID 数组(JSON body);空数组=清空全部凭证
 export async function updateHealthEvent(
   id: string,
   data: HealthEventFormFields,
-  existing: string[],
-  files: File[]
+  receiptIds: string[]
 ): Promise<HealthEvent> {
-  const fd = new FormData()
-  for (const [k, v] of Object.entries(data)) fd.set(k, v)
-  if (existing.length === 0 && files.length === 0) {
-    fd.set('receipt', '') // 移除全部既有凭证
-  } else {
-    existing.forEach((name) => fd.append('receipt', name))
-    files.forEach((f) => fd.append('receipt', f))
-  }
-  const record = await pb.collection('health_events').update(id, fd)
+  const record = await pb
+    .collection('health_events')
+    .update(id, { ...data, receipt: receiptIds })
   return healthEventResponseSchema.parse(record)
 }
 

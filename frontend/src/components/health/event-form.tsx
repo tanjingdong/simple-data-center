@@ -1,23 +1,20 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
-import { Controller, useForm, type Resolver } from 'react-hook-form'
-import { useRef, useState } from 'react'
-import EventPicker from '@/components/health/event-picker'
-import ReceiptUpload from '@/components/health/receipt-upload'
 import AutoCompleteField from '@/components/form/autocomplete-field'
 import InputField from '@/components/form/input-field'
-import { dateToString } from '@/lib/date-convert'
-import { errorToast } from '@/lib/toast'
+import EventPicker from '@/components/health/event-picker'
+import ReceiptUpload from '@/components/health/receipt-upload'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { dateToString } from '@/lib/date-convert'
+import { errorToast } from '@/lib/toast'
 import {
-  healthEventFormSchema,
-  HealthEventFormFields,
   HealthEvent,
+  HealthEventFormFields,
+  healthEventFormSchema,
   healthEventTypePresets
 } from '@/schemas/health-event-schema'
+import { deleteFile } from '@/services/api-filestore'
 import {
   createHealthEvent,
   departmentOptionsOf,
@@ -25,6 +22,14 @@ import {
   personOptionsOf,
   updateHealthEvent
 } from '@/services/api-health-events'
+import { zodResolver } from '@hookform/resolvers/zod'
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery
+} from '@tanstack/react-query'
+import { useRef, useState } from 'react'
+import { Controller, useForm, type Resolver } from 'react-hook-form'
 
 // 完整事件表单(新建/编辑共用)。页面与「插入事件链接」选择器内的新建模式
 // 均嵌入本组件——两次新增流程的字段与逻辑完全一致。
@@ -53,7 +58,9 @@ export default function EventForm({
   // schema 带 default('') 的字段使 zod 输入类型为可选,与 RHF 期望的字段类型不完全一致,
   // 故按输出类型(即 HealthEventFormFields)断言 resolver;同时显式声明转换值类型避免泛型别名未解析
   const form = useForm<HealthEventFormFields, any, HealthEventFormFields>({
-    resolver: zodResolver(healthEventFormSchema) as Resolver<HealthEventFormFields>,
+    resolver: zodResolver(
+      healthEventFormSchema
+    ) as Resolver<HealthEventFormFields>,
     defaultValues: editingEvent
       ? {
           person: editingEvent.person,
@@ -80,9 +87,12 @@ export default function EventForm({
         }
   })
 
-  // 凭证状态:既有文件名 + 新增文件
-  const [existingReceipts, setExistingReceipts] = useState<string[]>(editingEvent?.receipt ?? [])
-  const [newFiles, setNewFiles] = useState<File[]>([])
+  // 凭证状态:filestore_files 记录 ID 数组(既有 + 本次新增)
+  const [receiptIds, setReceiptIds] = useState<string[]>(
+    editingEvent?.receipt ?? []
+  )
+  // 进入编辑时已存在的 ID,用于保存失败时区分「本次新增」并回滚
+  const initialReceiptIds = useRef<string[]>(editingEvent?.receipt ?? [])
 
   // 插入事件链接(光标位置插入)
   const detailRef = useRef<HTMLTextAreaElement>(null)
@@ -91,9 +101,13 @@ export default function EventForm({
     const current = form.getValues('detail')
     const el = detailRef.current
     const pos = el?.selectionStart ?? current.length
-    form.setValue('detail', current.slice(0, pos) + `[[事件${id}]]` + current.slice(pos), {
-      shouldValidate: true
-    })
+    form.setValue(
+      'detail',
+      current.slice(0, pos) + `[[事件${id}]]` + current.slice(pos),
+      {
+        shouldValidate: true
+      }
+    )
     setPickerOpen(false)
     // 链接全长 = 4(「[[事件」前缀) + id.length + 2(「]]」后缀),光标定位在链接末尾
     requestAnimationFrame(() => {
@@ -102,18 +116,37 @@ export default function EventForm({
     })
   }
 
+  // 回滚本次新增的凭证文件(当前 receiptIds − 已保存的既有 ID)。
+  // 用于:保存失败,或用户上传后取消/未保存离开,避免已上传文件成孤儿。
+  const rollbackAddedReceipts = async () => {
+    const initial = new Set(initialReceiptIds.current)
+    const added = receiptIds.filter((id) => !initial.has(id))
+    await Promise.all(added.map((id) => deleteFile(id).catch(() => {})))
+  }
+
+  // 取消编辑/新建:后台回滚本次新增的凭证,再执行调用方取消回调(如返回列表)
+  const handleCancel = () => {
+    void rollbackAddedReceipts()
+    onCancel()
+  }
+
   const saveMutation = useMutation({
     mutationFn: async (values: HealthEventFormFields) => {
       if (editing && editingEvent) {
-        return updateHealthEvent(editingEvent.id, values, existingReceipts, newFiles)
+        return updateHealthEvent(editingEvent.id, values, receiptIds)
       }
-      return createHealthEvent(values, newFiles)
+      return createHealthEvent(values, receiptIds)
     },
     onSuccess: async (saved) => {
       await queryClient.invalidateQueries({ queryKey: ['health_events'] })
+      // 保存成功:本次凭证已成既有,更新基准,避免后续取消/回滚误删
+      initialReceiptIds.current = receiptIds
       onSaved(saved)
     },
-    onError: (e) => errorToast('保存失败', e)
+    onError: async (e) => {
+      await rollbackAddedReceipts()
+      errorToast('保存失败', e)
+    }
   })
 
   return (
@@ -124,12 +157,27 @@ export default function EventForm({
         <form
           className='space-y-4'
           onSubmit={form.handleSubmit((values) => saveMutation.mutate(values))}>
-          <AutoCompleteField form={form} name='person' label='人' options={personOptionsOf(allEvents)} />
+          <AutoCompleteField
+            form={form}
+            name='person'
+            label='人'
+            options={personOptionsOf(allEvents)}
+          />
           <InputField form={form} name='happen_at' label='时间' type='date' />
-          <AutoCompleteField form={form} name='event_type' label='类型' options={[...healthEventTypePresets]} />
+          <AutoCompleteField
+            form={form}
+            name='event_type'
+            label='类型'
+            options={[...healthEventTypePresets]}
+          />
           <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
             <InputField form={form} name='item' label='项目' />
-            <AutoCompleteField form={form} name='department' label='科属' options={departmentOptionsOf(allEvents)} />
+            <AutoCompleteField
+              form={form}
+              name='department'
+              label='科属'
+              options={departmentOptionsOf(allEvents)}
+            />
             <InputField form={form} name='institution' label='机构' />
             <InputField form={form} name='doctor' label='接诊医师' />
           </div>
@@ -139,7 +187,11 @@ export default function EventForm({
             <div className='flex items-center justify-between'>
               <Label>详述</Label>
               {allowInsertLinks && (
-                <Button type='button' variant='outline' size='sm' onClick={() => setPickerOpen(true)}>
+                <Button
+                  type='button'
+                  variant='outline'
+                  size='sm'
+                  onClick={() => setPickerOpen(true)}>
                   插入事件链接
                 </Button>
               )}
@@ -163,17 +215,11 @@ export default function EventForm({
 
           <div className='space-y-2'>
             <Label>原始凭证</Label>
-            <ReceiptUpload
-              eventId={editingEvent?.id}
-              existing={existingReceipts}
-              files={newFiles}
-              onExistingChange={setExistingReceipts}
-              onFilesChange={setNewFiles}
-            />
+            <ReceiptUpload receiptIds={receiptIds} onChange={setReceiptIds} />
           </div>
 
           <div className='flex justify-end gap-2'>
-            <Button type='button' variant='outline' onClick={onCancel}>
+            <Button type='button' variant='outline' onClick={handleCancel}>
               取消
             </Button>
             <Button type='submit' disabled={saveMutation.isPending}>

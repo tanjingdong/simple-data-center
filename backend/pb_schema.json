@@ -1429,20 +1429,12 @@
       {
         "hidden": false,
         "id": "he_receipt",
-        "maxSelect": 10,
-        "maxSize": 10485760,
-        "mimeTypes": [
-          "image/jpeg",
-          "image/png",
-          "image/webp",
-          "application/pdf"
-        ],
+        "maxSize": 0,
         "name": "receipt",
-        "pattern": "",
         "presentable": false,
         "required": false,
         "system": false,
-        "type": "file"
+        "type": "json"
       },
       {
         "hidden": false,
@@ -1478,6 +1470,136 @@
     "indexes": [
       "CREATE INDEX `idx_health_events_person` ON `health_events` (`person`)",
       "CREATE INDEX `idx_health_events_date` ON `health_events` (`happen_at` DESC)"
+    ],
+    "system": false
+  },
+  {
+    "id": "pbc_filestore_files",
+    "listRule": "@request.auth.id = owner.id || visibility = 'public'",
+    "viewRule": "@request.auth.id = owner.id || visibility = 'public'",
+    "createRule": "@request.auth.id = owner.id",
+    "updateRule": "@request.auth.id = owner.id",
+    "deleteRule": "@request.auth.id = owner.id",
+    "name": "filestore_files",
+    "type": "base",
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "hidden": false,
+        "id": "text3208210256",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "cascadeDelete": false,
+        "collectionId": "_pb_users_auth_",
+        "hidden": false,
+        "id": "relation_owner",
+        "maxSelect": 1,
+        "name": "owner",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text_storage_key",
+        "max": 512,
+        "min": 1,
+        "name": "storage_key",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text_original_name",
+        "max": 255,
+        "min": 1,
+        "name": "original_name",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text_mime",
+        "max": 128,
+        "min": 1,
+        "name": "mime",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "number_size",
+        "max": null,
+        "min": 0,
+        "name": "size",
+        "onlyInt": true,
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "hidden": false,
+        "id": "select_visibility",
+        "maxSelect": 1,
+        "name": "visibility",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "select",
+        "values": ["private", "public"]
+      },
+      {
+        "hidden": false,
+        "id": "autodate_created",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      },
+      {
+        "hidden": false,
+        "id": "autodate_updated",
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      }
+    ],
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_storage_key` ON `filestore_files` (`storage_key`)",
+      "CREATE INDEX `idx_owner` ON `filestore_files` (`owner`)",
+      "CREATE INDEX `idx_visibility` ON `filestore_files` (`visibility`)",
+      "CREATE INDEX `idx_created_desc` ON `filestore_files` (`created` DESC)"
     ],
     "system": false
   }

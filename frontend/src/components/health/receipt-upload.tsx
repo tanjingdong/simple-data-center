@@ -1,82 +1,120 @@
-import { FileTextIcon, ImageIcon, TrashIcon, UploadIcon } from 'lucide-react'
-import { useRef } from 'react'
 import { Button } from '@/components/ui/button'
+import { errorToast } from '@/lib/toast'
+import {
+  deleteFile,
+  getDownloadUrl,
+  getFile,
+  uploadFile
+} from '@/services/api-filestore'
+import { useQueries } from '@tanstack/react-query'
+import { FileTextIcon, TrashIcon, UploadIcon } from 'lucide-react'
+import { useRef, useState } from 'react'
 
-// 凭证多文件上传:既有文件(文件名,展示链接/缩略入口)+ 新增文件(本地预览)。
-// 删除操作通过 onExistingChange / onFilesChange 回调同步到表单状态。
+// 凭证上传与展示组件:选文件即时上传到 filestore(public),展示已上传凭证,
+// 下载走 filestore 直链,删除调 filestore。receipt 为 filestore_files 记录 ID 数组。
 export default function ReceiptUpload({
-  eventId,
-  existing,
-  files,
-  onExistingChange,
-  onFilesChange
+  receiptIds,
+  onChange,
+  accept = 'image/jpeg,image/png,image/webp,application/pdf'
 }: {
-  eventId?: string
-  existing: string[]
-  files: File[]
-  onExistingChange: (names: string[]) => void
-  onFilesChange: (files: File[]) => void
+  receiptIds: string[]
+  onChange: (ids: string[]) => void
+  accept?: string
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
 
-  const addFiles = (list: FileList | null) => {
-    if (!list) return
-    onFilesChange([...files, ...Array.from(list)])
+  // 并行拉取每个凭证的元数据(展示 original_name);失败显示「文件已删除」占位
+  const fileQueries = useQueries({
+    queries: receiptIds.map((id) => ({
+      queryKey: ['filestore', 'file', id],
+      queryFn: () => getFile(id),
+      retry: false,
+      staleTime: 60 * 1000
+    }))
+  })
+
+  const handleAdd = async (list: FileList | null) => {
+    if (!list || list.length === 0) return
+    setUploading(true)
+    try {
+      const uploaded: string[] = []
+      for (let i = 0; i < list.length; i++) {
+        const result = await uploadFile(list[i], 'public')
+        uploaded.push(result.id)
+      }
+      onChange([...receiptIds, ...uploaded])
+    } catch (err) {
+      // 上传失败不写入 receiptIds;把后端错误透传给用户
+      errorToast('凭证上传失败', err)
+    } finally {
+      setUploading(false)
+      if (inputRef.current) inputRef.current.value = ''
+    }
+  }
+
+  const handleRemove = async (id: string) => {
+    try {
+      await deleteFile(id)
+    } catch (err) {
+      // 删除失败:仍从本地状态移除,避免悬挂;后端孤儿对账兜底;提示用户
+      errorToast('凭证删除失败', err)
+    }
+    onChange(receiptIds.filter((x) => x !== id))
   }
 
   return (
     <div className='space-y-2'>
       <div className='flex flex-wrap gap-2'>
-        {existing.map((name) => (
-          <div
-            key={name}
-            className='bg-muted flex items-center gap-1 rounded-md px-2 py-1 text-xs'>
-            <FileTextIcon className='size-3.5' />
-            <a
-              className='underline underline-offset-2'
-              href={`/api/files/health_events/${eventId}/${encodeURIComponent(name)}`}
-              target='_blank'
-              rel='noreferrer'>
-              {name}
-            </a>
-            <Button
-              variant='ghost'
-              size='icon'
-              className='size-5'
-              onClick={() => onExistingChange(existing.filter((n) => n !== name))}>
-              <TrashIcon className='size-3.5' />
-            </Button>
-          </div>
-        ))}
-        {files.map((f, i) => (
-          <div
-            key={`${f.name}-${i}`}
-            className='bg-muted flex items-center gap-1 rounded-md px-2 py-1 text-xs'>
-            {f.type.startsWith('image/') ? <ImageIcon className='size-3.5' /> : <FileTextIcon className='size-3.5' />}
-            <span className='max-w-40 truncate'>{f.name}</span>
-            <Button
-              variant='ghost'
-              size='icon'
-              className='size-5'
-              onClick={() => onFilesChange(files.filter((_, j) => j !== i))}>
-              <TrashIcon className='size-3.5' />
-            </Button>
-          </div>
-        ))}
+        {receiptIds.map((id, i) => {
+          const q = fileQueries[i]
+          const failed = q?.isError
+          return (
+            <div
+              key={id}
+              className='bg-muted flex items-center gap-1 rounded-md px-2 py-1 text-xs'>
+              <FileTextIcon className='size-3.5' />
+              {failed ? (
+                <span className='text-muted-foreground'>文件已删除</span>
+              ) : (
+                <a
+                  className='underline underline-offset-2'
+                  href={getDownloadUrl(id)}
+                  target='_blank'
+                  rel='noreferrer'>
+                  {q?.data?.original_name ?? id}
+                </a>
+              )}
+              <Button
+                variant='ghost'
+                size='icon'
+                className='size-5'
+                onClick={() => handleRemove(id)}>
+                <TrashIcon className='size-3.5' />
+              </Button>
+            </div>
+          )
+        })}
       </div>
       <input
         ref={inputRef}
         type='file'
-        accept='image/jpeg,image/png,image/webp,application/pdf'
+        accept={accept}
         multiple
         className='hidden'
         onChange={(e) => {
-          addFiles(e.target.files)
+          void handleAdd(e.target.files)
           e.target.value = ''
         }}
       />
-      <Button type='button' variant='outline' size='sm' onClick={() => inputRef.current?.click()}>
-        <UploadIcon className='size-4' /> 添加凭证(图片/PDF,最多 10 个)
+      <Button
+        type='button'
+        variant='outline'
+        size='sm'
+        disabled={uploading}
+        onClick={() => inputRef.current?.click()}>
+        <UploadIcon className='size-4' />
+        {uploading ? '上传中…' : '添加凭证(图片/PDF,最多 10 个)'}
       </Button>
     </div>
   )

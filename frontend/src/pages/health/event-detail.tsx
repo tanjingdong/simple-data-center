@@ -1,23 +1,29 @@
-import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
-import { Link, useNavigate, useParams } from '@tanstack/react-router'
-import { Link2Icon, PencilIcon, TrashIcon } from 'lucide-react'
-import { useState } from 'react'
 import DeleteEventDialog from '@/components/health/delete-event-dialog'
 import HealthEventText from '@/components/health/health-event-text'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
-  linkContextSnippet,
   buildRelatedEvents,
+  linkContextSnippet,
   linkLabel
 } from '@/lib/render-links'
 import { errorToast } from '@/lib/toast'
+import { getDownloadUrl, getFile } from '@/services/api-filestore'
 import {
   deleteHealthEvent,
   healthEventDetailQueryOptions,
   healthEventsQueryOptions
 } from '@/services/api-health-events'
+import {
+  useMutation,
+  useQueries,
+  useQueryClient,
+  useSuspenseQuery
+} from '@tanstack/react-query'
+import { Link, useNavigate, useParams } from '@tanstack/react-router'
+import { Link2Icon, PencilIcon, TrashIcon } from 'lucide-react'
+import { useState } from 'react'
 
 // 事件详情页:全部字段 + 详述(双链渲染)+ 关联事件面板 + 凭证
 export default function EventDetailPage() {
@@ -34,6 +40,16 @@ export default function EventDetailPage() {
   const eventsById = new Map(allEvents.map((e) => [e.id, e]))
 
   const { direct, dangling } = buildRelatedEvents(event, allEvents)
+
+  // 并行拉取每个凭证的元数据(展示 original_name);失败显示「文件已删除」占位
+  const receiptQueries = useQueries({
+    queries: (event.receipt ?? []).map((id) => ({
+      queryKey: ['filestore', 'file', id],
+      queryFn: () => getFile(id),
+      retry: false,
+      staleTime: 60 * 1000
+    }))
+  })
 
   const [deleting, setDeleting] = useState(false)
   const deleteMutation = useMutation({
@@ -58,11 +74,16 @@ export default function EventDetailPage() {
         </Button>
         <div className='flex gap-2'>
           <Button asChild variant='outline' size='sm'>
-            <Link to='/health/events/$eventId/edit' params={{ eventId: event.id }}>
+            <Link
+              to='/health/events/$eventId/edit'
+              params={{ eventId: event.id }}>
               <PencilIcon className='size-4' /> 编辑
             </Link>
           </Button>
-          <Button variant='destructive' size='sm' onClick={() => setDeleting(true)}>
+          <Button
+            variant='destructive'
+            size='sm'
+            onClick={() => setDeleting(true)}>
             <TrashIcon className='size-4' /> 删除
           </Button>
         </div>
@@ -72,40 +93,70 @@ export default function EventDetailPage() {
         <CardHeader className='pb-2'>
           <CardTitle className='flex flex-wrap items-center gap-2'>
             <Badge variant='secondary'>{event.event_type}</Badge>
-            {event.item && <span className='text-lg font-semibold'>{event.item}</span>}
+            {event.item && (
+              <span className='text-lg font-semibold'>{event.item}</span>
+            )}
             {event.conclusion && (
-              <span className='text-muted-foreground text-lg'>{event.conclusion}</span>
+              <span className='text-muted-foreground text-lg'>
+                {event.conclusion}
+              </span>
             )}
           </CardTitle>
         </CardHeader>
         <CardContent className='space-y-3 text-sm'>
           <div className='grid grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2'>
-            <p><span className='text-muted-foreground'>人:</span> {event.person}</p>
-            <p><span className='text-muted-foreground'>时间:</span> {event.happen_at}</p>
-            <p><span className='text-muted-foreground'>科属:</span> {event.department || '—'}</p>
-            <p><span className='text-muted-foreground'>机构:</span> {event.institution || '—'}</p>
-            <p><span className='text-muted-foreground'>接诊医师:</span> {event.doctor || '—'}</p>
+            <p>
+              <span className='text-muted-foreground'>人:</span> {event.person}
+            </p>
+            <p>
+              <span className='text-muted-foreground'>时间:</span>{' '}
+              {event.happen_at}
+            </p>
+            <p>
+              <span className='text-muted-foreground'>科属:</span>{' '}
+              {event.department || '—'}
+            </p>
+            <p>
+              <span className='text-muted-foreground'>机构:</span>{' '}
+              {event.institution || '—'}
+            </p>
+            <p>
+              <span className='text-muted-foreground'>接诊医师:</span>{' '}
+              {event.doctor || '—'}
+            </p>
           </div>
           {event.detail && (
             <div>
               <p className='text-muted-foreground mb-1'>详述</p>
-              <HealthEventText detail={event.detail} eventsById={eventsById} onLinkClick={openLink} />
+              <HealthEventText
+                detail={event.detail}
+                eventsById={eventsById}
+                onLinkClick={openLink}
+              />
             </div>
           )}
           {event.receipt.length > 0 && (
             <div>
-              <p className='text-muted-foreground mb-1'>原始凭证({event.receipt.length})</p>
+              <p className='text-muted-foreground mb-1'>
+                原始凭证({event.receipt.length})
+              </p>
               <div className='flex flex-wrap gap-2'>
-                {event.receipt.map((name) => (
-                  <a
-                    key={name}
-                    className='bg-muted inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs underline underline-offset-2'
-                    href={`/api/files/health_events/${event.id}/${encodeURIComponent(name)}`}
-                    target='_blank'
-                    rel='noreferrer'>
-                    {name}
-                  </a>
-                ))}
+                {event.receipt.map((id, i) => {
+                  const q = receiptQueries[i]
+                  const failed = q?.isError
+                  return (
+                    <a
+                      key={id}
+                      className='bg-muted inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs underline underline-offset-2'
+                      href={failed ? undefined : getDownloadUrl(id)}
+                      target='_blank'
+                      rel='noreferrer'>
+                      {failed
+                        ? `${id.slice(0, 6)}…(已删除)`
+                        : (q?.data?.original_name ?? id)}
+                    </a>
+                  )
+                })}
               </div>
             </div>
           )}
@@ -128,14 +179,20 @@ export default function EventDetailPage() {
           {direct.map((source) => {
             const snippet = linkContextSnippet(source.detail, event.id)
             return (
-              <div key={source.id} className='bg-muted/50 flex flex-wrap items-center gap-2 rounded-md px-3 py-2'>
+              <div
+                key={source.id}
+                className='bg-muted/50 flex flex-wrap items-center gap-2 rounded-md px-3 py-2'>
                 <Button
                   variant='link'
                   className='h-auto px-0'
                   onClick={() => openLink(source.id)}>
                   {linkLabel(source)}
                 </Button>
-                {snippet && <span className='text-muted-foreground text-xs'>{snippet}</span>}
+                {snippet && (
+                  <span className='text-muted-foreground text-xs'>
+                    {snippet}
+                  </span>
+                )}
               </div>
             )
           })}

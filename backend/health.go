@@ -2,14 +2,19 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 
+	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/security"
+
+	"github.com/s-petr/longhabit/filestore"
 )
 
 // healthCollection 是健康事件集合名(基座已有 events 集合,故使用独立命名避免冲突)。
@@ -97,6 +102,46 @@ func removeReferencedBy(target *core.Record, sourceID string) {
 		}
 	}
 	target.Set("referenced_by", filtered)
+}
+
+// parseReceiptIDs 解析 receipt 字段值(file ID 数组)为 ID 列表。
+// 兼容三种输入:json 字符串(如 `["f1"]`)、[]string、[]any;空/非法/非字符串数组返回 nil。
+func parseReceiptIDs(v any) []string {
+	if v == nil {
+		return nil
+	}
+	if s, ok := v.(string); ok {
+		s = strings.TrimSpace(s)
+		if s == "" {
+			return nil
+		}
+		var ids []string
+		if err := json.Unmarshal([]byte(s), &ids); err != nil {
+			return nil
+		}
+		return ids
+	}
+	// []string / []any 等:先 Marshal 再 Unmarshal 为 []string
+	raw, err := json.Marshal(v)
+	if err != nil {
+		return nil
+	}
+	var ids []string
+	if err := json.Unmarshal(raw, &ids); err != nil {
+		return nil
+	}
+	return ids
+}
+
+// deleteHealthReceipts 级联删除事件 receipt 引用的所有 filestore 文件。
+// 容错:任一文件删除失败仅记日志,不阻断事件删除主流程(事件已删,残留由孤儿对账清)。
+func deleteHealthReceipts(pb *pocketbase.PocketBase, record *core.Record) {
+	for _, id := range parseReceiptIDs(record.Get("receipt")) {
+		if err := filestore.DeleteFile(pb, id); err != nil {
+			pb.Logger().Warn("级联删除凭证文件失败",
+				"file_id", id, "error", err.Error())
+		}
+	}
 }
 
 // syncHealthReferencedBy 在事件创建/更新后,将本事件 ID 追加/移出各目标事件的
@@ -237,10 +282,16 @@ func (app *application) setupHealthHooks() {
 	})
 
 	app.pb.OnModelDelete(healthCollection).BindFunc(func(e *core.ModelEvent) error {
-		if err := syncHealthReferencedByOnDelete(e.App, e.Model.(*core.Record)); err != nil {
+		record := e.Model.(*core.Record)
+		if err := syncHealthReferencedByOnDelete(e.App, record); err != nil {
 			return err
 		}
-		return e.Next()
+		if err := e.Next(); err != nil {
+			return err
+		}
+		// 事件已删除,级联删凭证文件(非事务,容错;失败不阻断)
+		deleteHealthReceipts(app.pb, record)
+		return nil
 	})
 }
 
