@@ -420,6 +420,19 @@ func (h *FilestoreHandler) handleListFiles(re *core.RequestEvent) error {
 	})
 }
 
+// resolveDisposition 根据下载模式和 inline 标志返回 Content-Disposition 头值。
+// proxy 模式:inline=true 返回 inline(浏览器内联显示,用于预览),否则 attachment(下载);
+// direct 模式返回空串(不设头,302 重定向后由 Alist 响应决定)。
+func resolveDisposition(inline bool, mode string, filename string) string {
+	if mode != DownloadModeProxy {
+		return ""
+	}
+	if inline {
+		return fmt.Sprintf(`inline; filename="%s"`, filename)
+	}
+	return fmt.Sprintf(`attachment; filename="%s"`, filename)
+}
+
 // handleDownload 处理文件下载(按配置走 direct 或 proxy 模式)。
 func (h *FilestoreHandler) handleDownload(re *core.RequestEvent) error {
 	fileID := re.Request.PathValue("id")
@@ -451,6 +464,7 @@ func (h *FilestoreHandler) handleDownload(re *core.RequestEvent) error {
 	client := h.newAlistClient(cfg)
 	storageKey := rec.GetString("storage_key")
 	originalName := rec.GetString("original_name")
+	inline := re.Request.URL.Query().Get("inline") == "1"
 
 	if cfg.DownloadMode == DownloadModeProxy {
 		// proxy 模式:后端流式代理
@@ -465,7 +479,7 @@ func (h *FilestoreHandler) handleDownload(re *core.RequestEvent) error {
 
 		re.Response.Header().Set("Content-Type", mimeType)
 		re.Response.Header().Set("Content-Length", fmt.Sprintf("%d", size))
-		re.Response.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, originalName))
+		re.Response.Header().Set("Content-Disposition", resolveDisposition(inline, cfg.DownloadMode, originalName))
 		re.Response.Header().Set("Cache-Control", "private, max-age=3600")
 
 		io.Copy(re.Response, reader)

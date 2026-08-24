@@ -104,11 +104,23 @@ export async function listFiles(params?: {
   if (params?.per_page) searchParams.set('per_page', String(params.per_page))
   if (params?.filter) searchParams.set('filter', params.filter)
   const qs = searchParams.toString()
-  return pb.send(`/api/filestore/files${qs ? '?' + qs : ''}`, { requestKey: null })
+  return pb.send(`/api/filestore/files${qs ? '?' + qs : ''}`, {
+    requestKey: null
+  })
 }
 
 export function getDownloadUrl(id: string): string {
-  return `${pb.baseUrl}/api/filestore/files/${id}/download`
+  // 去掉 baseUrl 末尾斜杠,避免与 "/api/..." 拼成 "//api/..."(protocol-relative,
+  // 浏览器会把 api 当主机名)。pb.baseUrl 默认为 "/"。
+  const base = pb.baseUrl.replace(/\/$/, '')
+  return `${base}/api/filestore/files/${id}/download`
+}
+
+/** 预览 URL:在下载 URL 上加 inline=1。proxy 模式下后端返回
+ * Content-Disposition: inline,供 <img>/<iframe> 等标签内联显示;
+ * direct 模式下参数被忽略(302 到 Alist,由 Alist 决定)。 */
+export function getPreviewUrl(id: string): string {
+  return `${getDownloadUrl(id)}?inline=1`
 }
 
 export async function updateFileVisibility(
@@ -130,7 +142,10 @@ export async function deleteFile(id: string): Promise<{ ok: boolean }> {
 }
 
 /** 下载文件(通过 fetch + blob 触发浏览器下载,确保携带 auth token) */
-export async function downloadFile(id: string, filename: string): Promise<void> {
+export async function downloadFile(
+  id: string,
+  filename: string
+): Promise<void> {
   const response = await fetch(`/api/filestore/files/${id}/download`, {
     headers: { Authorization: pb.authStore.token }
   })
