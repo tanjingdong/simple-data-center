@@ -9,7 +9,7 @@ import RebuildIndexButton from '@/components/health/rebuild-index-button'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import MultiSelect from '@/components/ui/multi-select'
 import { errorToast } from '@/lib/toast'
 import type { HealthEvent } from '@/schemas/health-event-schema'
 import {
@@ -35,7 +35,7 @@ export default function EventListPage() {
   // 历史值
   const persons = personOptionsOf(allEvents)
   const departments = departmentOptionsOf(allEvents)
-  const eventTypes = [...new Set(allEvents.map((e) => e.event_type).filter(Boolean))].sort()
+  const eventTypes = [...new Set(allEvents.map((e) => e.event_type).filter(Boolean))].sort(new Intl.Collator('zh-Hans-CN').compare)
 
   const visible = filterHealthEvents(allEvents, applied)
 
@@ -68,7 +68,7 @@ export default function EventListPage() {
       </div>
 
       {/* 筛选栏 */}
-      <div className='grid grid-cols-2 gap-3 rounded-lg border p-3 md:grid-cols-4'>
+      <div className='grid grid-cols-2 gap-3 rounded-lg border p-3 md:grid-cols-[1fr_2fr_1fr_1fr]'>
         <div className='space-y-1'>
           <Label>人</Label>
           <PersonSelect value={draft.person} options={persons} onChange={(v) => setDraft({ ...draft, person: v })} />
@@ -91,29 +91,21 @@ export default function EventListPage() {
         </div>
         <div className='space-y-1'>
           <Label>类型</Label>
-          <ToggleGroup
-            type='multiple'
+          <MultiSelect
+            options={eventTypes}
             value={draft.eventTypes}
-            onValueChange={(v) => setDraft({ ...draft, eventTypes: v })}>
-            {eventTypes.map((t) => (
-              <ToggleGroupItem key={t} value={t} className='px-2 text-xs'>
-                {t}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
+            placeholder='全部'
+            onValueChange={(v) => setDraft({ ...draft, eventTypes: v })}
+          />
         </div>
         <div className='space-y-1'>
           <Label>科属</Label>
-          <ToggleGroup
-            type='multiple'
+          <MultiSelect
+            options={departments}
             value={draft.departments}
-            onValueChange={(v) => setDraft({ ...draft, departments: v })}>
-            {departments.map((d) => (
-              <ToggleGroupItem key={d} value={d} className='px-2 text-xs'>
-                {d}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
+            placeholder='全部'
+            onValueChange={(v) => setDraft({ ...draft, departments: v })}
+          />
         </div>
         <div className='col-span-2 space-y-1 md:col-span-4'>
           <Label>全文搜索</Label>

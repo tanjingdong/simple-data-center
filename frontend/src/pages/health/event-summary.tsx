@@ -6,7 +6,7 @@ import PersonSelect from '@/components/health/person-select'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import MultiSelect from '@/components/ui/multi-select'
 import { buildSummaryText } from '@/lib/render-links'
 import { successToast } from '@/lib/toast'
 import {
@@ -104,16 +104,12 @@ export default function EventSummaryPage() {
         </div>
         <div className='col-span-1 space-y-1 md:col-span-2'>
           <Label>科属(多选,可空=全部)</Label>
-          <ToggleGroup
-            type='multiple'
+          <MultiSelect
+            options={departments}
             value={search.departments}
-            onValueChange={(v) => updateSearch({ departments: v })}>
-            {departments.map((d) => (
-              <ToggleGroupItem key={d} value={d} className='px-2 text-xs'>
-                {d}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
+            placeholder='全部'
+            onValueChange={(v) => updateSearch({ departments: v })}
+          />
         </div>
       </div>
 
