@@ -2,6 +2,15 @@
 
 本项目版本号遵循语义化版本(SemVer)。版本记录自 v0.5.0 起,更早版本见 git 历史。
 
+## [1.2.2] - 2026-08-25
+
+合并基座 V0.7.2(含 V0.7.1)。包括:
+
+- **filestore 内联预览**:下载接口支持 `?inline=1`,`proxy` 模式返回 `Content-Disposition: inline` 供 `<img>`/`<iframe>` 内联显示;`direct` 模式忽略参数(302 到 Alist,由 Alist 决定)。前端新增 `getPreviewUrl(id)`;后端新增 `resolveDisposition` 纯函数 + `TestResolveDisposition` 单测。
+- **getDownloadUrl 拼接修复**:去掉 `pb.baseUrl` 末尾斜杠,避免拼成 `//api/...`(protocol-relative,浏览器把 `api` 当主机名)。本项目先于基座(V1.2.1)已修复,本次取两者合并——保留本项目 `replace(/\/+$/)` 的稳健实现,并补入基座的 `getPreviewUrl`。
+- **task 示例模块清理**:随基座删除示例「任务模块」。本项目早已移除前端 task 代码与 `tasks` 集合,本次补齐清理:删除残留的 `backend/mailer.go`/`notifier` 引用、README 中 task 示例描述、`pb_schema` 导入说明里的 `tasks`/`settings` 字样。
+- 基座通用邮件(邮箱验证 / 密码重置 / 新设备登录)保留;本项目按既有架构不使用基座 mailer,已由 PIM 自有 auth/health 流程替代,合并后保持现状。
+
 ## [1.2.1] - 2026-08-23
 
 健康事件的原始凭证文件改由统一文件存储服务托管。包括:

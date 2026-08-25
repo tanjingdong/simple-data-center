@@ -128,6 +128,13 @@ export function getDownloadUrl(id: string): string {
   return `${base}/api/filestore/files/${id}/download`
 }
 
+/** 预览 URL:在下载 URL 上加 inline=1。proxy 模式下后端返回
+ * Content-Disposition: inline,供 <img>/<iframe> 等标签内联显示;
+ * direct 模式下参数被忽略(302 到 Alist,由 Alist 决定)。 */
+export function getPreviewUrl(id: string): string {
+  return `${getDownloadUrl(id)}?inline=1`
+}
+
 export async function updateFileVisibility(
   id: string,
   visibility: 'private' | 'public'

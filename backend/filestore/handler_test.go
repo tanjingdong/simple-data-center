@@ -51,3 +51,29 @@ func TestGenerateUUID(t *testing.T) {
 		t.Errorf("UUID length = %d, want 36", len(u1))
 	}
 }
+
+// TestResolveDisposition 验证 inline 参数如何影响 Content-Disposition:
+// proxy 模式按 inline 切换 inline/attachment;direct 模式不设头(302 由 Alist 决定)。
+func TestResolveDisposition(t *testing.T) {
+	cases := []struct {
+		name     string
+		inline   bool
+		mode     string
+		filename string
+		want     string
+	}{
+		{"proxy+inline 返回 inline", true, DownloadModeProxy, "a.jpg", `inline; filename="a.jpg"`},
+		{"proxy+非inline 返回 attachment", false, DownloadModeProxy, "a.jpg", `attachment; filename="a.jpg"`},
+		{"direct+inline 不设头", true, DownloadModeDirect, "a.jpg", ""},
+		{"direct+非inline 不设头", false, DownloadModeDirect, "a.jpg", ""},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got := resolveDisposition(c.inline, c.mode, c.filename)
+			if got != c.want {
+				t.Errorf("resolveDisposition(%v, %q, %q) = %q, want %q",
+					c.inline, c.mode, c.filename, got, c.want)
+			}
+		})
+	}
+}

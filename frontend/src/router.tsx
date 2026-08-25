@@ -18,7 +18,6 @@ import { requireVerifiedUser } from './lib/route-guards'
 import AdminHomePage from './pages/admin/admin-home'
 import AdminLayout from './pages/admin/admin-layout'
 import { adminTools } from './pages/admin/admin-tools'
-import { isSuperuserAuthed } from './services/api-frpc'
 import ForgotPasswordPage from './pages/auth/forgot-password'
 import LoginPage from './pages/auth/login'
 import RegisterPage from './pages/auth/register'
@@ -26,9 +25,9 @@ import ResetPasswordPage from './pages/auth/reset-password'
 import VerifyEmailPage from './pages/auth/verify-email'
 import CenterPage from './pages/center'
 import ErrorPage from './pages/error'
+import FilesPage from './pages/files/files-page'
 import HomePage from './pages/home'
 import PrivacyPolicyPage from './pages/privacy-policy'
-import FilesPage from './pages/files/files-page'
 import UserSettingPage from './pages/user-setting'
 import WorkbenchPage from './pages/workbench'
 import EventListPage from './pages/health/event-list'
@@ -47,6 +46,7 @@ import {
   checkVerifiedUserIsLoggedIn,
   userQueryOptions
 } from './services/api-auth'
+import { isSuperuserAuthed } from './services/api-frpc'
 
 interface RootContext {
   queryClient: QueryClient
