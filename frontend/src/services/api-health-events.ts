@@ -95,9 +95,11 @@ export function personOptionsOf(events: HealthEvent[]): string[] {
   return [...new Set(events.map((e) => e.person).filter(Boolean))].sort()
 }
 
-// 纯函数:科属历史值(筛选多选与表单联想)
+// 纯函数:科属历史值(筛选多选与表单联想);按拼音序(zh-Hans-CN)排序,便于在长列表中查找
 export function departmentOptionsOf(events: HealthEvent[]): string[] {
-  return [...new Set(events.map((e) => e.department).filter(Boolean))].sort()
+  return [...new Set(events.map((e) => e.department).filter(Boolean))].sort(
+    new Intl.Collator('zh-Hans-CN').compare
+  )
 }
 
 // 创建事件:字段 + 凭证 file ID 数组(JSON body,凭证经 filestore 服务存储)

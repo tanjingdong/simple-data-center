@@ -1,3 +1,4 @@
+import FilePreviewDialog from '@/components/filestore/file-preview'
 import DeleteEventDialog from '@/components/health/delete-event-dialog'
 import HealthEventText from '@/components/health/health-event-text'
 import { Badge } from '@/components/ui/badge'
@@ -9,7 +10,7 @@ import {
   linkLabel
 } from '@/lib/render-links'
 import { errorToast } from '@/lib/toast'
-import { getDownloadUrl, getFile } from '@/services/api-filestore'
+import { getFile } from '@/services/api-filestore'
 import {
   deleteHealthEvent,
   healthEventDetailQueryOptions,
@@ -143,18 +144,13 @@ export default function EventDetailPage() {
               <div className='flex flex-wrap gap-2'>
                 {event.receipt.map((id, i) => {
                   const q = receiptQueries[i]
-                  const failed = q?.isError
                   return (
-                    <a
+                    <FilePreviewDialog
                       key={id}
-                      className='bg-muted inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs underline underline-offset-2'
-                      href={failed ? undefined : getDownloadUrl(id)}
-                      target='_blank'
-                      rel='noreferrer'>
-                      {failed
-                        ? `${id.slice(0, 6)}…(已删除)`
-                        : (q?.data?.original_name ?? id)}
-                    </a>
+                      fileId={id}
+                      file={q?.data}
+                      failed={q?.isError}
+                    />
                   )
                 })}
               </div>

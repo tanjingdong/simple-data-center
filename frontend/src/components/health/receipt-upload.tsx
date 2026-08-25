@@ -1,13 +1,9 @@
+import FilePreviewDialog from '@/components/filestore/file-preview'
 import { Button } from '@/components/ui/button'
 import { errorToast } from '@/lib/toast'
-import {
-  deleteFile,
-  getDownloadUrl,
-  getFile,
-  uploadFile
-} from '@/services/api-filestore'
+import { deleteFile, getFile, uploadFile } from '@/services/api-filestore'
 import { useQueries } from '@tanstack/react-query'
-import { FileTextIcon, TrashIcon, UploadIcon } from 'lucide-react'
+import { TrashIcon, UploadIcon } from 'lucide-react'
 import { useRef, useState } from 'react'
 
 // 凭证上传与展示组件:选文件即时上传到 filestore(public),展示已上传凭证,
@@ -68,31 +64,23 @@ export default function ReceiptUpload({
       <div className='flex flex-wrap gap-2'>
         {receiptIds.map((id, i) => {
           const q = fileQueries[i]
-          const failed = q?.isError
           return (
-            <div
+            <FilePreviewDialog
               key={id}
-              className='bg-muted flex items-center gap-1 rounded-md px-2 py-1 text-xs'>
-              <FileTextIcon className='size-3.5' />
-              {failed ? (
-                <span className='text-muted-foreground'>文件已删除</span>
-              ) : (
-                <a
-                  className='underline underline-offset-2'
-                  href={getDownloadUrl(id)}
-                  target='_blank'
-                  rel='noreferrer'>
-                  {q?.data?.original_name ?? id}
-                </a>
-              )}
-              <Button
-                variant='ghost'
-                size='icon'
-                className='size-5'
-                onClick={() => handleRemove(id)}>
-                <TrashIcon className='size-3.5' />
-              </Button>
-            </div>
+              fileId={id}
+              file={q?.data}
+              failed={q?.isError}
+              trailing={
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='size-5'
+                  aria-label='删除凭证'
+                  onClick={() => handleRemove(id)}>
+                  <TrashIcon className='size-3.5' />
+                </Button>
+              }
+            />
           )
         })}
       </div>
