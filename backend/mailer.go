@@ -4,37 +4,11 @@ import (
 	"embed"
 
 	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/cron"
 	"github.com/pocketbase/pocketbase/tools/template"
-	"github.com/s-petr/longhabit/notifier"
 )
 
 //go:embed templates
 var embeddedTemplates embed.FS
-
-// startNotifier initializes and starts the email notification scheduler.
-// It sets up a cron job that periodically sends email reminders
-// to users based on the configured schedule.
-func (app *application) startNotifier() {
-	app.pb.OnServe().BindFunc(func(e *core.ServeEvent) error {
-		scheduler := cron.New()
-		mailNotifier := notifier.NewNotifier(
-			app.pb,
-			embeddedTemplates,
-			app.config.mailerNumWorkers,
-		)
-
-		scheduler.MustAdd(
-			"email-reminders",
-			app.config.mailerCronSchedule,
-			func() { mailNotifier.NotifyUsers() },
-		)
-
-		scheduler.Start()
-		return e.Next()
-	})
-
-}
 
 // loadAuthEmailTemplates loads custom email templates and overrides
 // the framework's default account email verification, password reset

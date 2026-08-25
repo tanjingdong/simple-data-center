@@ -1,6 +1,5 @@
 import NotFoundPage from '@/pages/not-found'
 import RootLayout from '@/root-layout'
-import { taskQueryOptions, tasksQueryOptions } from '@/services/api-tasks'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import {
@@ -30,16 +29,11 @@ import ErrorPage from './pages/error'
 import FilesPage from './pages/files/files-page'
 import HomePage from './pages/home'
 import PrivacyPolicyPage from './pages/privacy-policy'
-import EditTaskPage from './pages/tasks/edit-task'
-import NewTaskPage from './pages/tasks/new-task'
-import SettingsPage from './pages/tasks/settings'
-import TasksPage from './pages/tasks/tasks'
 import UserSettingPage from './pages/user-setting'
 import {
   resetPasswordParamsSchema,
   verifyEmailParamsSchema
 } from './schemas/auth-schema'
-import { pbIdSchema } from './schemas/pb-schema'
 import {
   checkEmailIsVerified,
   checkUserIsLoggedIn,
@@ -197,16 +191,6 @@ const userSettingRoute = createRoute({
   beforeLoad: requireVerifiedUser('用户设置')
 })
 
-const tasksRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: 'tasks',
-  component: TasksPage,
-  pendingComponent: Spinner,
-  beforeLoad: requireVerifiedUser('任务'),
-  loader: ({ context: { queryClient } }) =>
-    queryClient.ensureQueryData(tasksQueryOptions)
-})
-
 // /admin 的管理端认证统一由 PB Dashboard(/_ )负责:
 // 未登录超级管理员时整页跳转到 /_ 登录,登录后同一会话对 /admin 可见
 // 注意:相对路径 href 必须带 reloadDocument,否则 TanStack 会按内部路由导航,
@@ -257,39 +241,6 @@ const adminCatchAllRoute = createRoute({
   }
 })
 
-const settingsRoute = createRoute({
-  getParentRoute: () => tasksRoute,
-  path: 'settings',
-  component: SettingsPage,
-  beforeLoad: () => ({ getTitle: () => '设置' })
-})
-
-const newTaskRoute = createRoute({
-  getParentRoute: () => tasksRoute,
-  path: 'new',
-  component: NewTaskPage,
-  beforeLoad: () => {
-    return { getTitle: () => '新建' }
-  }
-})
-
-const editTaskRoute = createRoute({
-  getParentRoute: () => tasksRoute,
-  path: '$taskId',
-  component: EditTaskPage,
-  beforeLoad: () => {
-    return { getTitle: () => '编辑' }
-  },
-  loader: async ({ context: { queryClient }, params: { taskId } }) => {
-    const taskIdValidationResult = pbIdSchema.safeParse(taskId)
-    if (taskIdValidationResult.error) throw redirect({ to: '/tasks' })
-    const task = await queryClient.ensureQueryData(
-      taskQueryOptions(taskIdValidationResult.data)
-    )
-    return task
-  }
-})
-
 const routeTree = rootRoute.addChildren([
   homeRoute,
   privacyPolicyRoute,
@@ -303,7 +254,6 @@ const routeTree = rootRoute.addChildren([
   centerRoute,
   filesRoute,
   userSettingRoute,
-  tasksRoute.addChildren([settingsRoute, newTaskRoute, editTaskRoute]),
   adminRoute.addChildren([
     adminIndexRoute,
     ...adminToolRoutes,

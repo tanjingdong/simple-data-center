@@ -51,7 +51,7 @@ export default function useSettings() {
     onSuccess: () => {
       trackEvent('settings-update')
       successToast('成功!', '账户信息更新成功')
-      navigate({ to: '/tasks' })
+      navigate({ to: '/center' })
     },
 
     onError: (error, _, context) => {

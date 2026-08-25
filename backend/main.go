@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"strconv"
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/s-petr/longhabit/frpc"
@@ -18,26 +17,17 @@ type application struct {
 
 // appConfig holds the application's configuration settings.
 type appConfig struct {
-	dbDir              string
-	mailerCronSchedule string
-	mailerNumWorkers   int
+	dbDir string
 }
 
 // newApplication creates and initializes a new application instance.
 func newApplication() *application {
 	dbDir := getEnvOrDefault("DB_DIR", "db")
 
-	numWorkers, err := strconv.Atoi(getEnvOrDefault("MAILER_NUM_WORKERS", "10"))
-	if err != nil {
-		numWorkers = 10
-	}
-
 	return &application{
 		pb: pocketbase.NewWithConfig(pocketbase.Config{DefaultDataDir: dbDir}),
 		config: appConfig{
-			dbDir:              dbDir,
-			mailerCronSchedule: getEnvOrDefault("MAILER_CRON_SCHEDULE", "0 9 * * *"),
-			mailerNumWorkers:   numWorkers,
+			dbDir: dbDir,
 		},
 	}
 }
@@ -49,7 +39,6 @@ func main() {
 	app.loadAuthEmailTemplates()
 	app.setupAuthHooks()
 	app.disableHealthRouteLogging()
-	app.startNotifier()
 
 	app.frpc = frpc.NewManager(app.pb)
 	app.setupFrpc()
