@@ -4,6 +4,7 @@ import * as React from 'react'
 
 const Popover = PopoverPrimitive.Root
 const PopoverTrigger = PopoverPrimitive.Trigger
+const PopoverAnchor = PopoverPrimitive.Anchor
 
 const PopoverContent = ({
   className,
@@ -27,4 +28,4 @@ const PopoverContent = ({
 )
 PopoverContent.displayName = PopoverPrimitive.Content.displayName
 
-export { Popover, PopoverContent, PopoverTrigger }
+export { Popover, PopoverAnchor, PopoverContent, PopoverTrigger }

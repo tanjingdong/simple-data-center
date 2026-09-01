@@ -7,8 +7,9 @@ import {
   useQueryClient,
   useSuspenseQuery
 } from '@tanstack/react-query'
-import { PencilIcon, QrCodeIcon, Trash2Icon } from 'lucide-react'
+import { PencilIcon, PlusIcon, QrCodeIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
+import EventFormDialog from './event-form-dialog'
 import ExperiencePanel from './experience-panel'
 import PersonEventsTab from './person-events-tab'
 import PersonForm from './person-form'
@@ -22,14 +23,20 @@ import { SimpleTabs } from './simple-tabs'
 // 删除确认后级联移除该人员的任职、关系与事件,完成后回调 onDeleted 清空选中
 export default function PersonDetail({
   personId,
-  onDeleted
+  onDeleted,
+  onSelectTarget
 }: {
   personId: string
   onDeleted?: () => void
+  onSelectTarget?: (target: {
+    type: 'persons' | 'organizations'
+    id: string
+  }) => void
 }) {
   const { data: person } = useSuspenseQuery(personDetailQueryOptions(personId))
   const [editing, setEditing] = useState(false)
   const [showQr, setShowQr] = useState(false)
+  const [eventOpen, setEventOpen] = useState(false)
   const queryClient = useQueryClient()
 
   const deleteMutation = useMutation({
@@ -67,6 +74,12 @@ export default function PersonDetail({
           {person.first_name}
         </h1>
         <div className='flex items-center gap-2'>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => setEventOpen(true)}>
+            <PlusIcon className='size-4' /> 新增事件
+          </Button>
           <Button
             variant='outline'
             size='sm'
@@ -119,7 +132,10 @@ export default function PersonDetail({
                   />
                 </div>
                 <aside className='w-full shrink-0 lg:w-[360px]'>
-                  <ExperiencePanel personId={personId} />
+                  <ExperiencePanel
+                    personId={personId}
+                    onSelectTarget={onSelectTarget}
+                  />
                 </aside>
               </div>
             )}
@@ -127,10 +143,25 @@ export default function PersonDetail({
             {active === 'relations' && (
               <PersonRelationsTab personId={personId} />
             )}
-            {active === 'events' && <PersonEventsTab personId={personId} />}
+            {active === 'events' && (
+              <PersonEventsTab
+                personId={personId}
+                onSelectTarget={onSelectTarget}
+              />
+            )}
           </>
         )}
       </SimpleTabs>
+      {/* 头部「新增事件」按钮打开:prefill 当前人 token */}
+      <EventFormDialog
+        open={eventOpen}
+        prefill={{
+          kind: 'p',
+          id: personId,
+          label: `${person.last_name}${person.first_name}`
+        }}
+        onOpenChange={setEventOpen}
+      />
     </div>
   )
 }

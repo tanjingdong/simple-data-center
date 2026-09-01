@@ -177,9 +177,17 @@ export default function WorkbenchPage() {
       <OrganizationForm onCancel={closeCreating} onSaved={closeCreating} />
     )
   ) : target?.type === 'persons' ? (
-    <PersonDetail personId={target.id} onDeleted={clearTarget} />
+    <PersonDetail
+      personId={target.id}
+      onDeleted={clearTarget}
+      onSelectTarget={handleSelect}
+    />
   ) : target?.type === 'organizations' ? (
-    <OrganizationDetail orgId={target.id} onDeleted={clearTarget} />
+    <OrganizationDetail
+      orgId={target.id}
+      onDeleted={clearTarget}
+      onSelectTarget={handleSelect}
+    />
   ) : null
 
   return (

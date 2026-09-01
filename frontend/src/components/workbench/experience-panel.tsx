@@ -2,10 +2,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { eventsOfPersonQueryOptions } from '@/services/api-events'
 import { personDetailQueryOptions } from '@/services/api-persons'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { EventTypeBadge } from './event-type-badge'
+import EventCard from './event-card'
 
 // 经历信息:学历类字段 + 最近 10 个事件时间线(右栏)
-export default function ExperiencePanel({ personId }: { personId: string }) {
+export default function ExperiencePanel({
+  personId,
+  onSelectTarget
+}: {
+  personId: string
+  onSelectTarget?: (target: {
+    type: 'persons' | 'organizations'
+    id: string
+  }) => void
+}) {
   const { data: person } = useSuspenseQuery(personDetailQueryOptions(personId))
   const { data: events } = useSuspenseQuery(
     eventsOfPersonQueryOptions(personId)
@@ -45,17 +54,10 @@ export default function ExperiencePanel({ personId }: { personId: string }) {
           {recentEvents.length === 0 ? (
             <p className='text-muted-foreground text-sm'>暂无事件记录</p>
           ) : (
-            <ul className='space-y-3'>
+            <ul className='divide-y'>
               {recentEvents.map((event) => (
-                <li key={event.id} className='text-sm'>
-                  <div className='text-muted-foreground flex items-center gap-2 text-xs tabular-nums'>
-                    {event.happen_at}
-                    <EventTypeBadge type={event.type ?? ''} />
-                    {event.expand?.org_id?.name && (
-                      <span>{event.expand.org_id.name}</span>
-                    )}
-                  </div>
-                  <p className='mt-0.5'>{event.summary}</p>
+                <li key={event.id}>
+                  <EventCard event={event} onSelectTarget={onSelectTarget} />
                 </li>
               ))}
             </ul>

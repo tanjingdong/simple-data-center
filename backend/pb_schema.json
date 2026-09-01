@@ -1084,32 +1084,6 @@
         "type": "text"
       },
       {
-        "cascadeDelete": true,
-        "collectionId": "pbc_persons",
-        "hidden": false,
-        "id": "f_person_id",
-        "maxSelect": 1,
-        "minSelect": 0,
-        "name": "person_id",
-        "presentable": false,
-        "required": true,
-        "system": false,
-        "type": "relation"
-      },
-      {
-        "cascadeDelete": false,
-        "collectionId": "pbc_organizations",
-        "hidden": false,
-        "id": "f_org_id",
-        "maxSelect": 1,
-        "minSelect": 0,
-        "name": "org_id",
-        "presentable": false,
-        "required": false,
-        "system": false,
-        "type": "relation"
-      },
-      {
         "hidden": false,
         "id": "f_happen_at",
         "name": "happen_at",
@@ -1139,7 +1113,7 @@
         "max": 0,
         "min": 0,
         "name": "summary",
-        "pattern": "",
+        "pattern": "\\[\\[(p|o):",
         "presentable": false,
         "primaryKey": false,
         "required": true,
@@ -1168,8 +1142,6 @@
       }
     ],
     "indexes": [
-      "CREATE INDEX `idx_events_person` ON `events` (`person_id`)",
-      "CREATE INDEX `idx_events_org` ON `events` (`org_id`)",
       "CREATE INDEX `idx_events_date` ON `events` (`happen_at` DESC)"
     ],
     "system": false

@@ -101,8 +101,6 @@ export type PersonOrgLinksRecord = {
 
 // —— events ——
 export type EventsRecord = {
-  person_id: RecordIdString
-  org_id?: RecordIdString
   happen_at: string
   type?: string
   summary: string

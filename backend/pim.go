@@ -89,9 +89,9 @@ func validateRating(v int, fieldName string) error {
 // setupPimHooks 注册 PIM 数据层的钩子:
 //  1. persons 记录保存前对 id_card 加密(OnModelCreate/OnModelUpdate 在校验前触发);
 //  2. persons 记录响应序列化前对 id_card 解密(OnRecordEnrich,覆盖列表/详情/expand/管理后台);
-//  3. 删除组织前,将引用该组织的 events.org_id 与 persons.current_org_id 置空
+//  3. 删除组织前,将引用该组织的 persons.current_org_id 置空
 //     (替代 SQL 的 ON DELETE SET NULL;0.39.4 的 relation 字段无该语义,
-//     cascadeDelete=false 会留下悬空 id,cascadeDelete=true 会误删事件)。
+//     cascadeDelete=false 会留下悬空 id)。
 func (app *application) setupPimHooks() {
 	app.pb.OnModelCreate("persons").BindFunc(func(e *core.ModelEvent) error {
 		record := e.Model.(*core.Record)
@@ -153,20 +153,6 @@ func (app *application) setupPimHooks() {
 
 	app.pb.OnModelDelete("organizations").BindFunc(func(e *core.ModelEvent) error {
 		record := e.Model.(*core.Record)
-
-		// 置空引用该组织的所有事件的 org_id
-		events, err := app.pb.FindRecordsByFilter(
-			"events", "org_id = {:id}", "-created", 0, 0, dbx.Params{"id": record.Id},
-		)
-		if err != nil {
-			return err
-		}
-		for _, ev := range events {
-			ev.Set("org_id", "")
-			if err := app.pb.Save(ev); err != nil {
-				return err
-			}
-		}
 
 		// 置空引用该组织的所有人员的 current_org_id
 		persons, err := app.pb.FindRecordsByFilter(
