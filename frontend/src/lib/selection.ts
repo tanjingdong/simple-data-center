@@ -60,3 +60,26 @@ export function selectExportedPersons(
   }
   return { exported, skippedOrgs }
 }
+
+// 默认检索判断:无任何已应用过滤条件(含 query)即视为"未检索"。
+// 不再以 viewMode 为门槛——默认视图改为「最近更新」后,
+// 进入即空列表仍应提示"暂无联系人"而非"没有匹配的结果"。
+export function isDefaultSearch(applied: {
+  query: string
+  personTags: string
+  socialTags: string
+  nativePlace: string
+  graduateSchool: string
+  trustLevel: string
+  orgType: string
+}): boolean {
+  return (
+    applied.query === '' &&
+    applied.personTags === '' &&
+    applied.socialTags === '' &&
+    applied.nativePlace === '' &&
+    applied.graduateSchool === '' &&
+    applied.trustLevel === '' &&
+    applied.orgType === ''
+  )
+}

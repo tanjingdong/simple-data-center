@@ -11,6 +11,7 @@ import {
   FormLabel,
   FormMessage
 } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -19,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { type TagPoolEntry } from '@/lib/person-tags'
 import { errorToast, successToast } from '@/lib/toast'
 import {
   Person,
@@ -27,11 +29,52 @@ import {
   politicalStatusOptions,
   trustLevelOptions
 } from '@/schemas/person-schema'
-import { createPerson, updatePerson } from '@/services/api-persons'
+import {
+  createPerson,
+  personTagPoolQueryOptions,
+  updatePerson
+} from '@/services/api-persons'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useForm, type Resolver } from 'react-hook-form'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useForm, type Resolver, type UseFormReturn } from 'react-hook-form'
 import OrgPicker from './org-picker'
+import TagSuggestRow from './tag-suggest-row'
+
+// 标签字段输入块:文本框唯一事实源 + 下方候选行(行为风格对齐本文件 trust_level 块)
+function TagFieldRow({
+  form,
+  name,
+  label,
+  pool
+}: {
+  form: UseFormReturn<PersonFormFields>
+  name: 'person_tags' | 'social_tags'
+  label: string
+  pool: TagPoolEntry[]
+}) {
+  return (
+    <FormField
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <div className='flex items-baseline justify-between'>
+            <FormLabel>{label}</FormLabel>
+            <FormMessage className='text-xs font-normal' />
+          </div>
+          <FormControl>
+            <Input {...field} value={(field.value as string) ?? ''} />
+          </FormControl>
+          <TagSuggestRow
+            pool={pool}
+            text={(field.value as string) ?? ''}
+            onChange={(value) => field.onChange(value)}
+          />
+        </FormItem>
+      )}
+    />
+  )
+}
 
 // 人员新建/编辑共用表单;字段按「个人信息/联系信息/人脉信息/个人档案/经历信息」分组
 export default function PersonForm({
@@ -44,6 +87,9 @@ export default function PersonForm({
   onSaved(): void
 }) {
   const queryClient = useQueryClient()
+
+  // 标签候选池(最近更新 10 人聚合);失败/加载中静默,由 TagSuggestRow 空池隐藏兜底
+  const tagPoolQuery = useQuery(personTagPoolQueryOptions())
 
   // schema 带 default('') 的字段使 zod 输入类型为可选,与 RHF 期望的字段类型不完全一致,
   // 故按输出类型(即 PersonFormFields)断言 resolver;同时显式声明转换值类型避免泛型别名未解析
@@ -138,7 +184,8 @@ export default function PersonForm({
       <form
         className='mx-auto max-w-2xl space-y-4 pb-8'
         onSubmit={form.handleSubmit((data) => saveMutation.mutate(data))}>
-        <div className='flex items-center justify-between'>
+        {/* 标题与操作行吸顶:窗口滚动下贴视口,top-10 避让上方 h-10 返回条 */}
+        <div className='bg-background sticky top-10 z-20 flex items-center justify-between border-b py-2'>
           <h1 className='text-xl font-bold'>
             {person ? '编辑人员' : '新增人员'}
           </h1>
@@ -217,14 +264,24 @@ export default function PersonForm({
           </CardContent>
         </Card>
 
-        {/* 分组 3:人脉信息(人脉标签/社会标签/信任评级) */}
+        {/* 分组 3:人脉信息(人脉标签/社会标签/信任评级);标签输入框下候选行可点击填入,数据源为最近更新 10 人 */}
         <Card>
           <CardHeader className='pb-2'>
             <CardTitle className='text-base'>人脉信息</CardTitle>
           </CardHeader>
           <CardContent className='grid grid-cols-2 gap-3'>
-            <InputField form={form} name='person_tags' label='人脉标签' />
-            <InputField form={form} name='social_tags' label='社会标签' />
+            <TagFieldRow
+              form={form}
+              name='person_tags'
+              label='人脉标签'
+              pool={tagPoolQuery.data?.person ?? []}
+            />
+            <TagFieldRow
+              form={form}
+              name='social_tags'
+              label='社会标签'
+              pool={tagPoolQuery.data?.social ?? []}
+            />
             <FormField
               control={form.control}
               name='trust_level'

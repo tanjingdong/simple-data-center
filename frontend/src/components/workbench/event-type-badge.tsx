@@ -8,7 +8,9 @@ const typeStyles: Record<string, string> = {
   升职: 'bg-green-500/15 text-green-700',
   处分: 'bg-red-500/15 text-red-700',
   会议: 'bg-purple-500/15 text-purple-700',
-  签约: 'bg-orange-500/15 text-orange-700'
+  签约: 'bg-orange-500/15 text-orange-700',
+  任职: 'bg-indigo-500/15 text-indigo-700',
+  离职: 'bg-slate-500/15 text-slate-700'
 }
 
 export function EventTypeBadge({ type }: { type: string }) {

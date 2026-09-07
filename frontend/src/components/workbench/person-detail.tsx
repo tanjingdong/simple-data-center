@@ -13,14 +13,13 @@ import EventFormDialog from './event-form-dialog'
 import ExperiencePanel from './experience-panel'
 import PersonEventsTab from './person-events-tab'
 import PersonForm from './person-form'
-import PersonLinksTab from './person-links-tab'
 import PersonOverview from './person-overview'
 import PersonQrDialog from './person-qr-dialog'
 import PersonRelationsTab from './person-relations-tab'
 import { SimpleTabs } from './simple-tabs'
 
-// 人员详情:概况/任职/关系/事件 四个 Tab;编辑进入 PersonForm;
-// 删除确认后级联移除该人员的任职、关系与事件,完成后回调 onDeleted 清空选中
+// 人员详情:概况/关系/事件 三个 Tab(任职履历事件化,任职/离职走事件);
+// 删除确认后级联移除联系人关系;事件保留(参与方显示"已删除"),完成后回调 onDeleted 清空选中
 export default function PersonDetail({
   personId,
   onDeleted,
@@ -102,7 +101,7 @@ export default function PersonDetail({
             onClick={() => {
               if (
                 confirm(
-                  `确定删除「${person.last_name}${person.first_name}」?该人员的关系、任职、事件将一并级联删除,此操作不可撤销。`
+                  `确定删除「${person.last_name}${person.first_name}」?该人员的联系人关系将级联删除;引用该人员的事件将保留(参与方显示为已删除)。此操作不可撤销。`
                 )
               ) {
                 deleteMutation.mutate(person.id)
@@ -116,7 +115,6 @@ export default function PersonDetail({
       <SimpleTabs
         tabs={[
           { value: 'overview', label: '概况' },
-          { value: 'links', label: '任职' },
           { value: 'relations', label: '关系' },
           { value: 'events', label: '事件' }
         ]}
@@ -139,7 +137,6 @@ export default function PersonDetail({
                 </aside>
               </div>
             )}
-            {active === 'links' && <PersonLinksTab personId={personId} />}
             {active === 'relations' && (
               <PersonRelationsTab personId={personId} />
             )}

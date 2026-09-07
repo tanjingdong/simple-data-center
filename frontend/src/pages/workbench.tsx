@@ -7,7 +7,7 @@ import OrganizationForm from '@/components/workbench/organization-form'
 import PersonDetail from '@/components/workbench/person-detail'
 import PersonForm from '@/components/workbench/person-form'
 import ResultTable from '@/components/workbench/result-table'
-import type { SearchScope } from '@/lib/selection'
+import { isDefaultSearch, type SearchScope } from '@/lib/selection'
 import {
   emptyOrganizationFilters,
   organizationDetailQueryOptions,
@@ -47,7 +47,7 @@ export default function WorkbenchPage() {
 
   // 检索状态(草稿 + 已应用)
   const [scope, setScope] = useState<SearchScope>('all')
-  const [viewMode, setViewMode] = useState<PersonViewMode>('all')
+  const [viewMode, setViewMode] = useState<PersonViewMode>('recent')
   const [queryDraft, setQueryDraft] = useState('')
   const [personFiltersDraft, setPersonFiltersDraft] =
     useState<PersonFilters>(emptyPersonFilters)
@@ -99,17 +99,19 @@ export default function WorkbenchPage() {
         : '加载中…'
       : `共 ${personsQuery.data.length} 人 / ${orgsQuery.data.length} 个组织`
 
-  // 默认检索判断(全部视图 + 空条件 = 未检索):空态文案区分
-  const isDefaultSearch =
-    viewMode === 'all' &&
-    applied.query === '' &&
-    applied.personFilters.personTags === '' &&
-    applied.personFilters.socialTags === '' &&
-    applied.personFilters.nativePlace === '' &&
-    applied.personFilters.graduateSchool === '' &&
-    applied.personFilters.trustLevel === '' &&
-    applied.orgFilters.type === ''
-  const emptyHint = isDefaultSearch ? '暂无联系人' : '没有匹配的结果'
+  // 默认检索判断(空条件 = 未检索):空态文案区分。viewMode 不再参与——
+  // 默认视图改为「最近更新」后,进入即空列表仍提示"暂无联系人"
+  const emptyHint = isDefaultSearch({
+    query: applied.query,
+    personTags: applied.personFilters.personTags,
+    socialTags: applied.personFilters.socialTags,
+    nativePlace: applied.personFilters.nativePlace,
+    graduateSchool: applied.personFilters.graduateSchool,
+    trustLevel: applied.personFilters.trustLevel,
+    orgType: applied.orgFilters.type
+  })
+    ? '暂无联系人'
+    : '没有匹配的结果'
 
   const closeCreating = () => setCreating(null)
   const clearTarget = () => setTarget(null)
@@ -210,11 +212,11 @@ export default function WorkbenchPage() {
       {/* 宽屏:常驻左栏控制区 */}
       <div className='hidden w-[300px] shrink-0 md:block'>{controlPanel}</div>
 
-      {/* 右栏:分时使用 */}
-      <section className='flex min-w-0 flex-1 flex-col overflow-y-auto'>
-        {/* 详情/表单态返回条 */}
+      {/* 右栏:分时使用(页面为窗口滚动,吸顶元素 sticky 直达视口顶) */}
+      <section className='flex min-w-0 flex-1 flex-col'>
+        {/* 详情/表单态返回条:吸顶 */}
         {detailOrForm && (
-          <div className='flex items-center gap-1 border-b px-2 py-1'>
+          <div className='bg-background sticky top-0 z-30 flex h-10 items-center gap-1 border-b px-2'>
             <Button
               variant='ghost'
               size='sm'

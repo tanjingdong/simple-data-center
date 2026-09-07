@@ -1,6 +1,9 @@
+import { SUMMARY_MIN_TOKEN_RE } from '@/lib/event-tokens'
 import { z } from 'zod/v4'
 import { pbIdSchema } from './pb-schema'
-import { SUMMARY_MIN_TOKEN_RE } from '@/lib/event-tokens'
+
+// 人事履历事件类型:任职/离职两型承载全部任职数据(挂职/兼职等以 任职+纪要 表达)
+export const employmentEventTypes = ['任职', '离职'] as const
 
 // 事件类型开放值(预置常用项,允许自定义)
 export const eventTypePresets = [
@@ -9,7 +12,8 @@ export const eventTypePresets = [
   '升职',
   '处分',
   '会议',
-  '签约'
+  '签约',
+  ...employmentEventTypes
 ] as const
 
 // 事件 schema:summary 带参与方 token([[p:id|名]]/[[o:id|名]]),必须含 ≥1 token(与服务端 pattern 对齐)
@@ -28,7 +32,10 @@ export const eventSchema = z.object({
 //  - 日期:完整时间戳 → 'yyyy-MM-dd'(取前 10 位)
 export const eventResponseSchema = z.object({
   id: pbIdSchema,
-  happen_at: z.string().catch('').transform((v) => v.slice(0, 10)),
+  happen_at: z
+    .string()
+    .catch('')
+    .transform((v) => v.slice(0, 10)),
   type: z.string().catch(''),
   summary: z.string()
 })

@@ -93,7 +93,8 @@ export default function OrganizationForm({
       <form
         className='mx-auto max-w-2xl space-y-4 pb-8'
         onSubmit={form.handleSubmit((data) => saveMutation.mutate(data))}>
-        <div className='flex items-center justify-between'>
+        {/* 标题与操作行吸顶:窗口滚动下贴视口,top-10 避让上方 h-10 返回条 */}
+        <div className='bg-background sticky top-10 z-20 flex items-center justify-between border-b py-2'>
           <h1 className='text-xl font-bold'>
             {organization ? '编辑组织' : '新增组织'}
           </h1>

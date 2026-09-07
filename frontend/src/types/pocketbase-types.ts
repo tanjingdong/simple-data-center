@@ -10,7 +10,6 @@ export enum Collections {
   Persons = 'persons',
   Organizations = 'organizations',
   Relations = 'relations',
-  PersonOrgLinks = 'person_org_links',
   Events = 'events',
   ToolsSettings = 'tools_settings',
   HealthEvents = 'health_events'
@@ -92,13 +91,6 @@ export type RelationsRecord = {
   relation_description: string
 }
 
-// —— person_org_links ——
-export type PersonOrgLinksRecord = {
-  person_id: RecordIdString
-  org_id: RecordIdString
-  link_description: string
-}
-
 // —— events ——
 export type EventsRecord = {
   happen_at: string
@@ -153,8 +145,6 @@ export type OrganizationsResponse<Texpand = unknown> = Required<OrganizationsRec
   BaseSystemFields<Texpand>
 export type RelationsResponse<Texpand = unknown> = Required<RelationsRecord> &
   BaseSystemFields<Texpand>
-export type PersonOrgLinksResponse<Texpand = unknown> = Required<PersonOrgLinksRecord> &
-  BaseSystemFields<Texpand>
 export type EventsResponse<Texpand = unknown> = Required<EventsRecord> &
   BaseSystemFields<Texpand>
 export type HealthEventsResponse<Texpand = unknown> = Required<HealthEventsRecord> &
@@ -171,7 +161,6 @@ export type CollectionRecords = {
   persons: PersonsRecord
   organizations: OrganizationsRecord
   relations: RelationsRecord
-  person_org_links: PersonOrgLinksRecord
   events: EventsRecord
   tools_settings: ToolsSettingsRecord
   users: UsersRecord
@@ -183,7 +172,6 @@ export type CollectionResponses = {
   persons: PersonsResponse
   organizations: OrganizationsResponse
   relations: RelationsResponse
-  person_org_links: PersonOrgLinksResponse
   events: EventsResponse
   tools_settings: ToolsSettingsResponse
   users: UsersResponse
@@ -195,7 +183,6 @@ export type TypedPocketBase = PocketBase & {
   collection(idOrName: 'persons'): RecordService<PersonsResponse>
   collection(idOrName: 'organizations'): RecordService<OrganizationsResponse>
   collection(idOrName: 'relations'): RecordService<RelationsResponse>
-  collection(idOrName: 'person_org_links'): RecordService<PersonOrgLinksResponse>
   collection(idOrName: 'events'): RecordService<EventsResponse>
   collection(idOrName: 'tools_settings'): RecordService<ToolsSettingsResponse>
   collection(idOrName: 'users'): RecordService<UsersResponse>

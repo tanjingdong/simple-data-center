@@ -176,7 +176,7 @@ export default function ResultTable({
                       onClick={(e) => e.stopPropagation()}
                     />
                   </TableCell>
-                  <TableCell className='max-w-[120px] truncate font-medium'>
+                  <TableCell className='max-w-[96px] truncate font-medium'>
                     {person.last_name}
                     {person.first_name}
                     {person.nickname && (
@@ -190,17 +190,17 @@ export default function ResultTable({
                       ? `${person.expand.current_org_id.name}${titlesOf(person) ? `(${titlesOf(person)})` : ''}`
                       : titlesOf(person) || '—'}
                   </TableCell>
-                  <TableCell className='max-w-[140px] truncate'>
-                    {tagsOf(person)
-                      .slice(0, 2)
-                      .map((tag) => (
+                  <TableCell className='max-w-[200px]'>
+                    <div className='flex flex-wrap gap-1'>
+                      {tagsOf(person).map((tag) => (
                         <Badge
                           key={tag}
                           variant='outline'
-                          className='mr-1 text-[10px]'>
+                          className='text-[10px]'>
                           {tag}
                         </Badge>
                       ))}
+                    </div>
                   </TableCell>
                   <TableCell className='text-muted-foreground max-w-[130px] truncate'>
                     {person.mobile || '—'}
@@ -234,7 +234,7 @@ export default function ResultTable({
                       onClick={(e) => e.stopPropagation()}
                     />
                   </TableCell>
-                  <TableCell className='max-w-[200px] truncate font-medium'>
+                  <TableCell className='max-w-[96px] truncate font-medium'>
                     {org.name}
                   </TableCell>
                   <TableCell className='max-w-[100px] truncate'>

@@ -4,6 +4,7 @@ import {
   buildDatasetKey,
   checkKey,
   countChecked,
+  isDefaultSearch,
   selectExportedPersons,
   toggleCheck
 } from './selection'
@@ -64,5 +65,35 @@ describe('selectExportedPersons', () => {
     const { exported, skippedOrgs } = selectExportedPersons(new Set(), persons)
     expect(exported).toEqual([])
     expect(skippedOrgs).toBe(0)
+  })
+})
+
+describe('isDefaultSearch', () => {
+  const empty = {
+    query: '',
+    personTags: '',
+    socialTags: '',
+    nativePlace: '',
+    graduateSchool: '',
+    trustLevel: '',
+    orgType: ''
+  }
+
+  it('所有条件为空时视为默认(未检索)', () => {
+    expect(isDefaultSearch(empty)).toBe(true)
+  })
+
+  it('任一条件非空即非默认', () => {
+    expect(isDefaultSearch({ ...empty, query: '张' })).toBe(false)
+    expect(isDefaultSearch({ ...empty, personTags: '核心圈' })).toBe(false)
+    expect(isDefaultSearch({ ...empty, socialTags: '医疗' })).toBe(false)
+    expect(isDefaultSearch({ ...empty, nativePlace: '湖南' })).toBe(false)
+    expect(isDefaultSearch({ ...empty, trustLevel: '3' })).toBe(false)
+    expect(isDefaultSearch({ ...empty, orgType: '医疗机构' })).toBe(false)
+  })
+
+  it('与 viewMode 无关(默认视图改为最近更新后仍判为默认)', () => {
+    // 函数签名不含 viewMode;默认 recent + 空条件 → 仍为默认态 → 提示"暂无联系人"
+    expect(isDefaultSearch(empty)).toBe(true)
   })
 })

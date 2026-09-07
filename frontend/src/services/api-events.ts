@@ -1,5 +1,9 @@
-import { Event, eventResponseSchema } from '@/schemas/event-schema'
 import { buildOrgFilter, buildPersonFilter } from '@/lib/event-tokens'
+import {
+  Event,
+  employmentEventTypes,
+  eventResponseSchema
+} from '@/schemas/event-schema'
 import { queryOptions } from '@tanstack/react-query'
 import { pb } from './pocketbase'
 
@@ -12,7 +16,9 @@ export function eventsOfPersonQueryOptions(personId: string) {
         filter: buildPersonFilter(personId),
         sort: '-happen_at'
       })
-      return result.items.map((item) => eventResponseSchema.parse(item) as Event)
+      return result.items.map(
+        (item) => eventResponseSchema.parse(item) as Event
+      )
     }
   })
 }
@@ -26,7 +32,30 @@ export function eventsOfOrgQueryOptions(orgId: string) {
         filter: buildOrgFilter(orgId),
         sort: '-happen_at'
       })
-      return result.items.map((item) => eventResponseSchema.parse(item) as Event)
+      return result.items.map(
+        (item) => eventResponseSchema.parse(item) as Event
+      )
+    }
+  })
+}
+
+// 组织任职/离职事件 filter:类型等值(仅 任职/离职 两型)+ 组织 token 子串
+export function buildEmploymentFilter(orgId: string): string {
+  return `(${employmentEventTypes.map((t) => `type='${t}'`).join(' || ')}) && ${buildOrgFilter(orgId)}`
+}
+
+// 组织【相关人员】查询:仅该组织的任职/离职事件(不含会议/电话等其它类型)
+export function orgEmploymentEventsQueryOptions(orgId: string) {
+  return queryOptions({
+    queryKey: ['organizations', orgId, 'people'],
+    queryFn: async () => {
+      const result = await pb.collection('events').getList(1, 100, {
+        filter: buildEmploymentFilter(orgId),
+        sort: '-happen_at'
+      })
+      return result.items.map(
+        (item) => eventResponseSchema.parse(item) as Event
+      )
     }
   })
 }

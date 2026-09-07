@@ -1,3 +1,4 @@
+import { buildTagPool, type TagRecord } from '@/lib/person-tags'
 import {
   Person,
   PersonFormFields,
@@ -134,4 +135,20 @@ export async function updatePerson(id: string, data: PersonFormFields) {
 
 export async function deletePerson(id: string) {
   await pb.collection('persons').delete(id)
+}
+
+// 标签候选池:最近更新的 10 人仅投影两个标签字段,前端聚合出常用标签
+// (queryKey 前缀与人员列表一致,列表相关失效会一并覆盖本查询)
+export function personTagPoolQueryOptions() {
+  return queryOptions({
+    queryKey: ['persons', 'tag-pool'],
+    queryFn: async () => {
+      const result = await pb.collection('persons').getList(1, 10, {
+        sort: '-updated',
+        fields: 'person_tags,social_tags'
+      })
+      return buildTagPool(result.items as TagRecord[])
+    },
+    staleTime: 5 * 60 * 1000
+  })
 }
