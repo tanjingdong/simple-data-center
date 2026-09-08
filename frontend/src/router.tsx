@@ -229,6 +229,12 @@ const adminToolRoutes = [
     path: 'filestore',
     component: adminTools[1].component,
     beforeLoad: () => ({ getTitle: () => adminTools[1].label })
+  }),
+  createRoute({
+    getParentRoute: () => adminRoute,
+    path: 'links',
+    component: adminTools[2].component,
+    beforeLoad: () => ({ getTitle: () => adminTools[2].label })
   })
 ]
 

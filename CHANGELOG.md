@@ -1,5 +1,17 @@
 # Changelog
 
+## V0.7.3
+### **文件存储管理工具优化**
+- 「我的文件」列表每个文件行新增「复制浏览链接」按钮：点击将文件的 API 浏览地址(绝对地址 + `?inline=1`,proxy 模式下图片/PDF 可在浏览器内联显示)复制到剪贴板并 toast 提示。公开与私有文件均可复制(私有链接仅登录且有权限者访问,未授权打开显示占位图)。
+- 大文件下载保护:「我的文件」下载按钮增加前置确认——文件大于 10MB 时先弹窗提示「文件将完整加载到浏览器内存,可能占用较多内存」,确认后才执行下载,取消则不下载;小文件下载不受影响。
+- 前端新增工具函数:`getAbsoluteFileUrl(id, inline)`(带协议域名拼接)、`copyText(text)`(剪贴板助手,http 局域网等非安全上下文自动降级为 `execCommand` 复制)、常量 `BIG_FILE_SIZE`(10MB 下载确认阈值)。
+
+### **链接管理工具(帮助中心入口)**
+- 新增管理工具「链接管理」(导航栏「管理工具」→ 链接管理):配置项 `links_help_center_url`(帮助中心目标地址,绝对或 `/` 开头的根相对路径)与 `links_error_html`(未配置/非法时展示的报错页 HTML,内置默认文案,可修改)。
+- 导航栏新增固定入口「帮助中心」(管理工具与账号之间,匿名可见,新标签页):目标固定为 `/links/help-center`,由后端网关裁决——配置合法则 302 跳转(`Cache-Control: no-store` 防缓存),未配置/非法则展示报错页;前端零判断逻辑、无公开配置 API,配置内容始终不可被非管理员读取。
+- URL 校验仅收受绝对地址(危险协议 `javascript:`/`data:`/`vbscript:`/`file:` 黑名单除外)与 `/` 开头的根相对路径;裸相对地址(如 `help.html`)解析基准未定义、一律拒绝并提示改用 `/` 开头或完整绝对地址——前后端同规则中文报错,管理工具页即填即验,保存后端二次校验。
+- 配置保存采用部分更新语义(仅提交单项时不清空另一项);后端新增 `backend/links` 包 11 个单测:URL/报错 HTML 校验矩阵、网关决策(合法→302 / 未配置·非法→报错页)、部分更新、配置回读。
+
 ## V0.7.2
 
 - 删除示例业务「任务模块」(task):前端 `pages/tasks`、`components/tasks`、`api-tasks`、`task-schema`、`task-status`、`date-convert`、`use-tasks` 及相关路由;后端 `notifier` 邮件提醒包(仅服务 task)、`tasks.page.gohtml` 模板、`pb_schema` 的 tasks 集合;`main`/`mailer` 去 `startNotifier` 与 appConfig mailer 字段。

@@ -44,6 +44,7 @@ func main() {
 	app.setupFrpc()
 
 	app.setupFilestore()
+	app.setupLinks()
 
 	log.Fatal(app.pb.Start())
 }

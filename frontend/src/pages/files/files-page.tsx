@@ -7,15 +7,18 @@ import {
 } from '@/components/ui/card'
 import { errorToast, successToast } from '@/lib/toast'
 import {
+  BIG_FILE_SIZE,
+  copyText,
   deleteFile,
   downloadFile,
+  getAbsoluteFileUrl,
   listFiles,
   updateFileVisibility,
   uploadFile
 } from '@/services/api-filestore'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ClientResponseError } from 'pocketbase'
-import { DownloadIcon, GlobeIcon, LockIcon, Trash2Icon, UploadIcon } from 'lucide-react'
+import { DownloadIcon, GlobeIcon, Link2Icon, LockIcon, Trash2Icon, UploadIcon } from 'lucide-react'
 import { useRef, useState } from 'react'
 
 export default function FilesPage() {
@@ -171,6 +174,16 @@ export default function FilesPage() {
                         <LockIcon className='size-3.5 text-muted-foreground' />
                       )}
                     </button>
+                    <button
+                      onClick={() => {
+                        copyText(getAbsoluteFileUrl(file.id, true))
+                          .then(() => successToast('浏览链接已复制'))
+                          .catch((err) => errorToast('复制失败', err))
+                      }}
+                      className='shrink-0'
+                      title='复制浏览链接(内联预览地址)'>
+                      <Link2Icon className='size-3.5 text-muted-foreground' />
+                    </button>
                   </div>
                   <div className='text-muted-foreground flex items-center gap-3 text-xs'>
                     <span>{formatSize(file.size)}</span>
@@ -187,6 +200,14 @@ export default function FilesPage() {
                     className='size-8 p-0'
                     title='下载'
                     onClick={() => {
+                      if (
+                        file.size > BIG_FILE_SIZE &&
+                        !confirm(
+                          `文件大小为 ${formatSize(file.size)},超过 10MB。下载过程中文件传输需要一定时间，不能立即看到下载结果，且会完整加载到浏览器内存,可能占用较多内存,是否继续下载?`
+                        )
+                      ) {
+                        return
+                      }
                       downloadFile(file.id, file.original_name).catch((err) =>
                         errorToast('下载失败', err)
                       )
