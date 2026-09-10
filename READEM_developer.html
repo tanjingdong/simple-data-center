@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>开发者手册 - Simple Data Center</title>
+    <style>
+        /* ========== CSS 变量:定义文档主题颜色 (修改这里即可全局换色) ========== */
+        :root {
+            --primary-color: #9b7ec4; /* 主色调:淡紫色(与产品主色一致) */
+            --primary-light: #ede7f6; /* 浅紫色背景 */
+            --bg-color: #f7f8fa;      /* 页面背景色 */
+            --sidebar-bg: #ffffff;    /* 侧边栏背景色 */
+            --text-color: #333333;    /* 主文字颜色 */
+            --text-muted: #888888;    /* 次要文字颜色 */
+            --border-color: #eaeaea;  /* 边框颜色 */
+            --content-bg: #ffffff;    /* 内容区背景色 */
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* 卡片阴影 */
+        }
+
+        /* ========== 基础样式 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* ========== 顶部导航栏 ========== */
+        header {
+            background-color: var(--sidebar-bg);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+
+        .logo-area img {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+            border-radius: 6px;
+        }
+
+        .logo-area svg {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+            fill: var(--primary-color);
+        }
+
+        .doc-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            border-left: 1px solid var(--border-color);
+            padding-left: 16px;
+        }
+
+        /* ========== 主体布局 (左侧栏 + 右侧内容) ========== */
+        .main-container {
+            display: flex;
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+            gap: 30px;
+        }
+
+        /* 左侧侧边栏 */
+        .sidebar {
+            width: 280px;
+            flex-shrink: 0;
+            background-color: var(--sidebar-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            height: fit-content;
+            position: sticky;
+            top: 90px;
+        }
+
+        .sidebar-search {
+            margin-bottom: 20px;
+        }
+
+        .sidebar-search input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .sidebar-search input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .nav-section {
+            margin-bottom: 15px;
+        }
+
+        .nav-section-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            padding-left: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .nav-section-title:hover {
+            color: var(--primary-color);
+        }
+
+        /* 收缩指示箭头(展开=向下,收起=向右) */
+        .nav-section-title::after {
+            content: "";
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 6px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid var(--text-muted);
+            transition: transform 0.15s ease;
+            vertical-align: middle;
+        }
+
+        /* 收起分组:隐藏其下全部二级条目 */
+        .nav-section.collapsed > .nav-items {
+            display: none;
+        }
+
+        .nav-section.collapsed .nav-section-title::after {
+            transform: rotate(90deg);
+        }
+
+        .nav-items li a {
+            display: block;
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 15px;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+
+        .nav-items li a:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        .nav-items li a.active {
+            background-color: var(--primary-color);
+            color: #ffffff;
+        }
+
+        /* 搜索过滤时隐藏不匹配的分组 */
+        .nav-section.hidden {
+            display: none;
+        }
+
+        .nav-items li.hidden {
+            display: none;
+        }
+
+        /* 右侧内容区 */
+        .content-area {
+            flex: 1;
+            background-color: var(--content-bg);
+            border-radius: 12px;
+            padding: 40px 50px;
+            box-shadow: var(--shadow);
+            min-height: 600px;
+        }
+
+        /* 面包屑导航 */
+        .breadcrumb {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+        .breadcrumb span {
+            margin: 0 8px;
+        }
+
+        /* 文章标题与正文(单文件内多篇文章切换显示) */
+        .doc-article {
+            display: none;
+        }
+
+        .doc-article.active {
+            display: block;
+        }
+
+        .article-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 10px;
+        }
+
+        .article-meta {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+        .article-content h2 {
+            font-size: 22px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 10px;
+        }
+
+        .article-content h3 {
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .article-content p {
+            margin-bottom: 15px;
+            color: #444;
+        }
+
+        .article-content p.note {
+            font-size: 13px;
+            color: var(--text-muted);
+            border-left: 3px solid var(--border-color);
+            padding-left: 10px;
+        }
+
+        .article-content ul {
+            list-style: disc;
+            padding-left: 22px;
+            margin-bottom: 15px;
+        }
+
+        .article-content ul li {
+            margin-bottom: 6px;
+            color: #444;
+        }
+
+        /* 待撰写占位提示框(内容完成后整块删除) */
+        .draft-box {
+            background-color: #fffbe6;
+            border: 1px dashed #e8c74c;
+            border-radius: 8px;
+            padding: 15px 18px;
+            font-size: 14px;
+            color: #8a6d1a;
+            margin-bottom: 20px;
+        }
+
+        .draft-box strong {
+            color: #6b5200;
+        }
+
+        /* 示例代码块 */
+        .code-block {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 14px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            color: #d63384;
+        }
+
+        /* 表格样式 */
+        .table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        /* 上一篇/下一篇导航 */
+        .pagination-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .pagination-nav a {
+            background-color: var(--bg-color);
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .pagination-nav a:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        .pagination-nav a.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 900px) {
+            .main-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                position: static;
+            }
+            .content-area {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部导航栏 -->
+    <header>
+        <div class="logo-area">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAM0lEQVR4nO3OsQkAMAgAQSfPIq7jXqa3FwK5h+8vQhrlqd4cAAAAAAAAAAAAAOB9gL7rAmoAb1t93yN+AAAAAElFTkSuQmCC" width="24" height="24" alt="logo">
+            <!-- 测试:单文件 HTML 内嵌 base64 图片资源(data URI) -->
+            SIMPLE DATA CENTER
+        </div>
+        <div class="doc-label">开发者手册(面向二次开发)</div>
+    </header>
+
+    <!-- 主体内容区域 -->
+    <div class="main-container">
+
+        <!-- 左侧:章节目录 -->
+        <aside class="sidebar">
+            <div class="sidebar-search">
+                <input type="text" id="sidebar-search-input" placeholder="搜索开发者手册...">
+            </div>
+
+            <!-- 分组一:概览与开发环境 -->
+            <div class="nav-section collapsed" data-group="概览与开发环境">
+                <div class="nav-section-title">一、概览与开发环境</div>
+                <ul class="nav-items">
+                    <li><a href="#art-about" class="active">项目定位与架构总览</a></li>
+                    <li><a href="#art-code-map">代码地图与目录约定</a></li>
+                    <li><a href="#art-dev-env">本地开发与常用命令</a></li>
+                </ul>
+            </div>
+
+            <!-- 分组二:业务模块开发 -->
+            <div class="nav-section collapsed" data-group="业务模块开发">
+                <div class="nav-section-title">二、业务模块开发</div>
+                <ul class="nav-items">
+                    <li><a href="#art-module-overview">开发模式总览</a></li>
+                    <li><a href="#art-backend">后端:集合与框架接线</a></li>
+                    <li><a href="#art-frontend">前端:页面、路由与服务层</a></li>
+                    <li><a href="#art-entry">入口注册与访问控制</a></li>
+                    <li><a href="#art-checklist">测试与交付清单</a></li>
+                </ul>
+            </div>
+
+            <!-- 分组三:内置模块与扩展接口 -->
+            <div class="nav-section collapsed" data-group="内置模块与扩展接口">
+                <div class="nav-section-title">三、内置模块与扩展接口</div>
+                <ul class="nav-items">
+                    <li><a href="#art-config">系统配置的存储与读取</a></li>
+                    <li><a href="#art-filestore">文件存储 filestore(接 Alist)</a></li>
+                    <li><a href="#art-links">链接管理网关与静态页发布</a></li>
+                    <li><a href="#art-misc">frpc、邮件与其余内置件</a></li>
+                </ul>
+            </div>
+
+            <!-- 分组四:部署与项目治理 -->
+            <div class="nav-section collapsed" data-group="部署与项目治理">
+                <div class="nav-section-title">四、部署与项目治理</div>
+                <ul class="nav-items">
+                    <li><a href="#art-release">构建与发布</a></li>
+                    <li><a href="#art-ops">数据、升级与备份</a></li>
+                    <li><a href="#art-faq">常见问题(FAQ)</a></li>
+                    <li><a href="#art-contributing">许可与贡献指南</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- 右侧:文章内容展示区 -->
+        <main class="content-area">
+
+            <!-- 面包屑导航 -->
+            <div class="breadcrumb" id="breadcrumb">
+                开发者手册 <span>/</span> <span id="crumb-group">一、概览与开发环境</span> <span>/</span> <span id="crumb-title">项目定位与架构总览</span>
+            </div>
+
+            <!-- ================= 文章:项目定位与架构总览 ================= -->
+            <article id="art-about" class="doc-article active">
+                <h1 class="article-title">项目定位与架构总览</h1>
+                <div class="article-meta">更新时间:2026-09-09 | 适用版本:V0.7.x | 面向二次开发者</div>
+                <div class="article-content">
+                    <p>Simple Data Center 是一个生产级的 <strong>CRUD 应用基座</strong>:基于 PocketBase 与 React 构建,编译为单个可执行文件。它把二次开发所需的「基础设施」准备齐全——认证、用户体系、文件存储、反向代理、数据管理后台——业务开发只需要按标准模式添加自己的数据集合与页面,而不是重复建设底座。</p>
+
+                    <h2>定位:基座,而非单一应用</h2>
+                    <p>理解本项目的关键只有一句话:</p>
+                    <ul>
+                        <li><strong>基座与业务的分界</strong>:凡属于「认证 / 账号 / 文件 / 网关 / 管理工具」范畴的能力归基座;凡属于具体业务语义的代码与数据归业务模块,二者在目录与数据归属上严格分开。</li>
+                        <li><strong>业务的标准生长方式</strong>是「定义集合 → 服务函数 → 页面路由 → 入口」四步,详见「二、业务模块开发」。</li>
+                        <li>历史上曾内置示例业务模块(V0.7.2 起已移除),当前仓库即<strong>纯基座</strong>,可直接整体复制为二次开发起点。</li>
+                    </ul>
+
+                    <h2>项目价值与应用场景</h2>
+                    <p>「定位」回答了它是什么;这一节回答更实际的问题——<strong>什么情况下值得选它,而不是自己搭一套,或去买一个 SaaS</strong>。</p>
+
+                    <h3>一个典型的基层场景:把「台账」搬上浏览器</h3>
+                    <p>先从一段几乎每天都在发生的场景讲起(情节做了抽象,但它由无数真实需求拼成):某镇政府的应急管理办公室,每年要按上级要求完成数百次安全生产检查,并做到「检查有记录、隐患有闭环、年终可归档迎检」。办公室的老李是负责人(业务管理员)——他不懂代码,单位也没有专职 IT;各村网格员(业务使用者)平时用手机拍现场照片,回办公室再补 Excel;电脑都在单位内网,数据按纪律要求不能放进任何商业云盘。现实中的痛点环环相扣:</p>
+                    <ul>
+                        <li><strong>上级要求留痕闭环,基层却靠 Excel 硬撑</strong>:文件在 U 盘和微信群之间传来传去,版本打架、字段乱填、照片与记录分离——迎检前全科室通宵补录是常态。</li>
+                        <li><strong>没有 IT,也不许上云</strong>:数据涉密纪律与单位规定排除了商业云;区里统建的大平台又没有这个业务,基层只能自己想办法。</li>
+                        <li><strong>市面系统不对路</strong>:要么按年招标、按人头报价;要么数据在厂商服务器上,流程要基层迁就系统——领导不放心,预算批不下来。</li>
+                        <li><strong>自己攒,养不起</strong>:一个会写前后端、又会部署服务器的人,在基层是稀缺资源;外包报价高,交付还是黑盒,以后没人维护。</li>
+                        <li><strong>表格与问卷只能「收」不能「管」</strong>:检查记录要持续更新、照片要归属到人、隐患要跟踪到关闭——这是表格范式的天花板。</li>
+                    </ul>
+                    <p>转折在于:单位里那位「会点代码的同事」用这个基座花两天搭了一套「安全检查台账系统」——交付物是一个文件、一个数据目录、一页说明书。管理员老李在一台旧电脑上照说明书执行一次启动命令;没有公网 IP 也没关系,搭建者预先在管理工具里配好 frpc,老李在浏览器里点一下「启动」,全镇网格员就能通过一个网址登录使用。此后一切都发生在浏览器里:手机拍照直接上传(文件归属到人、权限按规则控制)、隐患状态按设定流转、年底一键导出归档;数据始终在单位自己的硬盘上;明年流程要改,代码就在仓库里,换谁都能接手。</p>
+                    <p>这套设计真正的巧思,不在于某一项具体技术,而在于它把基层最稀缺的资源——「会运维的人」——从使用条件里删掉了,并且让链条上的每一环都只做自己会做的事。下面的分析,就是把这份巧思逐层拆开讲清楚。</p>
+
+                    <h3>关于这个名字:Simple Data Center</h3>
+                    <p>名字本身就是一句设计声明——三个词分别对应三层取舍:</p>
+                    <ul>
+                        <li><strong>Simple</strong>:简单是给<strong>使用者和运维者</strong>的,不是功能简单。认证、文件、反代、网关、管理后台一样不少;被简化掉的只是「运行它所需的成本」——一个文件、一条命令、一份数据目录。</li>
+                        <li><strong>Data</strong>:数据是主体,不是附属品。所有功能围绕「让数据被安全地录入、约束、流转与带走」展开;数据落在自己的磁盘上,格式开放、随时可迁。</li>
+                        <li><strong>Center</strong>:一层具体、一层抽象。具体的是登录后的<strong>数据大厅</strong>(<code>/center</code>)——各业务功能的统一入口,「中心」正是这个页面的名字;抽象的是定位——把你散落在 Excel、网盘、聊天记录里的业务,收拢到<strong>一个自主可控的中心站点</strong>上。</li>
+                    </ul>
+                    <p>合起来读:一个<strong>以数据为中心、简单到能自己部署</strong>的站点。它不追求功能大而全,只追求「你需要的那部分,恰好都在,而且都听话」。</p>
+
+                    <h3>价值所在</h3>
+                    <ul>
+                        <li><strong>基础设施零重复</strong>:对 CRUD 类应用,注册/登录/找回密码、用户资料、管理后台、文件上传、对外暴露,这些是所有项目都要写、又毫无业务价值的样板。基座一次性做完并经过真实使用打磨,业务方只写集合与页面。</li>
+                        <li><strong>单文件即产品</strong>:交付物是一个可执行文件 + 一个数据目录,运行环境随制品走(设计动机与使用者收益的完整分析见下节专述)。</li>
+                        <li><strong>数据自主可控</strong>:数据落在本地 SQLite,文件落在自己接的 Alist 存储上,对外可见性由访问规则决定(匿名只能读 public)。适合对数据归属、隐私、离线可用有要求的场景。</li>
+                        <li><strong>二次开发成本是「复制粘贴」级别</strong>:标准四步模式 + 现成模块做参照(README 与「二、业务模块开发」均以 filestore/files 为模板),同时它有一个更珍贵的特性——<strong>不是脚手架</strong>:认证、文件、反代等模块都从真实使用中演化而来(前身即为习惯追踪应用),边界、校验、报错文案是磨过的,不是 hello world。</li>
+                    </ul>
+
+                    <h3>价值的三层角色:开发者 → 业务管理员 → 业务使用者</h3>
+                    <p>上面的「价值所在」是从开发者视角说的——但这只是供给端。一个业务系统真正被采用,取决于链条末端的另外两类人。基座的价值不在于「帮开发者省了多少代码」,而在于<strong>每一层角色都能只做自己会做的事,把不会做的事交给上一层消化掉</strong>。</p>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>角色</th><th>他们是谁 / 不会什么</th><th>这套设计给他们的东西</th><th>他们需要做的</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>开发者(技术提供方)</td>
+                                    <td>会写代码,负责把基座变成某个具体业务系统</td>
+                                    <td>四步模板 + 现成模块参照,交付物收敛为「一个文件 + 一个数据目录 + 一页说明书」</td>
+                                    <td>写业务页面与集合;按需配好 frpc / filestore 等内置工具</td>
+                                </tr>
+                                <tr>
+                                    <td>业务管理员(组织内的拍板与维护人)</td>
+                                    <td><strong>不懂代码、不懂开发、不懂部署、没有专门服务器</strong>,最多能照说明书执行一条命令</td>
+                                    <td>上线门槛 = 把文件放到任意一台常开设备(旧电脑 / NAS / 最便宜的小主机),照说明书执行一次;此后账号、参数、基础数据都在浏览器里维护;备份 = 定期拷贝数据目录;升级 = 用新文件替换</td>
+                                    <td>按说明书启动一次;日常打开管理后台维护;定时拷目录做备份</td>
+                                </tr>
+                                <tr>
+                                    <td>业务使用者(员工 / 终端用户)</td>
+                                    <td>不懂也不关心技术,只关心业务本身</td>
+                                    <td>一个网址、一个账号:数据以「业务视图」呈现,该填什么、谁能看、怎么流转,全部由系统按设定固化,不需要人肉约定</td>
+                                    <td>打开浏览器,登录,按流程操作数据</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="code-block">
+                        [开发者]  写业务(集合/页面/服务),交付单文件+数据目录+说明书
+                            │  消化:开发复杂度
+                            ▼
+                        [业务管理员] 照说明书启动一次,此后全在浏览器里管理
+                            │  消化:部署与运维复杂度(无运行时/无数据库/无多组件)
+                            ▼
+                        [业务使用者] 打开网址 → 登录 → 按固化工作流操作数据
+                            │  消化:操作复杂度(数据约束与权限由系统保证)
+                    </div>
+                    <p>组织里真正为系统「买单」的,往往不是程序员,而是<strong>业务管理员</strong>。他评估一件事的标准从来不是技术选型,而是三个问题:</p>
+                    <ul>
+                        <li><strong>要多久才能用上?</strong>——基座路径下,开发者交付后,他照说明书跑一次命令即可上线,而不是等采购、等部署、等外包排期;</li>
+                        <li><strong>数据在谁手里、长期要花多少钱?</strong>——一次性的开发成本,数据始终是本地文件,没有按席位/按记录数的持续账单,也没有「平台涨价/停服」的被动;</li>
+                        <li><strong>以后想改,找谁?</strong>——代码在仓库里、MIT 许可,可以换任何开发者接手,不被单一厂商或平台绑架。</li>
+                    </ul>
+                    <p>而业务使用者的体验,决定这套系统是否被真正用起来:一个普通员工(比如报销、设备申领、登记台账)只需要登录、填单、上传附件、看到状态流转;他看不到「后端」「数据库」「部署」这些词,也不需要知道——<strong>这正是前面所有设计(单文件、同源、SQLite、内置工具)的最终落脚点:让最末端的人无感,让中间的管理者不慌,让最前端的开发者不累</strong>。</p>
+
+                    <h3>为什么坚持「单文件 + 打包前后端 + SQLite」</h3>
+                    <p>这三个决定看起来是技术取舍,本质上是在回答同一个问题:<strong>「最终会部署它的人,是谁?」</strong>答案通常是个人、小团队、内部管理员——<strong>没有专职运维的人</strong>。于是设计目标随之确定:让交付物自己携带全部运行条件,使用者的部署公式被压缩到只剩「放在哪、运行哪个文件、数据目录指到哪」。</p>
+
+                    <ul>
+                        <li>
+                            <strong>单文件:运行环境随制品走。</strong>把「运行环境」从部署公式中删掉,使用者不需要装 Node、Go,不需要静态服务器与进程管理器。收益全在终端一侧:
+                            <ul>
+                                <li><strong>一个文件就是一个产品</strong>:心智模型、部署文档、故障排查对象都只有一个。</li>
+                                <li><strong>升级与回滚都是「换一个文件」</strong>:旧文件留着就是回滚方案,没有多组件版本配对问题。</li>
+                                <li><strong>分发 = 复制</strong>:U 盘、网盘、scp 拷走即用,离线与内网环境同样成立。</li>
+                                <li><strong>排查面最小</strong>:只有一个进程、一个日志文件要看。</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>前后端打包(embed):消灭「两个地址」。</strong>单文件是形态,同源才是目的——页面与 API 来自同一端口,于是:
+                            <ul>
+                                <li><strong>无需任何反代与跨域配置</strong>:没有 CORS、没有 /api 转发、没有多域名证书;对使用者来说,「网址」只有一个。</li>
+                                <li><strong>登录态天然顺畅</strong>:同源 cookie 直接生效,不需要为跨域鉴权做任何额外设计。</li>
+                                <li><strong>暴露面收敛为一个端口</strong>:防火墙、内网穿透都只针对 8090——这正是 frpc 工具默认 <code>frpc_local_port = 8090</code> 的原因。</li>
+                                <li><strong>页面与接口永远同版本</strong>:不存在「前端升了、后端没升」的错位组合,发布即原子操作。</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>SQLite:把「数据库服务器」从架构中删掉。</strong>数据只是一个文件,这带来使用者最能直接感知的几件事:
+                            <ul>
+                                <li><strong>备份 = 拷贝文件,恢复 = 放回文件</strong>:不需要了解任何数据库运维,灾难恢复是普通人都能执行的两步操作。</li>
+                                <li><strong>搬家与换机 = 整个数据目录拷走</strong>:换机器、甚至换操作系统,数据原样跟上。</li>
+                                <li><strong>没有常驻数据库服务</strong>:无守护进程、无端口、无数据库账号,资源占用低,树莓派 / NAS / 旧小主机都能安静运行。</li>
+                                <li><strong>文件格式开放而长寿</strong>:SQLite 文件可迁移、可只读检查、无厂商锁定——对「打算用很多年」的个人与组织数字档案,这点尤其重要。</li>
+                                <li><strong>一个实例 = 一个数据目录</strong>:模型简单到不可能出现「多个进程抢同一个库」的部署错误。</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <p>把三者合起来看,本质是一句话:<strong>交付复杂度守恒——所有复杂都被作者预付在构建期,而不是转嫁给使用者在运行期支付</strong>。最终使用者不需要「会部署」,只需要「会拷贝文件」;而它的边界也同样清晰:这些收益以单机规模为前提,一旦业务需要多实例共享同一份数据或高并发写入,就该考虑换架构了(见下节「什么时候不该选它」)。</p>
+
+                    <h3>典型应用场景</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>场景</th><th>形态</th><th>为什么是它</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>个人数据自管理</td><td>习惯打卡、健康/运动记录、记账、读书摘录等单人应用</td><td>数据不想交给云厂商;单文件可放在自己的 NAS/电脑/小主机上;前身 Long Habit 即验证过这条路径。</td></tr>
+                                <tr><td>团队内部工具</td><td>设备/资产台账、值班排班、客户登记、订单跟单、报销单等「几张表」系统</td><td>买 SaaS 太重、数据在别人手里;内部人维护一个基座应用,比维护一套前后端脚手架省事得多。</td></tr>
+                                <tr><td>垂直小产品 MVP</td><td>独立开发者快速验证一个领域工具</td><td>账号、后台、文件、公网访问全部就绪,可先交付真用户,验证成立后再重写也不可惜——因为业务代码本来就只占一小部分。</td></tr>
+                                <tr><td>自托管 / NAS 用户</td><td>网页文件管理 + 给家人朋友开账号 + 内网服务外露</td><td>filestore 对接 Alist 覆盖文件能力,frpc 一键暴露到公网或子网,免去维护隧道与反代。</td></tr>
+                                <tr><td>内网 / 离线受控环境</td><td>科室、实验室、机房等无外网环境的管理系统</td><td>依赖全部内嵌,离线可装可跑;数据完全本地,天然满足本地化要求。</td></tr>
+                                <tr><td>教学与快速定制交付</td><td>全栈教学样例、外包交付的内部管理系统</td><td>一套现代前端 + Go 后端的真实代码库,带测试与单文件产物,交付与讲解都轻。</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3>与常见替代方案的对比</h3>
+                    <p>「做几张表的业务系统」这件事,市面上已有从零代码到自研的整条光谱。本节把最常被拿来比较的方案摊开,看各自的天花板在哪,以及<strong>换到本基座后,使用者原先的痛点分别落在哪里</strong>。</p>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>常见方案</th><th>它的定位(能做什么)</th><th>天花板(通常卡在哪)与基座的解法</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>单机 Excel / WPS</td>
+                                    <td>零成本、人人会用的二维表</td>
+                                    <td>没有身份与行级权限,单文件随手改坏,无法网页/移动访问,字段无类型与枚举守门。基座把它升级成「有账号、有约束、有页面」的表,而备份仍然是拷目录。</td>
+                                </tr>
+                                <tr>
+                                    <td>Excel + 网盘共享</td>
+                                    <td>解决跨设备与多人轮流编辑</td>
+                                    <td>「同步冲突 / 双开覆盖」是文件模型的死结;谁都能改、无审计;把文件外链给外部人不安全。基座只有一份数据,一个事实源,访问由账号与规则控制。</td>
+                                </tr>
+                                <tr>
+                                    <td>在线表格 / 多维表格(腾讯文档、金山、Sheets、飞书多维表格等)</td>
+                                    <td>实时协作、门槛低、生态广</td>
+                                    <td>仍是「表格范式」:数据约束弱(格式随手破坏),权限粒度粗,想做成「像样的产品界面」(录入表单、详情页、附件归属、状态流转)得跟平台范式较劲;数据出口握在别人手里。基座的界面是真正的 React 页面,规则由后端强制。</td>
+                                </tr>
+                                <tr>
+                                    <td>低代码 SaaS(简道云、明道云、钉钉宜搭、Airtable 等)</td>
+                                    <td>可视化建模、模板多、上线最快</td>
+                                    <td>按席位/用量计费,平台升级与停服不受控;超过模板时要去搏平台的表达式与脚本;数据迁移永远是最痛的一步。基座是 MIT + 全代码在仓库 + 数据永远是文件,代价是业务页面自己写(四步复制模板即可)。</td>
+                                </tr>
+                                <tr>
+                                    <td>自托管低代码(NocoDB、Baserow、Budibase 等)</td>
+                                    <td>开源、数据在自己手里</td>
+                                    <td>「自托管」不等于「轻运维」:多数要数据库 + 多进程/多容器,升级与备份并不比自研省心。基座把运维复杂度一并打进单文件,才是真正意义上的低运维。</td>
+                                </tr>
+                                <tr>
+                                    <td>在线表单问卷(腾讯问卷、金数据、Microsoft Forms 等)</td>
+                                    <td>收集即所得,统计图表友好</td>
+                                    <td>定位是「收」不是「管」:填完即断,没有登录态、没有「改自己的历史记录」、没有状态流转与附件归属。基座的表单背后是持续可管理的业务数据。</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>还有一类常被拉来比较、但并未真正同场竞争的对象:老牌桌面数据库(Access、FileMaker——Web 化与跨平台是硬伤)、企业网盘全家桶(Nextcloud 等——文件能力强、表格与应用弱、部署更重)、垂直 SaaS(业务不在其模型内只能将就)、以及「自己搭一套前后端脚手架」(把基础设施与技术债一并留给自己养,恰是本基座要消除的部分)。它们的共同分界线只有一条:<strong>要么把数据锁在平台里,要么把运维留给你,要么把开发量留给你</strong>——本基座选择把三者都从使用者身上拿走,只留下一份可以永远带走的代码与数据。</p>
+                    <p>因此比较优势可以收敛为三点:</p>
+                    <ul>
+                        <li><strong>对表格类</strong>:补上身份、约束与页面——「像表格一样简单,像数据库一样可靠」;</li>
+                        <li><strong>对低代码类</strong>:解除锁定——代码在仓库、数据是文件、付费与停服都与你无关;</li>
+                        <li><strong>对自托管类</strong>:把运维打进单文件——交付门槛回到「拷一个文件」。</li>
+                    </ul>
+                    <p>这也划出了它真正的受众分界线:<strong>表格与低代码卖给「不想碰代码的人」;这个基座卖给「不想碰基础设施、但愿意维护一个仓库的人」</strong>——它不承诺人人可用,只承诺:只要你愿意改前端,其余全部替你扛。</p>
+
+                    <h3>什么时候不该选它</h3>
+                    <ul>
+                        <li><strong>重协作 / 实时类</strong>(多人同时编辑同一文档、聊天、白板):需要实时同步与冲突处理,SQLite 单机 + CRUD 模型不是为此设计。</li>
+                        <li><strong>复杂企业治理</strong>:没有租户隔离、细粒度 RBAC 与审批流;访问控制是「集合规则」模型,适合内部工具级权限。</li>
+                        <li><strong>重型处理流水线</strong>:图片/视频转码、大数据分析等重活应放在外部服务,由业务自行编排,基座不做也不该做。</li>
+                    </ul>
+                    <p>一句话判断法:<strong>当你的业务本质是「若干张表 + 账号 + 文件 + 需要被内网/外网访问」时,这个基座已经替你做完了其中约八成的工作</strong>——剩下的两成,正是最有业务价值的部分。</p>
+
+                    <h2>内置能力清单</h2>
+                    <p>登录后即可使用的开箱能力,如下表所示(二次开发通常不必改动它们):</p>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>能力</th><th>入口</th><th>说明</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>数据大厅</td><td>/center</td><td>登录后落地页,集中提供各业务功能入口;新增业务模块需在此注册入口。</td></tr>
+                                <tr><td>用户设置</td><td>/user-setting</td><td>头像、昵称、用户名、邮箱(含邮件确认流程)、邮箱可见开关、修改密码。</td></tr>
+                                <tr><td>管理工具</td><td>/admin</td><td>仅管理员可用:frpc 反向代理工具、filestore 文件存储工具、链接管理工具(导航栏「帮助中心」入口)。</td></tr>
+                                <tr><td>数据管理后台</td><td>/_/</td><td>PocketBase 自带管理后台:集合管理、数据编辑、导入导出、API Rules 调试。</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h2>总体架构</h2>
+                    <p>三条决定整个项目形态的架构决策:</p>
+                    <ul>
+                        <li><strong>单文件部署</strong>:前端构建产物通过 Go <code>embed</code> 打入二进制,产物只有一个可执行文件,静态资源、API、数据层同进程。</li>
+                        <li><strong>PocketBase 是框架,不是独立进程</strong>:它以 Go 包形式被本工程引用,因此可直接使用其 Hooks、路由绑定、中间件、数据库、邮件、日志等全部扩展点(接入写法见「二、业务模块开发 → 后端」)。</li>
+                        <li><strong>frp 以 Go 库嵌入</strong>:frp 客户端(frp v0.70.1)以库形式内嵌,不引入外部进程,维持跨平台单文件(见「三、内置模块与扩展接口」)。</li>
+                    </ul>
+                    <div class="code-block">
+                        [前端 dist/ 产物]──embed──▶ 单二进制(Go 主进程)
+                                                  ├─ PocketBase 扩展(集合 / API / 认证 / Hooks)
+                                                  ├─ 基座功能包(auth、filestore、frpc、links…)
+                                                  └─ SQLite 数据文件(位于启动目录,相对路径!)
+                    </div>
+                    <p>开发模式(前后端分跑 + 热重载)与生产模式(单文件)行为等价;两者差异与踩坑点见「一、概览与开发环境 → 本地开发与常用命令」。</p>
+
+                    <h2>技术栈</h2>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>方向</th><th>选型</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>后端</td><td>Go + PocketBase v0.39(框架)、SQLite(数据层)</td></tr>
+                                <tr><td>前端</td><td>TypeScript + Vite + React 19(React Compiler)</td></tr>
+                                <tr><td>路由 / 数据</td><td>TanStack Router(路由内鉴权与预取)+ TanStack Query</td></tr>
+                                <tr><td>表单 / 校验</td><td>React Hook Form + Zod(前后端同规则校验)</td></tr>
+                                <tr><td>UI / 样式</td><td>shadcn/ui + TailwindCSS(自定义主题,支持浅色/深色)</td></tr>
+                                <tr><td>部署</td><td>Docker(多阶段 Alpine 镜像),可部署到 Dokploy、Coolify、自有服务器</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>通用框架知识(如 React Query 的常规用法)不在本手册展开;手册只描述这些技术在本项目中的<strong>接入点与约定</strong>,对应章节会给出具体的文件位置。</p>
+
+                    <h2>版本演进(V0.7.x 关键节点)</h2>
+                    <ul>
+                        <li><strong>V0.7.0</strong>:引入业务模块注册管理,优化数据大厅;新增 Alist/Openlist 文件存储支持工具。</li>
+                        <li><strong>V0.7.1</strong>:filestore 支持 <code>?inline=1</code> 内联预览;修复 download URL 拼接 bug。</li>
+                        <li><strong>V0.7.2</strong>:删除示例业务「任务模块」及仅服务它的邮件提醒包,精简为纯基座。</li>
+                        <li><strong>V0.7.3</strong>:filestore 增加复制浏览链接、大文件下载保护;新增链接管理工具(帮助中心网关入口)。</li>
+                    </ul>
+                    <p>完整的逐版本变更记录见仓库根目录 CHANGELOG.md;阅读旧版本代码时,先对照本表确认功能归属,可少走弯路。</p>
+
+                    <p class="note">注:项目本身以 MIT 许可开源;二次开发时第三方组件(frp 等)的许可见「四、部署与项目治理 → 许可与贡献指南」。</p>
+                </div>
+            </article>
+
+            <!-- ================= 文章:代码地图与目录约定 ================= -->
+            <article id="art-code-map" class="doc-article">
+                <h1 class="article-title">代码地图与目录约定</h1>
+                <div class="article-meta">更新时间:2026-09-09 | 适用版本:V0.7.x | 面向二次开发者</div>
+                <div class="article-content">
+                    <p>本节回答一个最实际的问题:「这段代码应该放哪里」。全项目只有两个代码源——<code>backend/</code>(Go)与 <code>frontend/src/</code>(React);其余目录都是产物、数据或过程文档。</p>
+
+                    <h2>顶层目录</h2>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>目录</th><th>用途</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>backend/</td><td>Go 主程序与全部基座后端功能(地图见下节)。</td></tr>
+                                <tr><td>frontend/</td><td>React 前端源码(<code>src</code>)与公共静态资源(<code>public</code>)。</td></tr>
+                                <tr><td>db/</td><td>本地开发默认数据目录(<code>dev:server</code> 以 <code>--dir=../db</code> 指向此处);运行时目录必须固定,详见 FAQ 的空库陷阱。</td></tr>
+                                <tr><td>release/</td><td>已发布单文件二进制归档,命名形如 <code>simple-data-center-{os}-{arch}-{版本}</code>。</td></tr>
+                                <tr><td>dev_tools/</td><td>本机维护脚本:<code>build.sh</code>(构建)、<code>restart.sh</code>(重启服务)。</td></tr>
+                                <tr><td>docs/</td><td>设计过程文档(superpowers 计划/规格),不参与运行,可忽略。</td></tr>
+                                <tr><td>根目录文件</td><td>README / CHANGELOG / 许可证;<code>package.json</code> 是脚本入口,<code>vite.config.ts</code>、Dockerfile、docker-compose.yml 负责构建与部署。</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="note">注:<code>go.mod</code> 至今仍声明模块名 <code>github.com/s-petr/longhabit</code>(上游项目遗留)。fork 改名仓库后需同步修改 go.mod 与全部内部 import 路径,否则推送到新仓库也无法被他人 <code>go get</code>。</p>
+
+                    <h2>后端 backend/</h2>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>文件 / 目录</th><th>职责</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>main.go、auth.go、mailer.go、logger.go</td><td>程序入口(命令与 serve)及基座级接线:账号认证、邮件、日志。</td></tr>
+                                <tr><td>frpc.go、filestore.go、links.go</td><td>各内置工具的后端网关接线,把同名功能包挂到 PocketBase 的路由与钩子上。</td></tr>
+                                <tr><td>fs-dev.go / fs-prod.go</td><td>静态资源服务:带 <code>production</code> 构建 tag 时用 <code>embed</code> 打入前端产物;非 production 构建提示改由 Vite 提供资源。</td></tr>
+                                <tr><td>pb_schema.json</td><td>全部数据集合的 schema 声明(users、settings、tools_settings、filestore_files 等),经管理后台导入。</td></tr>
+                                <tr><td>filestore/、frpc/、links/</td><td>各功能包本体,单测(<code>*_test.go</code>)与实现同目录放置。</td></tr>
+                                <tr><td>templates/</td><td>HTML 邮件模板(认证提醒、密码重置等)。</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>代码组织遵循「根目录一个接线 .go + 同名目录一个功能包」的惯例。业务模块若需要后端代码,应自建独立目录接入,不得塞进 filestore/frpc/links 这些基座包。</p>
+
+                    <h2>前端 frontend/src/</h2>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>目录</th><th>职责与典型落点</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>pages/</td><td>路由页面,与 <code>router.tsx</code> 的注册一一对应:<code>center</code>(数据大厅)、<code>files</code>(我的文件)、<code>user-setting</code>、<code>admin/</code>(frpc / filestore / links 三个工具页)、<code>auth/</code>(登录注册等 5 页)以及 home、error、not-found、privacy-policy。</td></tr>
+                                <tr><td>components/</td><td>页面组装件:<code>shared</code>(品牌 Logo、spinner 等跨页共用)、<code>ui</code>(shadcn 基础件)、form/header/footer/settings/filestore 等按领域组织的组件。</td></tr>
+                                <tr><td>services/</td><td>每域一个 <code>api-*.ts</code>(auth/filestore/frpc/links/settings),统一从 <code>pocketbase.ts</code> 导出的客户端实例访问后端。</td></tr>
+                                <tr><td>schemas/</td><td>Zod 校验定义,与后端校验规则同构;新增表单先在此落定义。</td></tr>
+                                <tr><td>lib/</td><td>横切逻辑:<code>business-modules.ts</code>(业务模块注册,数据大厅依赖)、<code>route-guards.ts</code>(路由守卫)、set-theme / shadcn / toast 等。</td></tr>
+                                <tr><td>hooks/、context/、types/</td><td>use-auth / use-settings / use-throttle;全局上下文;PocketBase 生成类型与通用类型。</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h2>「放哪里」决策规则</h2>
+                    <ul>
+                        <li><strong>纯 CRUD 业务</strong>:集合 → <code>services/api-*.ts</code> → <code>pages/</code> 页面 → <code>router.tsx</code> 注册 → 大厅入口;无需改任何 Go 代码。</li>
+                        <li><strong>需要后端参与的定制</strong>:backend/ 根目录一个接线 .go + 自建独立目录包;不要把业务语义写进基座包。</li>
+                        <li><strong>通用 UI 与工具函数</strong>:放 <code>components/shared</code> 或 <code>lib</code>;仅供单页使用的组件就近放在该页面目录。</li>
+                        <li><strong>规则类校验</strong>:前端 <code>schemas/</code> 与后端集合规则同构,改动需两端一起做(详见「二、业务模块开发」)。</li>
+                    </ul>
+                </div>
+            </article>
+
+            <!-- ================= 文章:本地开发与常用命令 ================= -->
+            <article id="art-dev-env" class="doc-article">
+                <h1 class="article-title">本地开发与常用命令</h1>
+                <div class="article-meta">更新时间:2026-09-09 | 适用版本:V0.7.x | 面向二次开发者</div>
+                <div class="article-content">
+                    <h2>环境要求</h2>
+                    <ul>
+                        <li>Go 1.26+、Node.js 25+(或 Bun 1.3+);Docker 可选,仅容器部署需要。</li>
+                        <li>安装依赖:<code>npm install</code> 或 <code>bun install</code> 均可,仓库同时维护 package-lock.json 与 bun.lock。</li>
+                    </ul>
+
+                    <h2>一键开发 vs 分拆启动</h2>
+                    <p><code>npm run dev</code> 一次拉起前后端,等价于同时执行下面两条:</p>
+                    <div class="code-block">
+                        npm run dev:client   # Vite 热重载开发服务器
+                        npm run dev:server   # cd backend && go run . --dir=../db serve(默认 8090)
+                    </div>
+                    <ul>
+                        <li><strong>端口与代理</strong>:Vite 把 <code>/api</code> 代理到 <code>VITE_BACKEND_URL</code>(默认 <code>http://localhost:8090</code>);前端 <code>services/pocketbase.ts</code> 使用相对路径实例化客户端,开发与生产均同源访问,无需硬编码域名。</li>
+                        <li><strong>连远程后端</strong>:单独启动 dev:client 并设置 <code>VITE_BACKEND_URL</code> 指向目标后端即可,适合联调他人环境。</li>
+                    </ul>
+
+                    <h2>首次初始化</h2>
+                    <ol>
+                        <li><strong>创建管理员</strong>:任选一个可执行入口执行 <code>superuser upsert</code>——生产二进制为 <code>./simple-data-center superuser upsert 邮箱 密码</code>;开发时等价于 <code>cd backend &amp;&amp; go run . --dir=../db superuser upsert 邮箱 密码</code>(参数写法与 serve 一致)。</li>
+                        <li><strong>导入集合</strong>:访问 <code>http://localhost:8090/_/</code> → Settings → Import collections → Load from JSON file,选择 <code>backend/pb_schema.json</code>(users、settings、tools_settings、filestore_files 等)。工具模块启动时会自动补插 <code>frpc_*</code>、<code>filestore_*</code>、<code>links_*</code> 配置项;若补插失败,先检查集合是否已导入。</li>
+                        <li><strong>(可选)Google OAuth</strong>:在 Users 集合的 OAuth2 配置中填入凭据。</li>
+                    </ol>
+                    <p class="note">数据目录由 <code>--dir</code> 决定且按启动目录解析——请固定从同一目录启动服务,否则会出现「数据全空、登录报错」的空库现象,详见「四、部署与项目治理 → 常见问题」。</p>
+
+                    <h2>常用命令速查</h2>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>命令</th><th>作用</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>npm run dev / dev:client / dev:server</td><td>开发模式:一键 / 仅前端 / 仅后端。</td></tr>
+                                <tr><td>npm run lint</td><td>TypeScript 类型检查 + ESLint。</td></tr>
+                                <tr><td>npm run pretty</td><td>Prettier 统一格式化 <code>frontend/src</code>。</td></tr>
+                                <tr><td>npm run build</td><td>lint → vite build(输出 <code>backend/dist</code>)→ <code>CGO_ENABLED=0 go build -tags production</code>(输出根目录 <code>simple-data-center</code>)。</td></tr>
+                                <tr><td>npm run preview</td><td>直接运行根目录二进制 <code>serve</code>,用于生产形态验证。</td></tr>
+                                <tr><td>npm run compose</td><td>docker compose 构建并后台运行。</td></tr>
+                                <tr><td>cd backend &amp;&amp; go test ./...</td><td>后端 Go 单测(filestore、frpc、links 等包均自带 <code>*_test.go</code>)。</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h2>开发态与生产态的差异</h2>
+                    <ul>
+                        <li>生产二进制带 <code>production</code> tag,经 <code>fs-prod.go</code> 将 <code>backend/dist</code> 用 <code>embed</code> 打入;开发态(<code>fs-dev.go</code>)由 Vite 提供静态资源。</li>
+                        <li>只改前端代码时 <code>npm run dev</code> 即可热重载,不必每次重编 Go;改 Go 代码或做最终验证时再执行 <code>npm run build</code>。</li>
+                        <li>仅修改管理配置(如 <code>links_*</code>)无需重启即生效;frpc 配置修改后需在工具页「重启」才生效——两者规则不同,注意区分。</li>
+                    </ul>
+
+                    <h2>规范与注意事项</h2>
+                    <ul>
+                        <li>代码、注释、文档一律中文;前端用户可见文案亦为中文。</li>
+                        <li><code>npm run lint</code> 是 build:client 的前置步骤,提交前必须通过;顺手执行 <code>npm run pretty</code> 统一格式。</li>
+                        <li>新增/修改集合后,须同步导出回 <code>backend/pb_schema.json</code>,保持仓库声明与运行库一致。</li>
+                        <li>网络受限(npm registry、Go proxy 不可达等)时按项目约定「只报告、不绕过」——不要私自换源或挂代理。</li>
+                    </ul>
+                </div>
+            </article>
+
+            <!-- ================= 文章:开发模式总览 ================= -->
+                        <article id="art-module-overview" class="doc-article">
+                <h1 class="article-title">开发模式总览</h1>
+                <div class="article-meta">更新时间:2026-09-10 | 适用版本:V0.7.x | 面向二次开发者</div>
+                <div class="article-content">
+                    <p>基座定义了一条业务开发的标准路径——<strong>定义集合 → 服务函数 → 页面路由 → 入口</strong>。本组五篇文章即按此展开;开始之前,先记住两条判断规则:</p>
+                    <ul>
+                        <li><strong>纯 CRUD 业务不需要写任何 Go 代码</strong>:数据存储、权限、校验、API 全部由 PocketBase 提供,你只写前端与集合定义。</li>
+                        <li><strong>只有「网关型 / 代理型 / 后台任务」才需要后端代码</strong>:这类需求在 backend/ 自建独立目录包接入,不得改动基座包语义。</li>
+                    </ul>
+                    <h2>四步与落点</h2>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>步骤</th><th>产物</th><th>落点</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>1. 定义集合</td><td>集合与字段、API Rules</td><td>管理后台 <code>/_/</code> 创建,或编辑 <code>backend/pb_schema.json</code> 后导入</td></tr>
+                                <tr><td>2. 服务函数</td><td><code>api-xxx.ts</code> 增删改查封装</td><td><code>frontend/src/services/</code></td></tr>
+                                <tr><td>3. 页面路由</td><td>页面组件 + 路由注册</td><td><code>frontend/src/pages/</code> + <code>router.tsx</code></td></tr>
+                                <tr><td>4. 入口</td><td>数据大厅卡片(与管理工具项)</td><td><code>lib/business-modules.ts</code>(或 <code>pages/admin/admin-tools.ts</code>)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h2>参照物</h2>
+                    <p>不要从零发明结构。仓库里有一个完整的横向切片可照抄——<strong>文件存储(/files)</strong>:它的集合(<code>filestore_files</code>)、服务层(<code>api-filestore.ts</code>)、页面(<code>pages/files/</code>)、路由(<code>filesRoute</code>)、大厅入口(<code>business-modules.ts</code>)五处齐全,是「四步」最标准的范例。需要更复杂的后端形态时,参看 <code>links</code>(最小网关:配置 + 公开路由)与 <code>filestore</code>(代理 + 流式转发)。</p>
+                    <p class="note">约定:业务模块的代码目录自包含(页面、组件、服务同域归拢),避免散落到全局目录;基座只认「注册表」中的入口,不感知业务内部结构。</p>
+                </div>
+            </article>
+
+            <!-- ================= 文章:后端:集合与框架接线 ================= -->
+                        <article id="art-backend" class="doc-article">
+                <h1 class="article-title">后端:集合与框架接线</h1>
+                <div class="article-meta">更新时间:2026-09-10 | 适用版本:V0.7.x | 面向二次开发者</div>
+                <div class="article-content">
+                    <p>后端只有两件事需要你关心:<strong>数据长什么样(集合)</strong>,以及<strong>定制逻辑挂在哪里(接线)</strong>。</p>
+                    <h2>PocketBase 作为框架</h2>
+                    <p>PocketBase 不是独立进程,而是被本工程以 Go 包引用(<code>backend/main.go</code> 中 <code>pocketbase.NewWithConfig</code>)。启动序列决定了各基座模块的挂载时机:</p>
+                    <div class="code-block">
+                        main.go: newApplication → mountFs(静态资源) → 邮件模板 → auth hooks
+                                 → frpc.NewManager + setupFrpc
+                                 → setupFilestore → setupLinks → pb.Start()
+                    </div>
+                    <p>每个 <code>setupXxx</code> 都是同一个套路:在 <code>OnServe</code> 钩子里<strong>幂等补插默认配置项</strong>,再 <code>RegisterHandlers(e)</code> 挂路由。新增后端功能时照此模式写。</p>
+                    <h2>集合与 schema</h2>
+                    <ul>
+                        <li><strong>单一事实源是 <code>backend/pb_schema.json</code></strong>:集合在管理后台 <code>/_/</code> 创建/修改后,必须导回该文件并提交;新环境靠 Settings → Import collections 导入。</li>
+                        <li>当前集合:users、settings(用户偏好)、tools_settings(系统配置)、filestore_files(文件登记)等;前两者和 filestore_files 都有配套代码依赖其字段名,改字段前先全局搜索引用。</li>
+                        <li><strong>API Rules</strong> 在集合上配置,是真正的安全边界:公开只读、登录可读、仅创建者可改等都在这里表达;前端守卫只是体验层(见「入口注册与访问控制」)。</li>
+                    </ul>
+                    <h2>定制逻辑挂哪里</h2>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>需求</th><th>落点与参照</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>集合记录的生命周期钩子(如创建用户时补建 settings)</td><td>backend/ 根目录的接线文件,<code>OnModelAfterCreateSuccess</code> 等;参照 <code>auth.go</code></td></tr>
+                                <tr><td>新 API / 网关路由(含鉴权)</td><td>自建 <code>backend/xxx/</code> 包 + <code>backend/xxx.go</code> 接线;包内 <code>RegisterHandlers</code> 注册,参照 <code>links/</code></td></tr>
+                                <tr><td>超级管理员专属接口</td><td>handler 内 <code>re.HasSuperuserAuth()</code> 判权,参照 <code>links/handler.go</code></td></tr>
+                                <tr><td>流式转发 / 大响应(文件类)</td><td>参照 <code>backend/filestore/handler.go</code>(代理模式)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="note">边界:业务语义不要写进 filestore/frpc/links 这些基座包;基座包只服务各自工具,业务代码自建目录。</p>
+                </div>
+            </article>
+
+            <!-- ================= 文章:前端:页面、路由与服务层 ================= -->
+                        <article id="art-frontend" class="doc-article">
+                <h1 class="article-title">前端:页面、路由与服务层</h1>
+                <div class="article-meta">更新时间:2026-09-10 | 适用版本:V0.7.x | 面向二次开发者</div>
+                <div class="article-content">
+                    <p>前端已定好分层,新增代码只需对号入座。<strong>先看 <code>pages/files/</code> + <code>api-filestore.ts</code> + <code>filesRoute</code> 这一套完整切片</strong>,再照抄结构。</p>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>产物</th><th>落点</th><th>约定</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>页面组件</td><td><code>pages/&lt;模块&gt;/</code></td><td>业务组件就近放置;跨页复用才进 <code>components/</code></td></tr>
+                                <tr><td>服务层</td><td><code>services/api-&lt;模块&gt;.ts</code></td><td>从 <code>services/pocketbase.ts</code> 导入客户端实例;封装类型 + 集合操作 + 错误信息</td></tr>
+                                <tr><td>校验 schema</td><td><code>schemas/&lt;模块&gt;-schema.ts</code></td><td>Zod 定义与后端规则<strong>镜像</strong>:同规则、同文案(参照 links-schema.ts 与 backend/links/config.go)</td></tr>
+                                <tr><td>路由</td><td><code>router.tsx</code></td><td><code>createRoute</code> + <code>beforeLoad: requireVerifiedUser('模块名')</code>,最后挂进 <code>routeTree</code></td></tr>
+                                <tr><td>登录态数据</td><td><code>services/api-auth.ts</code></td><td>复用 <code>userQueryOptions</code> 与 <code>use-auth</code>,不要另起客户端</td></tr>
+                                <tr><td>公共工具</td><td><code>lib/</code></td><td>toast、主题、守卫等横切逻辑</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h2>几条本项目特有的规矩</h2>
+                    <ul>
+                        <li><strong>客户端用相对路径</strong>:<code>new PocketBase()</code> 不带域名,开发态由 Vite 代理 <code>/api</code>,生产态同源——不要硬编码后端地址。</li>
+                        <li><strong>数据在渲染前就绪</strong>:路由 <code>loader</code> 里用 <code>queryClient.ensureQueryData</code> 预取(参考根路由),页面内用 TanStack Query 读缓存,不要在 <code>useEffect</code> 里手抓数据。</li>
+                        <li><strong><code>pendingComponent</code> 用 Spinner</strong>,标题通过 <code>beforeLoad</code> 返回 <code>getTitle</code> 参与 document.title 拼接。</li>
+                        <li>路径别名 <code>@/</code> 指向 <code>frontend/src</code>,新文件统一用它。</li>
+                    </ul>
+                </div>
+            </article>
+
+            <!-- ================= 文章:入口注册与访问控制 ================= -->
+                        <article id="art-entry" class="doc-article">
+                <h1 class="article-title">入口注册与访问控制</h1>
+                <div class="article-meta">更新时间:2026-09-10 | 适用版本:V0.7.x | 面向二次开发者</div>
+                <div class="article-content">
+                    <p>页面写完只是「能访问」,把入口挂进大厅/管理工具才算「能到达」。两处注册表是唯一的入口事实源:</p>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>入口</th><th>注册表</th><th>注意</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>数据大厅(/center)业务卡片</td><td><code>lib/business-modules.ts</code></td><td><code>path</code> 是字面量联合类型——新增路由后需同步扩展类型,否则编译不过(这是刻意设计,确保卡片不会指向不存在的路由)</td></tr>
+                                <tr><td>管理工具(/admin)工具卡片</td><td><code>pages/admin/admin-tools.ts</code></td><td>注册表驱动卡片渲染;但路由是<strong>显式声明</strong>的(<code>router.tsx</code> 的 <code>adminToolRoutes</code> 需手加一行)——用 map 动态生成会丢失字面量类型,注释里写明了原因</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h2>访问控制三层</h2>
+                    <p>按「体验层 → 安全层 → 管理端」理解,改权限时先想清楚属于哪一层:</p>
+                    <ul>
+                        <li><strong>路由守卫(体验层)</strong>:<code>lib/route-guards.ts</code> 的 <code>requireVerifiedUser('模块名')</code> 一行接入,未登录/未验证即跳登录页。它只管跳转体验,<strong>不是安全边界</strong>。</li>
+                        <li><strong>集合 API Rules(安全层)</strong>:真正拦住非法请求的地方。业务数据落库前先问:匿名能读吗?他人能改吗?答案写进集合规则,而不是前端判断。</li>
+                        <li><strong>管理端(superuser)</strong>:<code>/admin</code> 不自己实现登录,未认证时整页跳 PocketBase Dashboard(<code>/_/</code>)登录,同一会话生效;工具 API 在后端 <code>HasSuperuserAuth()</code> 二次校验。</li>
+                        <li>匿名可见的公开入口(如 <code>/links/help-center</code>)是特例:路由不挂守卫,安全性由服务端网关自身保证。</li>
+                    </ul>
+                    <h2>新增模块的自检</h2>
+                    <ul>
+                        <li>集合规则:默认最严,逐条放宽并说明理由;</li>
+                        <li>路由守卫:除公开入口外,一律挂 <code>requireVerifiedUser</code>;</li>
+                        <li>管理类接口:后端必须有 <code>HasSuperuserAuth()</code>,不能只靠前端隐藏按钮;</li>
+                        <li>文件名/浏览器直链可绕过任何前端判断——凡是「不想让无权者拿到」的内容,都要经后端校验。</li>
+                    </ul>
+                </div>
+            </article>
+
+            <!-- ================= 文章:测试与交付清单 ================= -->
+                        <article id="art-checklist" class="doc-article">
+                <h1 class="article-title">测试与交付清单</h1>
+                <div class="article-meta">更新时间:2026-09-10 | 适用版本:V0.7.x | 面向二次开发者</div>
+                <div class="article-content">
+                    <h2>自动化检查</h2>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>项目</th><th>命令</th><th>约定</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>后端单测</td><td><code>cd backend &amp;&amp; go test ./...</code></td><td>新增「纯函数 / 校验规则 / 网关裁决」类逻辑时补 <code>*_test.go</code>,与实现同目录;基座三个功能包(links/filestore/frpc)均有测试可参照</td></tr>
+                                <tr><td>前端检查</td><td><code>npm run lint</code></td><td>tsc 类型检查 + ESLint;是 build 的前置步骤,必须通过</td></tr>
+                                <tr><td>格式化</td><td><code>npm run pretty</code></td><td>Prettier 统一 <code>frontend/src</code></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h2>提交前的自检清单</h2>
+                    <ul>
+                        <li><strong>代码</strong>:中文注释与用户可见文案;无调试残留(<code>console.log</code>、临时按钮);类型无 <code>any</code> 逃逸。</li>
+                        <li><strong>数据</strong>:集合改动已导出回 <code>backend/pb_schema.json</code>;新字段对旧数据的影响已考虑(默认值、是否可空)。</li>
+                        <li><strong>安全</strong>:新集合的 API Rules 已配置;新管理接口有后端判权;不向前端暴露不该公开的配置(参照 links 的做法:配置 API 仅 superuser 可读)。</li>
+                        <li><strong>文档</strong>:README 快速上手是否需要更新;<strong>CHANGELOG.md 按既有格式追加一条</strong>(用户可见变更必须记录);本手册相关章节若因改动而过时,同步修订。</li>
+                        <li><strong>实机验证</strong>:开发模式跑通「注册/登录 → 进入大厅 → 打开新模块 → 增删改查」全链路;涉及 frpc/filestore 时,以生产二进制形态再验证一次。</li>
+                    </ul>
+                    <p class="note">排查顺序约定:实机问题先查环境、操作、数据,而不是直接改代码(端口占用、启动目录、集合未导入是三类高频原因,详见 FAQ)。</p>
+                </div>
+            </article>
+
+            <!-- ================= 文章:系统配置的存储与读取 ================= -->
+                        <article id="art-config" class="doc-article">
+                <h1 class="article-title">系统配置的存储与读取</h1>
+                <div class="article-meta">更新时间:2026-09-10 | 适用版本:V0.7.x | 面向二次开发者</div>
+                <div class="article-content">
+                    <p>所有管理工具类配置(不是业务数据)统一存放在 <code>tools_settings</code> 集合,字段为 <code>option / description / type / value</code>,按 <code>前缀_名称</code> 命名。你新增一个系统级配置项时,照下面三步走。</p>
+                    <h2>存储与补插机制</h2>
+                    <ul>
+                        <li><strong>幂等补插</strong>:每个功能模块在自己的 <code>setupXxx</code> 里,于 <code>OnServe</code> 钩子中补插缺失的默认值(见 <code>backend/frpc.go / filestore.go / links.go</code> 中的 <code>ensureXxxSettings</code>)。已存在的项不会被覆盖,可放心随版本新增字段。</li>
+                        <li>补插失败只告警不崩溃——最常见原因是 <code>tools_settings</code> 尚未导入,启动日志会给出中文提示。</li>
+                        <li><strong>对客户端关闭</strong>:该集合不对普通 API 开放;需要展示配置的模块,由后端提供 <strong>superuser 专属</strong>的配置 API(<code>GET/POST /api/xxx/config</code>),前端只调它,绝不直读集合。</li>
+                    </ul>
+                    <h2>现有配置项一览</h2>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>前缀</th><th>模块</th><th>说明</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><code>frpc_*</code></td><td>反向代理</td><td>server_addr / token / proxy_name / local_port / remote_port 等</td></tr>
+                                <tr><td><code>filestore_*</code></td><td>文件存储</td><td>alist_url / token / 大小与 MIME 限制 / 下载模式 / 存储路径 / 两种占位图</td></tr>
+                                <tr><td><code>links_*</code></td><td>链接管理</td><td>help_center_url / error_html</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h2>新增配置项要动的地方</h2>
+                    <ol style="padding-left:22px;margin-bottom:15px;">
+                        <li>后端:在对应 <code>defaultXxxSettings</code> 列表追加一条(option/description/type/默认值);</li>
+                        <li>读取:模块的 <code>LoadConfig</code> 里把该 option 映射进配置结构体(容错读取,容忍空值);</li>
+                        <li>写入:保存接口采用<strong>部分更新语义</strong>——只写请求中实际提交的项,未携带的保持库中原值(避免「只想改 A 却清空 B」);</li>
+                        <li>校验:保存时后端二次校验;若前端也有表单,<code>schemas/</code> 写镜像规则与同款中文报错(参照 links 的 URL 校验)。</li>
+                    </ol>
+                </div>
+            </article>
+
+            <!-- ================= 文章:文件存储 filestore(接 Alist) ================= -->
+                        <article id="art-filestore" class="doc-article">
+                <h1 class="article-title">文件存储 filestore(接 Alist)</h1>
+                <div class="article-meta">更新时间:2026-09-10 | 适用版本:V0.7.x | 面向二次开发者</div>
+                <div class="article-content">
+                    <p>定位一句话:<strong>本项目不写存储驱动——Alist 负责存文件,本项目负责鉴权、编排与元数据登记</strong>。<code>filestore_files</code> 集合是文件的登记簿,Alist 是字节仓库,两者只由本应用后端写入(禁止手改 Alist 后台,否则产生孤儿文件)。</p>
+                    <h2>三条链路</h2>
+                    <ul>
+                        <li><strong>上传</strong>:浏览器 → 后端(鉴权 + 大小/MIME 校验)→ 流式转发 → Alist,归档路径 <code>{根路径}/{年}/{月}/{用户ID}/{uuid}.{ext}</code>。</li>
+                        <li><strong>下载</strong>:由全局配置 <code>filestore_download_mode</code> 决定——<code>direct</code> 签发 Alist sign 直链 302 重定向;或 <code>proxy</code> 由后端流式透传(不暴露 Alist 地址)。</li>
+                        <li><strong>内联预览</strong>:下载 URL 加 <code>?inline=1</code>,<code>proxy</code> 模式返回 <code>Content-Disposition: inline</code>,可直接用于 <code>&lt;img&gt;</code>/<code>&lt;iframe&gt;</code>;<code>direct</code> 模式该参数被忽略。</li>
+                    </ul>
+                    <p>关键文件:<code>backend/filestore/</code>(alist 客户端 / config / handler 与全部单测)、<code>frontend/src/services/api-filestore.ts</code>(服务层,含 <code>getDownloadUrl</code>/<code>getPreviewUrl</code>/<code>getAbsoluteFileUrl</code> 等工具)、<code>frontend/src/pages/files/</code>(用户界面)、<code>frontend/src/pages/admin/filestore-tool.tsx</code>(管理配置与对账)。</p>
+                    <h2>业务模块如何使用</h2>
+                    <ul>
+                        <li><strong>不重复造轮子</strong>:业务表只需存一个 <code>filestore_files</code> 记录 ID(或 ID 列表)作为外键,上传/下载/删除全部调 filestore 提供的接口,不自行拼 Alist 地址。</li>
+                        <li>私有文件用原生 <code>&lt;img&gt;</code> 标签无法内联(标签不带鉴权头,会回退占位图),公开文件可直接内联——需要私有内联流时,参考现有 sign 思路扩展短期预览直链。</li>
+                        <li>AI/外部系统读取文件时,直接给 <code>filestore_files</code> 记录的 REST API 地址(公开文件)或通过本项目代理接口(私有文件)。</li>
+                    </ul>
+                </div>
+            </article>
+
+            <!-- ================= 文章:链接管理网关与静态页发布 ================= -->
+                        <article id="art-links" class="doc-article">
+                <h1 class="article-title">链接管理网关与静态页发布</h1>
+                <div class="article-meta">更新时间:2026-09-10 | 适用版本:V0.7.x | 面向二次开发者</div>
+                <div class="article-content">
+                    <p>这是基座里最小的一个完整模块,适合作为「新增后端功能」的样板;它同时解决一个具体问题:<strong>导航栏「帮助中心」这类外链入口,目标是运行期可改的管理员配置,且配置内容不能泄露给任何人</strong>。</p>
+                    <h2>工作原理</h2>
+                    <ul>
+                        <li>固定公开入口 <code>/links/help-center</code>(新标签页、匿名可见),后端每次请求实时裁决:<strong>合法 → 302(带 no-store)/ 未配置·非法 → 200 报错页</strong>;读配置失败(如集合未导入)也落报错页,不让公开页 500。</li>
+                        <li>校验规则:绝对地址(危险协议 <code>javascript:/data:/vbscript:/file:</code> 黑名单拒绝)或 <code>/</code> 开头的根相对路径;裸相对(如 <code>help.html</code>)基准未定义、一律拒绝并提示正确写法。</li>
+                        <li><strong>前端零判断</strong>:导航栏只放一个静态链接,没有公开配置 API,非管理员永远读不到配置内容。脏数据也在网关处被拦下,到不了用户浏览器。</li>
+                        <li>报错页内容由管理员配置(<code>links_error_html</code>,支持任意 HTML 片段);留空用内置默认文案。</li>
+                    </ul>
+                    <p>落点:<code>backend/links/</code>(config 校验 / handler 网关 / 单测)、<code>backend/links.go</code>(接线 + 默认配置补插)、<code>frontend/src/services/api-links.ts</code>、<code>frontend/src/pages/admin/links-tool.tsx</code>、<code>frontend/src/schemas/links-schema.ts</code>(镜像校验)。</p>
+                    <h2>静态页发布(帮助中心内容怎么放)</h2>
+                    <p>本项目的实践是「<strong>单文件 HTML + 内联 CSS/JS/图片(base64)</strong>」,零依赖、零构建,可直接浏览与秒级部署。本手册自身即此类产物,发布路径任选:</p>
+                    <ul>
+                        <li>丢到任意静态托管(内网 Nginx、对象存储),把 <code>links_help_center_url</code> 配成其绝对地址;</li>
+                        <li>或存入 filestore 的 public 文件,配置成其浏览链接(根相对或绝对均可)。</li>
+                    </ul>
+                    <h2>扩展第二、第三个链接</h2>
+                    <p>把 links 当作模板:新增 <code>links_docs_url</code> 之类的 option 到默认列表 → <code>Config</code> 结构体加字段 → handler 加一条网关路由 → 导航栏加一个静态入口。注意各链接独立裁决、独立报错,互不影响。</p>
+                </div>
+            </article>
+
+            <!-- ================= 文章:frpc、邮件与其余内置件 ================= -->
+                        <article id="art-misc" class="doc-article">
+                <h1 class="article-title">frpc、邮件与其余内置件</h1>
+                <div class="article-meta">更新时间:2026-09-10 | 适用版本:V0.7.x | 面向二次开发者</div>
+                <div class="article-content">
+                    <h2>frpc(反向代理)</h2>
+                    <ul>
+                        <li>frp 客户端以 <strong>Go 库</strong>嵌入(<code>backend/frpc/</code>,frp v0.70.1),保持单二进制与跨平台编译;当前仅支持 <strong>tcp 单代理</strong>。</li>
+                        <li>管理工具页(/admin/frpc)提供启动/停止/重启、连接配置表单、状态展示;配置存于 <code>frpc_*</code> 设置项,<strong>改配置后需点「重启」才生效</strong>。</li>
+                        <li>设计上服务重启后 frpc <strong>不自动启动</strong>,须管理员手动开启——这是安全默认值(frp 即公网暴露),不要在业务改动中打破它。</li>
+                    </ul>
+                    <h2>邮件</h2>
+                    <ul>
+                        <li>基座内置三个场景:邮箱验证、密码重置、新设备登录提醒;由 PocketBase 邮件体系 + 自定义钩子驱动(<code>backend/mailer.go</code>)。</li>
+                        <li>模板是 HTML 文件,位于 <code>backend/templates/</code>(如 <code>base.layout.gohtml</code>),启动时加载;自定义外观直接改模板。</li>
+                    </ul>
+                    <h2>用户设置与账号体系(概述)</h2>
+                    <ul>
+                        <li><code>users</code> 集合承载账号;用户创建时由钩子自动补建 <code>settings</code> 记录(主题、提醒偏好等),见 <code>backend/auth.go</code>。</li>
+                        <li>用户设置页(/user-setting)覆盖:头像、昵称、用户名、邮箱(含邮件确认流程)、邮箱可见性开关、修改密码;扩展账号字段时,前后端 schema 与表单需同步。</li>
+                    </ul>
+                    <h2>日志与运行文件</h2>
+                    <ul>
+                        <li>日志配置在 <code>backend/logger.go</code>;健康检查路由的噪音日志已被刻意静音,排查时不要误以为缺日志。</li>
+                        <li>生产运行文件:<code>server.log</code>(已 gitignore)、数据目录、二进制本体——备份与排障范围就是这三者。</li>
+                    </ul>
+                </div>
+            </article>
+
+            <!-- ================= 文章:构建与发布 ================= -->
+                        <article id="art-release" class="doc-article">
+                <h1 class="article-title">构建与发布</h1>
+                <div class="article-meta">更新时间:2026-09-10 | 适用版本:V0.7.x | 面向二次开发者</div>
+                <div class="article-content">
+                    <h2>构建流程</h2>
+                    <div class="code-block">
+                        npm run build
+                          ├─ build:client: lint → vite build(产物输出 backend/dist)
+                          └─ build:server: cd backend &amp;&amp; CGO_ENABLED=0 go build -tags production
+                                            → 根目录 simple-data-center
+                    </div>
+                    <ul>
+                        <li><code>production</code> tag 决定静态资源走 <code>embed</code>(<code>fs-prod.go</code>),这就是「单文件」的来源;<code>CGO_ENABLED=0</code> 保证静态链接,产物可直接丢进 Alpine 运行。</li>
+                        <li>日常发布推荐用菜单式脚本 <code>dev_tools/build.sh</code>:交互选择系统与架构,自动读取 package.json 版本号,产物同时落到 <code>release/simple-data-center-{os}-{arch}-{版本}[.exe]</code>(归档)与项目根目录(运行)。它每次都会先重建前端,避免嵌入陈旧产物导致新页面 404。</li>
+                    </ul>
+                    <h2>版本与归档约定</h2>
+                    <ul>
+                        <li>版本号源自 <code>package.json</code>;每次对外发布在 <strong>CHANGELOG.md 顶部追加版本条目</strong>(格式参照现有条目:分模块列要点,写明用户可见变化)。</li>
+                        <li><code>release/</code> 保留历史产物用于回滚;发布产物命名必须带 os/arch/版本三段。</li>
+                    </ul>
+                    <h2>Docker</h2>
+                    <ul>
+                        <li>多阶段 Dockerfile:Bun 构建前端 → Go 构建二进制 → Alpine 运行(<code>serve --http=0.0.0.0:8090</code>),约 20MB 级镜像。</li>
+                        <li>docker-compose 暴露 8090,数据卷挂载 db 目录(Dokploy 场景用 <code>../files/db</code>);自带 healthcheck 打 <code>/api/health</code>。</li>
+                        <li>注意 compose 中的服务名/容器名仍是上游遗留的 <code>longhabit</code>,fork 后按需改名。</li>
+                    </ul>
+                </div>
+            </article>
+
+            <!-- ================= 文章:数据、升级与备份 ================= -->
+                        <article id="art-ops" class="doc-article">
+                <h1 class="article-title">数据、升级与备份</h1>
+                <div class="article-meta">更新时间:2026-09-10 | 适用版本:V0.7.x | 面向二次开发者</div>
+                <div class="article-content">
+                    <h2>数据位置:先记住这个陷阱</h2>
+                    <p>数据目录由 <code>--dir</code>(或 <code>DB_DIR</code> 环境变量)决定,<strong>按启动时的工作目录解析相对路径</strong>。从不同目录启动同一个二进制,会各自创建一套空数据库——表现为「数据全空、登录报错」。运维第一原则:<strong>固定启动目录,或干脆用绝对路径</strong>。</p>
+                    <ul>
+                        <li>开发态:<code>--dir=../db</code>,即仓库根 <code>db/</code>。</li>
+                        <li>部署态:常规是二进制同级的 <code>db/</code>;容器内为挂载卷(compose 中 <code>/app/db</code>)。</li>
+                    </ul>
+                    <h2>备份与恢复</h2>
+                    <ul>
+                        <li><strong>数据库是全部业务事实源</strong>:备份 = 拷贝 db 目录(SQLite 主文件 + wal/shm);恢复 = 停服、放回目录、启动。建议低峰期或先停服再拷,避免拷贝到写入中的中间态。</li>
+                        <li>业务文件不在 db 里——它们在 Alist 侧,备份责任随之转移:确保 Alist 自身的存储有备份策略,本应用只登记元数据。</li>
+                        <li>第三方配置(邮件 SMTP、OAuth 凭据)在 PocketBase Settings 中,存于同一数据库,随 db 一起备份。</li>
+                    </ul>
+                    <h2>升级步骤</h2>
+                    <ol style="padding-left:22px;margin-bottom:15px;">
+                        <li>备份 db 目录(回滚的唯一保险);</li>
+                        <li>替换二进制(或拉新镜像)重启;</li>
+                        <li>若新版本含 schema 变更,按 CHANGELOG 的说明在 <code>/_/</code> 导入最新 <code>pb_schema.json</code> 或执行增量字段添加;</li>
+                        <li>回归验证:登录 → 大厅 → 各工具模块;frpc 若在用,记得手动重新启动。</li>
+                    </ol>
+                    <h2>日志</h2>
+                    <p>运行日志写 <code>server.log</code>(已 gitignore)。排查顺序:先看启动时的中文告警(常见为集合未导入、配置补插失败),再看各工具页的状态显示。发布前无需清理日志文件,但长期运行建议配置轮转或定期归档。</p>
+                </div>
+            </article>
+
+            <!-- ================= 文章:常见问题(FAQ) ================= -->
+                        <article id="art-faq" class="doc-article">
+                <h1 class="article-title">常见问题(FAQ)</h1>
+                <div class="article-meta">更新时间:2026-09-10 | 适用版本:V0.7.x | 面向二次开发者</div>
+                <div class="article-content">
+                    <p>按「先环境、先数据」的排查原则排列,多数问题不需要改代码。</p>
+                    <h2>登录报错 / 数据全空</h2>
+                    <ul>
+                        <li><strong>现象</strong>:原本正常的账号登录失败,或进去后集合/数据都不见了。</li>
+                        <li><strong>原因</strong>:几乎总是<strong>启动目录不对</strong>——数据目录按启动工作目录解析,从别处启动会新建空库。</li>
+                        <li><strong>处理</strong>:确认启动目录固定(或改用绝对路径 <code>--dir</code> / <code>DB_DIR</code>),并在正确目录下找到原有 db。</li>
+                    </ul>
+                    <h2>「帮助中心」点开是报错页</h2>
+                    <ul>
+                        <li>这是<strong>正常设计</strong>:<code>links_help_center_url</code> 未配置或非法时,网关展示报错页。</li>
+                        <li>处理:管理员到「管理工具 → 链接管理」填写合法地址(绝对地址或以 <code>/</code> 开头);裸相对路径会被拒绝,页面有中文提示。</li>
+                    </ul>
+                    <h2>filestore 链接打不开 / 图片不显示</h2>
+                    <ul>
+                        <li>先查「连通性自检」:Alist 地址与 token 是否有效、Alist 是否可达。</li>
+                        <li>内联预览不生效:确认当前是 <code>proxy</code> 模式且 URL 带 <code>?inline=1</code>;<code>direct</code> 模式下由 Alist 决定,参数被忽略。</li>
+                        <li>私有文件在 <code>&lt;img&gt;</code> 中显示占位图是预期行为(无鉴权头);如需私有内联,见 filestore 章节的扩展建议。</li>
+                        <li>上传失败:检查大小是否超 <code>filestore_max_size</code>、MIME 是否在 <code>filestore_allowed_mimes</code> 白名单内。</li>
+                    </ul>
+                    <h2>配置项补插失败 / 工具页异常</h2>
+                    <ul>
+                        <li>启动日志若有「配置项补插失败」告警:先在 <code>/_/</code> 导入 <code>backend/pb_schema.json</code>(含 <code>tools_settings</code>、<code>filestore_files</code>),再重启。</li>
+                        <li>frpc 状态一直失败:核对地址可达性、token、proxy_name 唯一性;改过配置需点「重启」才生效。</li>
+                    </ul>
+                    <h2>开发态正常、生产态异常</h2>
+                    <ul>
+                        <li><strong>新页面 404</strong>:生产用的是 embed 进二进制的旧前端产物——重新 <code>npm run build</code>。</li>
+                        <li><strong>接口地址错乱</strong>:检查是否硬编码了后端地址;客户端应始终用相对路径(见前端章节)。</li>
+                        <li><strong>日志缺健康检查记录</strong>:属刻意静音,不是异常。</li>
+                    </ul>
+                </div>
+            </article>
+
+            <!-- ================= 文章:许可与贡献指南 ================= -->
+                        <article id="art-contributing" class="doc-article">
+                <h1 class="article-title">许可与贡献指南</h1>
+                <div class="article-meta">更新时间:2026-09-10 | 适用版本:V0.7.x | 面向二次开发者</div>
+                <div class="article-content">
+                    <h2>许可</h2>
+                    <ul>
+                        <li>本项目以 <strong>MIT</strong> 许可开源,可自由使用、修改、分发与商用。</li>
+                        <li>上游与第三方:<strong>Long Habit</strong>(本基座的前身,MIT) → <strong>PocketBase</strong>(MIT) → <strong>frp</strong>(Apache License 2.0)。二次分发时保留相应版权声明。</li>
+                        <li>历史遗留:Go 模块名仍为 <code>github.com/s-petr/longhabit</code>,Docker 服务名亦然;fork 后若要独立发布,需同步改名并调整全部引用(见「代码地图」的注记)。</li>
+                    </ul>
+                    <h2>贡献约定</h2>
+                    <ul>
+                        <li><strong>语言</strong>:代码、注释、提交说明、用户可见文案、文档一律中文——这是本项目的硬性规范。</li>
+                        <li><strong>排查原则</strong>:报告实机问题时,先排查环境(端口、启动目录)、操作(参数、顺序)、数据(脏数据、字段格式),再考虑代码缺陷。</li>
+                        <li><strong>提交</strong>:一个提交讲清一件事;涉及用户可见变化时同步更新 CHANGELOG.md;重大改动前先与维护者确认方案。</li>
+                        <li><strong>测试</strong>:后端新增判定类逻辑附单测;前端保证 lint 与类型检查通过。</li>
+                        <li><strong>风格</strong>:沿用既有结构与命名,不引入平行实现(例如不要另造 HTTP 客户端、另起状态管理)。</li>
+                    </ul>
+                    <h2>二次开发衍生产品</h2>
+                    <ul>
+                        <li>无需公开你的业务代码,但建议在「目录结构」约定的位置保留基座边界,方便未来与上游同步。</li>
+                        <li>与上游基座保持同步的建议:业务代码集中在自建目录,基座文件尽量不动;确需修改时记录在 CHANGELOG,便于升级合并。</li>
+                    </ul>
+                </div>
+            </article>
+
+            <!-- 上一篇/下一篇导航 -->
+            <div class="pagination-nav">
+                <a href="#" id="prev-link" class="disabled">&larr; 上一篇</a>
+                <a href="#" id="next-link">下一篇 &rarr;</a>
+            </div>
+
+        </main>
+    </div>
+
+    <noscript>
+        <style>/* 无 JS 时全部文章平铺展示,锚点可直接跳转 */
+            .doc-article { display: block !important; }
+            .pagination-nav { display: none; }
+        </style>
+    </noscript>
+
+    <script>
+        // ========== 单文件手册的章节切换逻辑 ==========
+        (function () {
+            // 收集侧边栏全部导航项(顺序即文档顺序)
+            var links = Array.prototype.slice.call(document.querySelectorAll('.nav-items a'));
+            var articles = {};
+            links.forEach(function (link) {
+                var id = link.getAttribute('href').slice(1);
+                var article = document.getElementById(id);
+                if (article) {
+                    articles[id] = article;
+                }
+            });
+
+            var crumbGroup = document.getElementById('crumb-group');
+            var crumbTitle = document.getElementById('crumb-title');
+            var prevLink = document.getElementById('prev-link');
+            var nextLink = document.getElementById('next-link');
+
+            function groupTitleOf(link) {
+                var section = link.closest('.nav-section');
+                if (!section) return '';
+                var titleEl = section.querySelector('.nav-section-title');
+                return titleEl ? titleEl.textContent.trim() : '';
+            }
+
+            function switchTo(link) {
+                var id = link.getAttribute('href').slice(1);
+
+                // 切换侧边栏高亮
+                links.forEach(function (l) {
+                    l.classList.toggle('active', l === link);
+                });
+
+                // 切换文章显示
+                Object.keys(articles).forEach(function (key) {
+                    articles[key].classList.toggle('active', key === id);
+                });
+
+                // 更新面包屑
+                crumbGroup.textContent = groupTitleOf(link);
+                crumbTitle.textContent = link.textContent.trim();
+
+                // 更新上下篇
+                var idx = links.indexOf(link);
+                if (idx > 0) {
+                    prevLink.href = '#' + links[idx - 1].getAttribute('href').slice(1);
+                    prevLink.textContent = '← 上一篇:' + links[idx - 1].textContent.trim();
+                    prevLink.classList.remove('disabled');
+                } else {
+                    prevLink.href = '#';
+                    prevLink.textContent = '← 上一篇';
+                    prevLink.classList.add('disabled');
+                }
+                if (idx < links.length - 1) {
+                    nextLink.href = '#' + links[idx + 1].getAttribute('href').slice(1);
+                    nextLink.textContent = '下一篇:' + links[idx + 1].textContent.trim() + ' →';
+                    nextLink.classList.remove('disabled');
+                } else {
+                    nextLink.href = '#';
+                    nextLink.textContent = '下一篇 →';
+                    nextLink.classList.add('disabled');
+                }
+
+                // 回到内容区顶部
+                var content = document.querySelector('.content-area');
+                if (content) {
+                    content.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+
+            // 点击侧边栏切换文章
+            links.forEach(function (link) {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    switchTo(link);
+                    history.replaceState(null, '', link.getAttribute('href'));
+                });
+            });
+
+            // 点击上下篇链接切换文章
+            [prevLink, nextLink].forEach(function (link) {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var id = link.getAttribute('href').slice(1);
+                    var target = links.filter(function (l) {
+                        return l.getAttribute('href').slice(1) === id;
+                    })[0];
+                    if (target) {
+                        switchTo(target);
+                        history.replaceState(null, '', link.getAttribute('href'));
+                    }
+                });
+            });
+
+            // 支持带锚点直达(如 file.html#art-xxx)
+            var hash = window.location.hash.slice(1);
+            if (hash && articles[hash]) {
+                var targetLink = links.filter(function (l) {
+                    return l.getAttribute('href').slice(1) === hash;
+                })[0];
+                if (targetLink) switchTo(targetLink);
+            }
+
+            // 分组一级标题:点击收缩/展开二级条目
+            var sectionTitles = document.querySelectorAll('.nav-section-title');
+            sectionTitles.forEach(function (title) {
+                title.addEventListener('click', function () {
+                    var section = title.parentElement;
+                    section.classList.toggle('collapsed');
+                });
+            });
+
+            // 侧边栏搜索过滤
+            var searchInput = document.getElementById('sidebar-search-input');
+            searchInput.addEventListener('input', function () {
+                var keyword = searchInput.value.trim().toLowerCase();
+                var sections = document.querySelectorAll('.nav-section');
+                sections.forEach(function (section) {
+                    var items = section.querySelectorAll('.nav-items li');
+                    var anyVisible = false;
+                    items.forEach(function (li) {
+                        var match = !keyword || li.textContent.toLowerCase().indexOf(keyword) !== -1;
+                        li.classList.toggle('hidden', !match);
+                        if (match) anyVisible = true;
+                    });
+                    section.classList.toggle('hidden', !anyVisible);
+                });
+            });
+        })();
+    </script>
+
+</body>
+</html>

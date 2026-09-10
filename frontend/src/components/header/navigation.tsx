@@ -8,6 +8,7 @@ import {
 import useAuth from '@/hooks/use-auth'
 import { Link, useLocation } from '@tanstack/react-router'
 import {
+  CircleHelpIcon,
   DatabaseIcon,
   HomeIcon,
   LogOutIcon,
@@ -47,6 +48,16 @@ export default function Navigation() {
           <WrenchIcon className='size-4' />
           管理工具
         </Link>
+        {/* 帮助中心:目标为后端网关 /links/help-center(管理工具「链接管理」配置)。
+        未登录也显示;目标未配置/非法时网关返回报错页,此处无需任何分支逻辑。 */}
+        <a
+          href='/links/help-center'
+          target='_blank'
+          rel='noopener noreferrer'
+          className='text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm transition-colors focus:outline-hidden'>
+          <CircleHelpIcon className='size-4' />
+          帮助中心
+        </a>
         {verified ? (
           /* 已登录:头像点击弹出「用户设置 / 退出登录」菜单 */
           <DropdownMenu>

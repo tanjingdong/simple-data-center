@@ -46,6 +46,7 @@ func main() {
 	app.setupFrpc()
 
 	app.setupFilestore()
+	app.setupLinks()
 
 	if err := app.pb.Start(); err != nil {
 		log.Fatal(err)

@@ -135,6 +135,44 @@ export function getPreviewUrl(id: string): string {
   return `${getDownloadUrl(id)}?inline=1`
 }
 
+/** 大文件下载确认阈值:超过该大小(10MB)的文件,下载前需用户确认。 */
+export const BIG_FILE_SIZE = 10 * 1024 * 1024
+
+/** 生成带协议+域名的绝对访问地址(供复制分享)。
+ * inline=true 时返回内联预览地址(?inline=1):proxy 模式下图片/PDF 等可在
+ * 浏览器内直接显示;direct 模式下该参数被忽略(302 到 Alist),行为等同下载。 */
+export function getAbsoluteFileUrl(id: string, inline: boolean): string {
+  const origin = window.location.origin
+  return `${origin}/api/filestore/files/${id}/download${inline ? '?inline=1' : ''}`
+}
+
+/** 复制文本到剪贴板。
+ * 优先 Clipboard API(仅 https/localhost 安全上下文可用);http 局域网等
+ * 不可用场景降级为隐藏 textarea + execCommand('copy')。 */
+export async function copyText(text: string): Promise<void> {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text)
+      return
+    } catch {
+      // Clipboard API 被拒绝(如权限弹窗取消)→ 继续走降级方案
+    }
+  }
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.select()
+  let ok = false
+  try {
+    ok = document.execCommand('copy')
+  } finally {
+    textarea.remove()
+  }
+  if (!ok) throw new Error('复制失败,请手动复制')
+}
+
 export async function updateFileVisibility(
   id: string,
   visibility: 'private' | 'public'
