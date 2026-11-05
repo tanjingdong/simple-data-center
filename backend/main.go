@@ -47,6 +47,7 @@ func main() {
 
 	app.setupFilestore()
 	app.setupLinks()
+	app.setupUsertoken()
 
 	if err := app.pb.Start(); err != nil {
 		log.Fatal(err)

@@ -2,6 +2,17 @@
 
 本项目版本号遵循语义化版本(SemVer)。版本记录自 v0.5.0 起,更早版本见 git 历史。
 
+## [1.3.2] - 2026-11-05
+
+合并基座 V0.7.5。包括:
+
+- **用户 API 令牌(用户key授权)**:用户设置页新增「API 令牌」卡片,可生成/重置/删除自己的令牌;令牌明文仅在生成时展示一次,数据库只保存 SHA-256 哈希,每用户最多 1 个。管理工具新增「用户key授权」页,提供功能总开关、按邮箱/用户名搜索令牌状态、禁用/启用与删除(安全兜底);管理员不能生成或查看令牌明文。
+- **令牌校验能力**:后端新增 `backend/usertoken` 包与 `usertoken.RequireAuth` 校验中间件(`Authorization: Bearer <token>` 通过后以该用户身份执行,`last_used_at` 按 60 秒节流更新);本期未挂载到任何现有业务路由,供后续公开 API 接入。
+- **数据模型变更**:users 集合新增 4 个 hidden 字段(`api_token_hash` / `api_token_created_at` / `api_token_last_used_at` / `api_token_disabled`)与部分唯一索引;非 superuser 无法通过 PB API 读写,另加请求 hook 拦截 superuser 的直接改写。`usertoken_enabled` 配置项由服务启动时自动补插。
+- **开发工具**:新增 `dev_tools/start.sh`(检查二进制与既有进程后后台启动,日志写入 `server.log`)与 `dev_tools/stop.sh`(终止本机所有本服务进程,先 SIGTERM、3 秒未退再 SIGKILL,支持 `--dry-run`);`dev_tools/restart.sh` 改为复用二者。
+- **升级提示**:已有部署需在数据管理后台重新导入 `backend/pb_schema.json` 的 users 集合(或手工添加 4 个字段与索引)。
+- README 与二开说明书(`READEM_developer.html`)已同步基座说明。
+
 ## [1.3.1] - 2026-09-16
 
 修复 GTD 清单模块的若干问题。包括:

@@ -1,5 +1,6 @@
 import {
   HardDriveIcon,
+  KeyRoundIcon,
   LinkIcon,
   NetworkIcon,
   type LucideIcon
@@ -8,6 +9,7 @@ import type { ComponentType } from 'react'
 import FilestoreToolPage from './filestore-tool'
 import FrpcToolPage from './frpc-tool'
 import LinksToolPage from './links-tool'
+import UsertokenToolPage from './usertoken-tool'
 
 export interface AdminTool {
   id: string
@@ -41,5 +43,12 @@ export const adminTools = [
     icon: LinkIcon,
     path: '/admin/links',
     component: LinksToolPage
+  },
+  {
+    id: 'usertoken',
+    label: '用户key授权',
+    icon: KeyRoundIcon,
+    path: '/admin/usertoken',
+    component: UsertokenToolPage
   }
 ] as const satisfies readonly AdminTool[]
