@@ -26,16 +26,18 @@ import VerifyEmailPage from './pages/auth/verify-email'
 import CenterPage from './pages/center'
 import ErrorPage from './pages/error'
 import FilesPage from './pages/files/files-page'
+import GtdListPage from './pages/gtd/index'
+import GtdPrintPage from './pages/gtd/print'
+import EventDetailPage from './pages/health/event-detail'
+import EventFormPage from './pages/health/event-form'
+import EventListPage from './pages/health/event-list'
+import EventSummaryPage, {
+  eventSummarySearchSchema
+} from './pages/health/event-summary'
 import HomePage from './pages/home'
 import PrivacyPolicyPage from './pages/privacy-policy'
 import UserSettingPage from './pages/user-setting'
 import WorkbenchPage from './pages/workbench'
-import EventListPage from './pages/health/event-list'
-import EventFormPage from './pages/health/event-form'
-import EventDetailPage from './pages/health/event-detail'
-import EventSummaryPage, {
-  eventSummarySearchSchema
-} from './pages/health/event-summary'
 import {
   resetPasswordParamsSchema,
   verifyEmailParamsSchema
@@ -154,6 +156,26 @@ const healthSummaryRoute = createRoute({
   component: EventSummaryPage,
   validateSearch: eventSummarySearchSchema,
   beforeLoad: () => ({ getTitle: () => '归集' })
+})
+
+// GTD 清单:独立业务路由,登录用户经数据大厅入口进入。
+// 打印页为子路由,屏幕上保留站内导航便于返回,打印时由 CSS 隐藏全局壳。
+const gtdRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'gtd',
+  beforeLoad: requireVerifiedUser('GTD 清单')
+})
+const gtdIndexRoute = createRoute({
+  getParentRoute: () => gtdRoute,
+  path: '/',
+  component: GtdListPage,
+  beforeLoad: () => ({ getTitle: () => 'GTD 清单' })
+})
+const gtdPrintRoute = createRoute({
+  getParentRoute: () => gtdRoute,
+  path: 'print',
+  component: GtdPrintPage,
+  beforeLoad: () => ({ getTitle: () => '打印清单' })
 })
 
 const privacyPolicyRoute = createRoute({
@@ -317,6 +339,7 @@ const routeTree = rootRoute.addChildren([
     healthEditRoute,
     healthSummaryRoute
   ]),
+  gtdRoute.addChildren([gtdIndexRoute, gtdPrintRoute]),
   privacyPolicyRoute,
   authRoute.addChildren([
     loginRoute,

@@ -1,0 +1,556 @@
+/* GTD 打印页样式
+ * 移植自 MTR/templates/index.html 的 <style>,原样保留 mm 单位与印刷规则。
+ * 所有选择器加 .gtd-print-root 前缀,避免污染站内其他页面。
+ */
+
+.gtd-print-root {
+  font-family:
+    'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial,
+    sans-serif;
+  color: #1a1a1a;
+  background: #f0f0f0;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.gtd-print-root *,
+.gtd-print-root *::before,
+.gtd-print-root *::after {
+  box-sizing: border-box;
+}
+
+/* A4 纸面 */
+.gtd-print-root .page {
+  width: 210mm;
+  height: 297mm;
+  padding: 8mm;
+  margin: 0 auto 6mm;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
+}
+
+.gtd-print-root .page-header {
+  display: flex;
+  align-items: center;
+  gap: 3mm;
+  padding: 3mm 4mm;
+  border: 1.5px solid #1a1a1a;
+  border-bottom: 3px solid #1a1a1a;
+  margin-bottom: 3mm;
+  font-size: 10.5pt;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.gtd-print-root .page-header .label {
+  white-space: nowrap;
+}
+
+.gtd-print-root .page-header .line {
+  flex: 1;
+  border-bottom: 1px solid #555;
+  min-width: 15mm;
+  height: 1.1em;
+}
+
+.gtd-print-root .main-body {
+  flex: 1;
+  display: flex;
+  gap: 3mm;
+  overflow: hidden;
+  margin-bottom: 3mm;
+  min-height: 0;
+}
+
+.gtd-print-root .section {
+  display: flex;
+  flex-direction: column;
+  border: 1.5px solid #1a1a1a;
+  overflow: hidden;
+  background: #fff;
+  min-height: 0;
+}
+
+.gtd-print-root .section-header {
+  padding: 2.5mm 3.5mm;
+  font-size: 10pt;
+  font-weight: 700;
+  color: #fff;
+  background: #1a1a1a;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gtd-print-root .section-body {
+  flex: 1;
+  padding: 2.5mm 3mm;
+  font-size: 9.5pt;
+  line-height: 1.55;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2mm;
+  /* 溢出测量依赖此属性:scrollHeight > clientHeight 即判定溢出 */
+  overflow: hidden;
+  min-height: 0;
+}
+
+.gtd-print-root .cb {
+  display: inline-block;
+  width: 3.5mm;
+  text-align: center;
+  font-size: 11pt;
+  margin-right: 1mm;
+  color: #333;
+  flex-shrink: 0;
+}
+
+.gtd-print-root .item {
+  display: flex;
+  align-items: baseline;
+  gap: 1mm;
+}
+
+.gtd-print-root .fill-line {
+  flex: 1;
+  border-bottom: 1px solid #888;
+  min-height: 1em;
+  margin-left: 1mm;
+}
+
+.gtd-print-root .sub-label {
+  font-size: 8.5pt;
+  color: #555;
+  margin-top: auto;
+  padding-top: 2mm;
+  line-height: 1.4;
+}
+
+.gtd-print-root .divider {
+  border-top: 1px dashed #999;
+  margin: 2mm 0;
+}
+
+.gtd-print-root .context-label {
+  font-weight: 700;
+  font-size: 9pt;
+  color: #1a1a1a;
+  margin-top: 2mm;
+  margin-bottom: 0.5mm;
+  padding-left: 1.5mm;
+  border-left: 2.5mm solid #1a1a1a;
+}
+
+.gtd-print-root .page-footer {
+  padding: 3mm 4mm;
+  border: 1.5px solid #1a1a1a;
+  background: #f5f5f5;
+  font-size: 9.5pt;
+  display: flex;
+  align-items: center;
+  gap: 3mm;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.gtd-print-root .page-footer .label {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.gtd-print-root .footer-check {
+  display: flex;
+  align-items: center;
+  gap: 1mm;
+  white-space: nowrap;
+}
+
+.gtd-print-root .col-main {
+  width: 65%;
+  display: flex;
+  flex-direction: column;
+  gap: 2mm;
+  min-height: 0;
+}
+
+.gtd-print-root .col-side {
+  width: 35%;
+  display: flex;
+  flex-direction: column;
+  gap: 2mm;
+  min-height: 0;
+}
+
+.gtd-print-root .three-col {
+  flex: 1;
+  display: flex;
+  gap: 3mm;
+  margin-bottom: 3mm;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.gtd-print-root .col-third {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: 1.5px solid #1a1a1a;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.gtd-print-root .col-third-header {
+  padding: 2.5mm 3.5mm;
+  font-size: 10pt;
+  font-weight: 700;
+  color: #fff;
+  background: #1a1a1a;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gtd-print-root .col-third-body {
+  flex: 1;
+  padding: 2.5mm 3mm;
+  font-size: 9.5pt;
+  line-height: 1.55;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2mm;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.gtd-print-root .milestone-section {
+  border: 2px solid #1a1a1a;
+  margin-bottom: 3mm;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  /* 里程碑区最多占纸面 70mm,其余留给三栏;超出由 useFitCount 裁剪并提示 */
+  max-height: 70mm;
+}
+
+.gtd-print-root .milestone-header {
+  padding: 3.5mm 4mm;
+  font-size: 12pt;
+  font-weight: 700;
+  color: #fff;
+  background: #1a1a1a;
+  letter-spacing: 1px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3mm;
+  flex-shrink: 0;
+}
+
+.gtd-print-root .milestone-body {
+  flex: 1;
+  padding: 3mm 4mm;
+  font-size: 10pt;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  gap: 2mm;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.gtd-print-root .milestone-item {
+  display: flex;
+  align-items: baseline;
+  gap: 1mm;
+}
+
+.gtd-print-root .milestone-item .cb {
+  font-size: 12pt;
+}
+
+.gtd-print-root .split-line {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 1mm;
+}
+
+.gtd-print-root .split-line .left-part {
+  flex: 2;
+  border-bottom: 1px solid #888;
+  min-height: 1em;
+}
+
+.gtd-print-root .split-line .sep {
+  color: #888;
+  font-size: 10pt;
+  padding: 0 1mm;
+  flex-shrink: 0;
+}
+
+.gtd-print-root .split-line .right-part {
+  flex: 1;
+  border-bottom: 1px solid #888;
+  min-height: 1em;
+}
+
+.gtd-print-root .time-slot {
+  display: flex;
+  align-items: baseline;
+  gap: 2mm;
+  font-size: 9.5pt;
+}
+
+.gtd-print-root .time-slot .time {
+  font-weight: 700;
+  color: #1a1a1a;
+  font-size: 9pt;
+  min-width: 10mm;
+  flex-shrink: 0;
+}
+
+/* 溢出提示行:替代被隐藏的事项 */
+.gtd-print-root .overflow-notice {
+  font-size: 8pt;
+  color: #8b1a1a;
+  font-style: italic;
+  padding-top: 0.5mm;
+  flex-shrink: 0;
+}
+
+/* 可点击事项行 */
+.gtd-print-root .clickable {
+  cursor: pointer;
+}
+
+.gtd-print-root .clickable:hover .fill-line {
+  background: #f0f0f0;
+}
+
+/* 复选框:打印时保留(印出来可手写勾) */
+.gtd-print-root input[type='checkbox'].gtd-cb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 3.5mm;
+  height: 3.5mm;
+  min-width: 3.5mm;
+  min-height: 3.5mm;
+  border: 1px solid #1a1a1a;
+  background: #fff;
+  margin: 0 1mm 0 0;
+  flex-shrink: 0;
+  cursor: pointer;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  padding: 0;
+  border-radius: 0;
+}
+
+.gtd-print-root input[type='checkbox'].gtd-cb:checked::after {
+  content: '✓';
+  font-size: 9pt;
+  color: #1a1a1a;
+  font-weight: 700;
+  line-height: 1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+}
+
+/* 标题右侧添加按钮 */
+.gtd-print-root .add-btn {
+  /* 用 <button> 而非 <span> 以保证键盘可达;此处抹掉浏览器默认按钮外观 */
+  background: transparent;
+  font-family: inherit;
+  padding: 0;
+  font-size: 12pt;
+  font-weight: 400;
+  cursor: pointer;
+  width: 5mm;
+  height: 5mm;
+  min-width: 5mm;
+  min-height: 5mm;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 1mm;
+  line-height: 1;
+  color: #fff;
+  margin-left: 2mm;
+  user-select: none;
+}
+
+.gtd-print-root .add-btn-dark {
+  color: #1a1a1a;
+  border-color: #1a1a1a;
+}
+
+/* ---------- 屏幕工具条(打印时隐藏) ---------- */
+.gtd-print-root .gtd-screen-only {
+  display: flex;
+  align-items: center;
+  gap: 3mm;
+  width: 210mm;
+  margin: 0 auto 4mm;
+  padding: 3mm 4mm;
+  background: #fff;
+  border: 1.5px solid #1a1a1a;
+  font-size: 10pt;
+}
+
+/* ---------- 黑白素面编辑弹框(复刻原 MTR 样式) ---------- */
+.gtd-print-root .gtd-modal-overlay {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 60;
+  justify-content: center;
+  align-items: center;
+}
+
+.gtd-print-root .gtd-modal {
+  background: #fff;
+  border: 2px solid #1a1a1a;
+  box-shadow: 4px 4px 0 #1a1a1a;
+  padding: 6mm;
+  min-width: 70mm;
+  max-width: 110mm;
+  max-height: 90vh;
+  overflow-y: auto;
+  font-size: 9.5pt;
+  display: flex;
+  flex-direction: column;
+  gap: 3mm;
+}
+
+.gtd-print-root .gtd-modal .editor-meta {
+  font-size: 7.5pt;
+  color: #999;
+  line-height: 1.5;
+}
+
+.gtd-print-root .gtd-modal .editor-actions {
+  display: flex;
+  gap: 2mm;
+  flex-wrap: wrap;
+}
+
+.gtd-print-root .gtd-modal .editor-actions button {
+  font-family: inherit;
+  font-size: 9pt;
+  padding: 2mm 4mm;
+  cursor: pointer;
+  border: 1.5px solid #1a1a1a;
+  background: #fff;
+  font-weight: 600;
+}
+
+.gtd-print-root .gtd-modal .editor-actions button:hover:not(:disabled) {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.gtd-print-root .gtd-modal .editor-actions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.gtd-print-root .gtd-modal .editor-actions .btn-danger {
+  color: #8b1a1a;
+  border-color: #8b1a1a;
+}
+
+.gtd-print-root .gtd-modal .editor-actions .btn-danger:hover:not(:disabled) {
+  background: #8b1a1a;
+  color: #fff;
+}
+
+.gtd-print-root .gtd-modal .editor-actions .btn-warn {
+  color: #8b6914;
+  border-color: #8b6914;
+}
+
+.gtd-print-root .gtd-modal .editor-actions .btn-warn:hover:not(:disabled) {
+  background: #8b6914;
+  color: #fff;
+}
+
+/* ---------- 打印规则 ---------- */
+
+/* 注意:@page 是文档级 at-rule,无法用选择器作用域化。
+ * 后果:打印本站任何页面都会用 A4 零页边距。
+ * 本项目的打印场景只有 GTD 清单,故接受此副作用。
+ * 若日后有其他页面需要打印,改用 CSS 具名页(page: gtd-a4)隔离。
+ */
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  /* 隐藏全局壳:RootLayout 的容器、导航栏、页脚、toast */
+  [data-app-shell] {
+    display: block !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 0 !important;
+  }
+
+  [data-app-shell] > nav,
+  [data-app-shell] > footer,
+  [data-sonner-toaster] {
+    display: none !important;
+  }
+
+  .gtd-print-root {
+    background: #fff;
+  }
+
+  .gtd-print-root .page {
+    margin: 0;
+    box-shadow: none;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .gtd-print-root .page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  /* 屏幕专用元素不进纸面 */
+  .gtd-print-root .gtd-screen-only,
+  .gtd-print-root .add-btn,
+  .gtd-print-root .gtd-modal-overlay {
+    display: none !important;
+  }
+
+  .gtd-print-root input[type='checkbox'].gtd-cb {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    border: 1px solid #1a1a1a;
+    background: #fff;
+  }
+
+  .gtd-print-root input[type='checkbox'].gtd-cb:checked::after {
+    content: '✓';
+    color: #1a1a1a;
+  }
+}

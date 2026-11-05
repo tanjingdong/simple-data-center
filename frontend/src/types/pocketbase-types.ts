@@ -12,7 +12,8 @@ export enum Collections {
   Relations = 'relations',
   Events = 'events',
   ToolsSettings = 'tools_settings',
-  HealthEvents = 'health_events'
+  HealthEvents = 'health_events',
+  GtdItems = 'gtd_items'
 }
 
 // Alias types for improved usability
@@ -114,6 +115,27 @@ export type HealthEventsRecord = {
   referenced_by?: string[]
 }
 
+/** GTD 清单事项。字段与 backend/pb_schema.json 的 gtd_items 一致 */
+export type GtdItemsRecord = {
+  /** 数据归属,对应 PocketBase 的 owner relation */
+  owner: RecordIdString
+  /** 事项名称,允许重复 */
+  thing: string
+  note?: string
+  type:
+    'todo' | 'project' | 'milestone' | 'tracking' | 'handover' | 'accumulating'
+  /** 生效日期(yyyy-MM-dd) */
+  schedule_on: string
+  /** 硬时间(yyyy-MM-dd HH:mm),可空 */
+  hard_time?: string
+  /** 执行条件,仅 type=todo 时有意义 */
+  condition?: '电脑' | '沟通' | '外出' | '家' | '思考' | ''
+  /** 受让人姓名数组(自由文本,不关联 persons) */
+  assignee?: string[]
+  status: 'active' | 'completed' | 'cancelled'
+  sort_order?: number
+}
+
 // —— tools_settings ——
 export type ToolsSettingsRecord = {
   option: string
@@ -141,19 +163,21 @@ export type UsersRecord = {
 // Response 类型(含系统字段)
 export type PersonsResponse<Texpand = unknown> = Required<PersonsRecord> &
   BaseSystemFields<Texpand>
-export type OrganizationsResponse<Texpand = unknown> = Required<OrganizationsRecord> &
-  BaseSystemFields<Texpand>
+export type OrganizationsResponse<Texpand = unknown> =
+  Required<OrganizationsRecord> & BaseSystemFields<Texpand>
 export type RelationsResponse<Texpand = unknown> = Required<RelationsRecord> &
   BaseSystemFields<Texpand>
 export type EventsResponse<Texpand = unknown> = Required<EventsRecord> &
   BaseSystemFields<Texpand>
-export type HealthEventsResponse<Texpand = unknown> = Required<HealthEventsRecord> &
-  BaseSystemFields<Texpand>
-export type ToolsSettingsResponse<Texpand = unknown> = Required<ToolsSettingsRecord> &
-  BaseSystemFields<Texpand>
+export type HealthEventsResponse<Texpand = unknown> =
+  Required<HealthEventsRecord> & BaseSystemFields<Texpand>
+export type ToolsSettingsResponse<Texpand = unknown> =
+  Required<ToolsSettingsRecord> & BaseSystemFields<Texpand>
 export type UsersResponse<Texpand = unknown> = Required<UsersRecord> &
   AuthSystemFields<Texpand>
-export type FilestoreFilesResponse<Texpand = unknown> = Required<FilestoreFilesRecord> &
+export type FilestoreFilesResponse<Texpand = unknown> =
+  Required<FilestoreFilesRecord> & BaseSystemFields<Texpand>
+export type GtdItemsResponse<Texpand = unknown> = Required<GtdItemsRecord> &
   BaseSystemFields<Texpand>
 
 export type CollectionRecords = {
@@ -165,6 +189,7 @@ export type CollectionRecords = {
   tools_settings: ToolsSettingsRecord
   users: UsersRecord
   health_events: HealthEventsRecord
+  gtd_items: GtdItemsRecord
 }
 
 export type CollectionResponses = {
@@ -176,6 +201,7 @@ export type CollectionResponses = {
   tools_settings: ToolsSettingsResponse
   users: UsersResponse
   health_events: HealthEventsResponse
+  gtd_items: GtdItemsResponse
 }
 
 export type TypedPocketBase = PocketBase & {
@@ -187,4 +213,5 @@ export type TypedPocketBase = PocketBase & {
   collection(idOrName: 'tools_settings'): RecordService<ToolsSettingsResponse>
   collection(idOrName: 'users'): RecordService<UsersResponse>
   collection(idOrName: 'health_events'): RecordService<HealthEventsResponse>
+  collection(idOrName: 'gtd_items'): RecordService<GtdItemsResponse>
 }

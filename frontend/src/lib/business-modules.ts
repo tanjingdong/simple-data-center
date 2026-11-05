@@ -2,13 +2,14 @@ import {
   ContactIcon,
   FileIcon,
   HeartPulseIcon,
+  ListChecksIcon,
   SettingsIcon,
   type LucideIcon
 } from 'lucide-react'
 
 export interface BusinessModule {
   /** 业务入口路由路径(字面量类型,编译期校验;新增业务时扩展为联合) */
-  path: '/social' | '/health' | '/files' | '/user-setting'
+  path: '/social' | '/health' | '/files' | '/user-setting' | '/gtd'
   title: string
   description: string
   icon: LucideIcon
@@ -29,6 +30,12 @@ export const businessModules: BusinessModule[] = [
     title: '健康信息管理',
     description: '健康事件聚合记录、归集与就诊参考',
     icon: HeartPulseIcon
+  },
+  {
+    path: '/gtd',
+    title: 'GTD 清单',
+    description: '日程清单管理,支持 A4 清单打印',
+    icon: ListChecksIcon
   },
   {
     path: '/files',
