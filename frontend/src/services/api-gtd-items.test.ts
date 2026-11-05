@@ -11,10 +11,15 @@ import {
   assigneeNames,
   formatHardTime,
   groupTodayActions,
+  gtdDefaultSortKey,
+  gtdSortKeys,
   itemLabel,
+  joinAssigneeInput,
   normalizeCondition,
   partitionItems,
+  sortForList,
   sortItems,
+  splitAssigneeInput,
   toPbDate,
   toPbDateTime,
   todayStr,
@@ -590,5 +595,114 @@ describe('toPbDate / toPbDateTime', () => {
     expect(toPbDateTime('2026-02-28 00:00').slice(0, 16)).toBe(
       '2026-02-28 00:00'
     )
+  })
+})
+
+// ============================================================
+// 受让人输入往返(修复:输入逗号会被当场吃掉)
+// ============================================================
+
+describe('splitAssigneeInput / joinAssigneeInput', () => {
+  const roundTrip = (text: string) =>
+    joinAssigneeInput(splitAssigneeInput(text))
+
+  it('输入原文本原样回显——这是「能打出第二个名字」的前提', () => {
+    for (const t of [
+      '张三,',
+      '张三,李四',
+      '张三, 李四',
+      '张三,,李四',
+      ',',
+      ''
+    ]) {
+      expect(roundTrip(t)).toBe(t)
+    }
+  })
+
+  it('逐字符敲入「张三,李四」的每一步都能回显', () => {
+    let text = ''
+    for (const ch of '张三,李四') {
+      text = roundTrip(text + ch)
+    }
+    expect(text).toBe('张三,李四')
+  })
+
+  it('刻意保留空串与首尾空格(清洗交给 assigneeNames)', () => {
+    expect(splitAssigneeInput('张三,')).toEqual(['张三', ''])
+    expect(splitAssigneeInput(' 张三 , 李四 ')).toEqual([' 张三 ', ' 李四 '])
+  })
+
+  it('与 assigneeNames 衔接后得到干净的姓名数组', () => {
+    expect(assigneeNames(splitAssigneeInput('张三,, 李四 ,'))).toEqual([
+      '张三',
+      '李四'
+    ])
+  })
+})
+
+// ============================================================
+// 列表页排序
+// ============================================================
+
+describe('sortForList', () => {
+  const mk = (created: string, over: Partial<GtdItem> = {}) =>
+    item({
+      id: created.replace(/\D/g, '').padEnd(15, 'x').slice(0, 15),
+      created,
+      ...over
+    })
+
+  const older = mk('2026-09-01 00:00:00.000Z', { thing: '旧' })
+  const newer = mk('2026-09-10 00:00:00.000Z', { thing: '新' })
+
+  it('默认排序:录入时间新→旧(刚录入的排最上面)', () => {
+    expect(
+      sortForList([older, newer], gtdDefaultSortKey).map((i) => i.thing)
+    ).toEqual(['新', '旧'])
+  })
+
+  it('录入时间旧→新', () => {
+    expect(
+      sortForList([newer, older], 'created_asc').map((i) => i.thing)
+    ).toEqual(['旧', '新'])
+  })
+
+  it('生效日期近→远', () => {
+    const a = item({ thing: 'A', schedule_on: '2026-09-01' })
+    const b = item({ thing: 'B', schedule_on: '2026-09-20' })
+    expect(sortForList([b, a], 'schedule_on_asc').map((i) => i.thing)).toEqual([
+      'A',
+      'B'
+    ])
+  })
+
+  it('生效日期远→近', () => {
+    const a = item({ thing: 'A', schedule_on: '2026-09-01' })
+    const b = item({ thing: 'B', schedule_on: '2026-09-20' })
+    expect(sortForList([a, b], 'schedule_on_desc').map((i) => i.thing)).toEqual(
+      ['B', 'A']
+    )
+  })
+
+  it('硬时间早→晚,且未设硬时间的排在最后', () => {
+    const early = item({ thing: '早', hard_time: '2026-09-16 08:00' })
+    const late = item({ thing: '晚', hard_time: '2026-09-16 20:00' })
+    const none = item({ thing: '无', hard_time: '' })
+    expect(
+      sortForList([none, late, early], 'hard_time_asc').map((i) => i.thing)
+    ).toEqual(['早', '晚', '无'])
+  })
+
+  it('不修改入参数组', () => {
+    const input = [older, newer]
+    const snapshot = input.map((i) => i.thing)
+    sortForList(input, 'created_asc')
+    expect(input.map((i) => i.thing)).toEqual(snapshot)
+  })
+
+  it('每种排序键都能处理空数组', () => {
+    for (const k of gtdSortKeys) {
+      expect(sortForList([], k)).toEqual([])
+    }
   })
 })

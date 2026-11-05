@@ -419,7 +419,11 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.15);
-  z-index: 60;
+  /* 必须低于 Radix 下拉/弹层的 z-50(shadcn SelectContent 用的是 z-50)。
+     下拉内容被 portal 到 document.body,与本遮罩同级竞争 z-index;
+     若遮罩高于 50,下拉其实弹出来了却被盖住,表现为「点了没反应」。
+     40 足够压住 A4 纸面与站内导航(它们都没有 z-index)。 */
+  z-index: 40;
   justify-content: center;
   align-items: center;
 }

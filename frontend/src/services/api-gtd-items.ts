@@ -236,6 +236,80 @@ export function trimGroups<T extends { items: unknown[] }>(
   return out
 }
 
+/**
+ * 受让人输入框:把用户输入的原文本切成人名数组。
+ *
+ * 刻意**不做** trim、**不去**空串——否则用户刚敲下的逗号会在回显时被吃掉
+ * (「张三,」→ ['张三'] → 回显「张三」),导致永远打不出第二个名字。
+ * 清洗交给 assigneeNames()(展示)与 toPbPayload()(落库)。
+ */
+export function splitAssigneeInput(text: string): string[] {
+  return text.split(',')
+}
+
+/** 数组 → 输入框回显文本(与 splitAssigneeInput 构成往返不变式) */
+export function joinAssigneeInput(names: string[]): string {
+  return names.join(',')
+}
+
+// ---------- 列表页排序 ----------
+
+export const gtdSortKeys = [
+  'created_desc',
+  'created_asc',
+  'schedule_on_desc',
+  'schedule_on_asc',
+  'hard_time_asc'
+] as const
+export type GtdSortKey = (typeof gtdSortKeys)[number]
+
+export const gtdSortLabels: Record<GtdSortKey, string> = {
+  created_desc: '录入时间(新→旧)',
+  created_asc: '录入时间(旧→新)',
+  schedule_on_desc: '生效日期(远→近)',
+  schedule_on_asc: '生效日期(近→远)',
+  hard_time_asc: '硬时间(早→晚)'
+}
+
+/** 列表页默认排序:最新录入的排最上面,方便确认刚录完的事项 */
+export const gtdDefaultSortKey: GtdSortKey = 'created_desc'
+
+/**
+ * 按列表页选定的排序键排序(不修改入参)。
+ * 与打印页的 sortItems 不同——打印页固定用 sort_order/created 升序,
+ * 不受用户在列表页选的排序影响。
+ */
+export function sortForList(items: GtdItem[], key: GtdSortKey): GtdItem[] {
+  const sorted = [...items]
+  switch (key) {
+    case 'created_desc':
+      return sorted.sort((a, b) => b.created.localeCompare(a.created))
+    case 'created_asc':
+      return sorted.sort((a, b) => a.created.localeCompare(b.created))
+    case 'schedule_on_desc':
+      return sorted.sort(
+        (a, b) =>
+          b.schedule_on.localeCompare(a.schedule_on) ||
+          b.created.localeCompare(a.created)
+      )
+    case 'schedule_on_asc':
+      return sorted.sort(
+        (a, b) =>
+          a.schedule_on.localeCompare(b.schedule_on) ||
+          b.created.localeCompare(a.created)
+      )
+    case 'hard_time_asc':
+      // 硬时间为空的事项排在最后(而不是当成最小值排到最前)
+      return sorted.sort((a, b) => {
+        if (!a.hard_time && !b.hard_time)
+          return b.created.localeCompare(a.created)
+        if (!a.hard_time) return 1
+        if (!b.hard_time) return -1
+        return a.hard_time.localeCompare(b.hard_time)
+      })
+  }
+}
+
 /** 事项的展示文本:有受让人时用「事项  |  张三,李四」格式 */
 export function itemLabel(item: GtdItem): string {
   const names = assigneeNames(item.assignee)
@@ -310,7 +384,7 @@ function toPbPayload(data: GtdItemFormFields) {
     schedule_on: toPbDate(data.schedule_on),
     hard_time: toPbDateTime(data.hard_time),
     condition: data.condition || '',
-    assignee: data.assignee,
+    assignee: assigneeNames(data.assignee),
     status: data.status,
     sort_order: 0
   }

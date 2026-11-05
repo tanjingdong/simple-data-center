@@ -36,10 +36,17 @@ import {
   createGtdItem,
   deleteGtdItem,
   formatHardTime,
+  gtdDefaultSortKey,
   gtdItemsQueryOptions,
+  gtdSortKeys,
+  gtdSortLabels,
+  joinAssigneeInput,
+  sortForList,
+  splitAssigneeInput,
   todayStr,
   updateGtdItem,
-  updateGtdItemStatus
+  updateGtdItemStatus,
+  type GtdSortKey
 } from '@/services/api-gtd-items'
 import {
   useMutation,
@@ -70,6 +77,7 @@ export default function GtdListPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active')
   const [typeFilter, setTypeFilter] = useState<string>(ALL)
   const [conditionFilter, setConditionFilter] = useState<string>(ALL)
+  const [sortKey, setSortKey] = useState<GtdSortKey>(gtdDefaultSortKey)
   const [keyword, setKeyword] = useState('')
   // 弹框
   const [editing, setEditing] = useState<GtdItem | null>(null)
@@ -82,7 +90,7 @@ export default function GtdListPage() {
 
   const visible = useMemo(() => {
     const kw = keyword.trim().toLowerCase()
-    return items.filter((it) => {
+    const filtered = items.filter((it) => {
       if (statusFilter === 'active' && it.status !== 'active') return false
       if (typeFilter !== ALL && it.type !== typeFilter) return false
       if (conditionFilter !== ALL && it.condition !== conditionFilter)
@@ -93,7 +101,8 @@ export default function GtdListPage() {
       }
       return true
     })
-  }, [items, statusFilter, typeFilter, conditionFilter, keyword])
+    return sortForList(filtered, sortKey)
+  }, [items, statusFilter, typeFilter, conditionFilter, sortKey, keyword])
 
   // ---- 变更 ----
   const createMut = useMutation({
@@ -146,7 +155,13 @@ export default function GtdListPage() {
       errorToast('无法新增', parsed.error.issues[0]?.message ?? '输入不合法')
       return
     }
-    await createMut.mutateAsync(parsed.data)
+    try {
+      await createMut.mutateAsync(parsed.data)
+    } catch {
+      // 失败原因已由 createMut.onError 弹 toast;此处吞掉 rejection,
+      // 否则会冒泡成未捕获的 promise rejection(控制台报错但界面无提示)
+      return
+    }
     // 保留类型选择,便于连续录入同类事项
     setQuick({ ...emptyQuickAdd(), type: quick.type })
     document.getElementById('gtd-quick-thing')?.focus()
@@ -279,14 +294,11 @@ export default function GtdListPage() {
           <Input
             className='w-36'
             placeholder='逗号分隔'
-            value={quick.assignee.join(',')}
+            value={joinAssigneeInput(quick.assignee)}
             onChange={(e) =>
               setQuick({
                 ...quick,
-                assignee: e.target.value
-                  .split(',')
-                  .map((s) => s.trim())
-                  .filter((s) => s !== '')
+                assignee: splitAssigneeInput(e.target.value)
               })
             }
           />
@@ -332,6 +344,21 @@ export default function GtdListPage() {
             {gtdConditions.map((c) => (
               <SelectItem key={c} value={c}>
                 {gtdConditionLabels[c]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={sortKey}
+          onValueChange={(v) => setSortKey(v as GtdSortKey)}>
+          <SelectTrigger className='w-44'>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {gtdSortKeys.map((k) => (
+              <SelectItem key={k} value={k}>
+                {gtdSortLabels[k]}
               </SelectItem>
             ))}
           </SelectContent>

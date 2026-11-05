@@ -65,8 +65,9 @@ export function SectionTodayActions({
         <AddButton label='新增待办' onAdd={onAdd} />
       </div>
       <div className='section-body' id='section-today-actions'>
+        {/* 这里不能放 flex:1 的占位元素——列表容器自身是 flex:1,
+            两者会平分高度,导致可用高度只剩一半、溢出测量过早触发 */}
         {children}
-        <div style={{ flex: 1 }} />
         <div className='sub-label'>用动词开头,确保可执行</div>
       </div>
     </div>
@@ -152,18 +153,27 @@ export function SectionSupport({
 // A4 溢出处理
 // ============================================================
 
+/** 收敛阶段 */
+type FitPhase = 'measure' | 'shrink' | 'grow' | 'settled'
+
 /**
- * A4 溢出测量:内容超出容器高度时逐步减少可见条数,直到装得下。
+ * A4 溢出测量:算出一个分区里最多能完整放下多少条,多出来的交给调用方提示。
  *
- * 原理:每次提交后比较容器的 scrollHeight 与 clientHeight,溢出则把可见条数减 1,
- * 触发下一轮渲染后再测。收敛后 visibleCount 即为能装下的条数;hiddenCount > 0
- * 表示有内容被隐藏,调用方需在末行渲染「【更多记录未显示……】」。
+ * 规则(与产品要求一致):
+ * - 装得下就**全部显示**,不显示任何提示;
+ * - 只有排满容器时才裁剪,且把「原本还能显示的最后一行」换成
+ *   「【更多记录未显示……】」——提示行本身也在被测量的容器内,所以它占掉的
+ *   那一行会自动计入下一轮测量,不会出现「减一条、加一行提示、还是溢出」的残留。
  *
- * 提示行本身也在被测量的容器内,所以它占掉的那一行会自动被计入下一轮测量,
- * 因此不会出现「减掉一条数据、又加了一行提示、结果还是溢出」的残留。
+ * 收敛方式:双向搜索。溢出就退一条,退到不溢出后试着回增一条;回增又溢出的
+ * 那一格就是答案。**必须能回增**,否则首次测量若偏小(字体未就绪、容器尚未
+ * 撑开)就会永久锁死在一个过小的值上。
  *
- * 风险:依赖真实渲染后的 DOM 测量,字体加载、浏览器缩放、渲染时序都会影响结果。
- * 实测不稳时的退路是给每个分区预设固定行数容量(见设计文档 4.4)。
+ * 重测时机:数据条数变化、窗口缩放、字体加载完成。容器的 clientHeight 由
+ * flex 决定、与内容无关,所以这些时机之外无需重复测量。
+ *
+ * 风险:依赖真实渲染后的 DOM 测量。实测不稳时的退路是给每个分区预设固定
+ * 行数容量(见设计文档 4.4)。
  */
 export function useFitCount(total: number): {
   ref: RefObject<HTMLDivElement | null>
@@ -173,23 +183,78 @@ export function useFitCount(total: number): {
   const ref = useRef<HTMLDivElement>(null)
   const [visibleCount, setVisibleCount] = useState(total)
   const [prevTotal, setPrevTotal] = useState(total)
+  const phase = useRef<FitPhase>('measure')
 
-  // 数据条数变化时重置为全部,再重新收敛。
+  // 数据条数变化 → 重置为全部显示,重新收敛。
   // 用渲染期派生(React 官方「props 变化时调整 state」写法)而非 effect,
   // 避免 setState-in-effect 造成的额外一轮渲染。
+  // 注意:这里只改 state、不改 ref——渲染期写 ref 会触发 react-hooks/refs 报错。
   if (total !== prevTotal) {
     setPrevTotal(total)
     setVisibleCount(total)
   }
 
-  // 每次提交后测量;溢出则减一,触发下一轮渲染与测量,直至装得下。
-  // 这里是条件式 setState(不溢出就什么都不做),不会造成无谓的级联渲染。
+  // 收敛阶段重置 + 容器尺寸变化时重新收敛。
+  // 本 effect 声明在测量 effect 之前,所以 total 变化时先重置阶段再测量。
+  useLayoutEffect(() => {
+    let cancelled = false
+    phase.current = 'measure'
+
+    const reset = () => {
+      if (cancelled) return
+      phase.current = 'measure'
+      setVisibleCount(total)
+    }
+    window.addEventListener('resize', reset)
+    // 字体加载完成会改变行高;若首次测量早于字体就绪,结果会偏小且当时看不出来
+    void document.fonts?.ready.then(reset)
+    return () => {
+      cancelled = true
+      window.removeEventListener('resize', reset)
+    }
+  }, [total])
+
   useLayoutEffect(() => {
     const el = ref.current
-    if (!el) return
-    if (el.scrollHeight > el.clientHeight) {
-      setVisibleCount((v) => (v > 0 ? v - 1 : 0))
+    if (!el || phase.current === 'settled') return
+
+    const overflowing = el.scrollHeight > el.clientHeight
+
+    if (overflowing) {
+      if (phase.current === 'grow') {
+        // 回增时溢出了 → 退回一格即为最大可容纳条数
+        phase.current = 'settled'
+        setVisibleCount((v) => Math.max(0, v - 1))
+        return
+      }
+      if (visibleCount <= 0) {
+        // 连一条都放不下(固定开销太大),就此定稿
+        phase.current = 'settled'
+        return
+      }
+      if (phase.current === 'measure') {
+        // 首次就溢出:按高度比例给个初值,避免逐条退几十次
+        const ratio = el.clientHeight / el.scrollHeight
+        const guess = Math.max(
+          0,
+          Math.min(visibleCount - 1, Math.floor(total * ratio))
+        )
+        phase.current = 'shrink'
+        setVisibleCount(guess)
+        return
+      }
+      phase.current = 'shrink'
+      setVisibleCount((v) => v - 1)
+      return
     }
+
+    // 未溢出:全部显示得下就定稿,否则试着多显示一条
+    if (visibleCount >= total) {
+      phase.current = 'settled'
+      return
+    }
+    phase.current = 'grow'
+    setVisibleCount((v) => Math.min(total, v + 1))
   })
 
   return {

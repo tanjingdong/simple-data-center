@@ -22,7 +22,9 @@ import {
 } from '@/schemas/gtd-item-schema'
 import {
   assigneeNames,
+  joinAssigneeInput,
   normalizeCondition,
+  splitAssigneeInput,
   todayStr
 } from '@/services/api-gtd-items'
 
@@ -173,16 +175,10 @@ export default function GtdItemForm({
         <Input
           id={`${idPrefix}-assignee`}
           placeholder='多人以逗号分隔,如:张三,李四'
-          value={value.assignee.join(',')}
-          onChange={(e) =>
-            set(
-              'assignee',
-              e.target.value
-                .split(',')
-                .map((s) => s.trim())
-                .filter((s) => s !== '')
-            )
-          }
+          // 显示与解析都必须用这一对函数:若在输入时 trim/去空,刚敲下的逗号
+          // 会在回显时被吃掉,导致永远打不出第二个名字。清洗在落库前做。
+          value={joinAssigneeInput(value.assignee)}
+          onChange={(e) => set('assignee', splitAssigneeInput(e.target.value))}
         />
       </div>
 
