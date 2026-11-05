@@ -1,5 +1,23 @@
 # Changelog
 
+## V0.7.5
+
+### **用户 API 令牌(用户key授权)**
+- 用户设置页新增「API 令牌」卡片：用户可生成/重置/删除自己的 API 令牌；令牌明文仅在生成时展示一次，数据库只保存 SHA-256 哈希，每用户最多 1 个。
+- 管理工具新增「用户key授权」页：功能总开关、按邮箱/用户名搜索用户令牌状态、禁用/启用、删除 (安全兜底)；管理员不能生成或查看令牌明文。
+- 新增后端 `backend/usertoken` 包与 `usertoken.RequireAuth` 校验中间件(本期未挂载到任何现有路由)：`Authorization: Bearer <token>` 校验通过后请求以该用户身份执行；`last_used_at` 按 60 秒节流更新。
+- users 集合新增 4 个 hidden 字段(`api_token_hash` / `api_token_created_at` / `api_token_last_used_at` / `api_token_disabled`)与部分唯一索引；非 superuser 无法通过 PB API 读写，另加请求 hook 拦截 superuser 的直接改写。
+- 升级提示：已有部署需在数据管理后台重新导入 `backend/pb_schema.json` 的 users 集合(或手工添加 4 个字段与索引)；`usertoken_enabled` 配置项由服务启动时自动补插。
+
+### **开发工具**
+- 新增 `dev_tools/start.sh`：检查二进制与既有进程后后台启动服务，日志写入 `server.log`；已有本服务进程时拒绝启动并提示先停止，避免端口冲突。
+- 新增 `dev_tools/stop.sh`：终止本机所有本项目服务进程(按进程名与命令行精确匹配，先 SIGTERM、3 秒未退再 SIGKILL)，支持 `--dry-run` 仅列出待终止 PID。
+- `dev_tools/restart.sh` 改为复用 `start.sh` 与 `stop.sh`，消除重复的启动/停止逻辑。
+
+## V0.7.4
+
+- 新增公开文档 `READEM_developer.html`，作为项目二次开发说明书（由 AI 生成，尚未校对）。
+
 ## V0.7.3
 ### **文件存储管理工具优化**
 - 「我的文件」列表每个文件行新增「复制浏览链接」按钮：点击将文件的 API 浏览地址(绝对地址 + `?inline=1`,proxy 模式下图片/PDF 可在浏览器内联显示)复制到剪贴板并 toast 提示。公开与私有文件均可复制(私有链接仅登录且有权限者访问,未授权打开显示占位图)。

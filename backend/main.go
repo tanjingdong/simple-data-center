@@ -45,6 +45,7 @@ func main() {
 
 	app.setupFilestore()
 	app.setupLinks()
+	app.setupUsertoken()
 
 	log.Fatal(app.pb.Start())
 }

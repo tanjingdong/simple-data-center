@@ -235,6 +235,12 @@ const adminToolRoutes = [
     path: 'links',
     component: adminTools[2].component,
     beforeLoad: () => ({ getTitle: () => adminTools[2].label })
+  }),
+  createRoute({
+    getParentRoute: () => adminRoute,
+    path: 'usertoken',
+    component: adminTools[3].component,
+    beforeLoad: () => ({ getTitle: () => adminTools[3].label })
   })
 ]
 

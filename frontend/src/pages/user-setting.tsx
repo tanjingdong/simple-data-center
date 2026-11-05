@@ -1,3 +1,4 @@
+import ApiTokenCard from '@/components/settings/api-token-card'
 import UserSettingsForm from '@/components/settings/user-settings-form'
 
 export default function UserSettingPage() {
@@ -8,6 +9,7 @@ export default function UserSettingPage() {
         管理您的账户信息。
       </p>
       <UserSettingsForm />
+      <ApiTokenCard />
     </main>
   )
 }
