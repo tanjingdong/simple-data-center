@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
+  buildDuplicatePersonFilter,
   buildPersonFilter,
   buildPersonListFilter,
   emptyPersonFilters,
+  escapeFilterValue,
   oneMonthAgoIso
 } from './api-persons'
 
@@ -70,5 +72,61 @@ describe('buildPersonListFilter', () => {
       'recent'
     )
     expect(filter).toMatch(/ && updated >= '/)
+  })
+})
+
+describe('buildDuplicatePersonFilter', () => {
+  const none = { lastName: '', firstName: '', mobile: '' }
+
+  it('姓与名都有值才生成同名条件', () => {
+    expect(
+      buildDuplicatePersonFilter({ ...none, lastName: '康', firstName: '勇' })
+    ).toBe("(last_name='康' && first_name='勇')")
+    expect(
+      buildDuplicatePersonFilter({ ...none, lastName: '康', firstName: '' })
+    ).toBe('')
+  })
+
+  it('仅手机号生成同手机条件', () => {
+    expect(buildDuplicatePersonFilter({ ...none, mobile: '13508749999' })).toBe(
+      "(mobile='13508749999')"
+    )
+  })
+
+  it('同名与同手机以 || 连接并各自加括号', () => {
+    expect(
+      buildDuplicatePersonFilter({
+        lastName: '康',
+        firstName: '勇',
+        mobile: '13508749999'
+      })
+    ).toBe("((last_name='康' && first_name='勇') || (mobile='13508749999'))")
+  })
+
+  it('编辑模式排除自身', () => {
+    expect(
+      buildDuplicatePersonFilter({
+        ...none,
+        mobile: '135',
+        excludeId: 'abc123'
+      })
+    ).toBe("((mobile='135')) && id != 'abc123'")
+  })
+
+  it('值 trim 后参与匹配,空值不下发查询', () => {
+    expect(
+      buildDuplicatePersonFilter({
+        lastName: ' 康 ',
+        firstName: ' 勇 ',
+        mobile: ' '
+      })
+    ).toBe("(last_name='康' && first_name='勇')")
+  })
+
+  it('单引号与反斜杠转义,避免拼坏过滤器', () => {
+    expect(escapeFilterValue("a'b\\c")).toBe("a\\'b\\\\c")
+    expect(buildDuplicatePersonFilter({ ...none, mobile: "135'00" })).toBe(
+      "(mobile='135\\'00')"
+    )
   })
 })

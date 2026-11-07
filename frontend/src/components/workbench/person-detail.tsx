@@ -54,6 +54,11 @@ export default function PersonDetail({
         key={person.id}
         person={person}
         onCancel={() => setEditing(false)}
+        onOpenPerson={(id) => {
+          // 退出编辑并跳转目标详情(未保存内容丢弃,用户已确认)
+          setEditing(false)
+          onSelectTarget?.({ type: 'persons', id })
+        }}
         onSaved={() => setEditing(false)}
       />
     )

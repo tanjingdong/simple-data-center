@@ -82,6 +82,72 @@ export function buildPersonFilter(filters: PersonFilters): string {
   return parts.length ? parts.map((p) => `(${p})`).join(' && ') : ''
 }
 
+// 转义 PocketBase filter 字符串字面量中的特殊字符(单引号与反斜杠),
+// 避免用户输入拼坏过滤器。
+export function escapeFilterValue(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+}
+
+// 重复联系人检索条件:同名同姓(姓、名分别精确相等)或同手机号(精确相等),
+// 编辑模式排除自身。无有效条件时返回空串(使用方据此跳过查询)。
+export function buildDuplicatePersonFilter(params: {
+  lastName: string
+  firstName: string
+  mobile: string
+  excludeId?: string
+}): string {
+  const lastName = params.lastName.trim()
+  const firstName = params.firstName.trim()
+  const mobile = params.mobile.trim()
+
+  const conds: string[] = []
+  if (lastName && firstName) {
+    conds.push(
+      `(last_name='${escapeFilterValue(lastName)}' && first_name='${escapeFilterValue(firstName)}')`
+    )
+  }
+  if (mobile) {
+    conds.push(`(mobile='${escapeFilterValue(mobile)}')`)
+  }
+  if (conds.length === 0) return ''
+
+  const expr = conds.join(' || ')
+  // 多项以 || 连接时整体再包一层括号:既与单测期望一致,也保证后续
+  // 拼上 `&& id != '…'` 时不会因 && 优先级高于 || 而只作用于最后一个条件
+  const grouped = conds.length > 1 ? `(${expr})` : expr
+  return params.excludeId
+    ? `(${grouped}) && id != '${escapeFilterValue(params.excludeId)}'`
+    : grouped
+}
+
+// 疑似重复联系人查询(编辑页警示用);expand 单位用于展示区分信息。
+export function duplicatePersonCandidatesQueryOptions(params: {
+  lastName: string
+  firstName: string
+  mobile: string
+  excludeId?: string
+}) {
+  const filter = buildDuplicatePersonFilter(params)
+  return queryOptions({
+    queryKey: ['persons', 'duplicates', params],
+    queryFn: async () => {
+      const result = await pb.collection('persons').getList(1, 20, {
+        filter,
+        expand: 'current_org_id'
+      })
+      return result.items.map(
+        (item) =>
+          ({
+            ...personResponseSchema.parse(item),
+            expand: item.expand as PersonWithOrg['expand']
+          }) as PersonWithOrg
+      )
+    },
+    enabled: filter !== '',
+    staleTime: 10 * 1000
+  })
+}
+
 // 列表查询(viewMode:all 不传 sort 走默认序;recent 过滤 30 天内并按更新时间倒序)
 export function personsQueryOptions(
   filters: PersonFilters,

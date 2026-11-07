@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { type TagPoolEntry } from '@/lib/person-tags'
 import { errorToast, successToast } from '@/lib/toast'
 import {
@@ -31,12 +32,25 @@ import {
 } from '@/schemas/person-schema'
 import {
   createPerson,
+  duplicatePersonCandidatesQueryOptions,
   personTagPoolQueryOptions,
   updatePerson
 } from '@/services/api-persons'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useForm, type Resolver, type UseFormReturn } from 'react-hook-form'
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient
+} from '@tanstack/react-query'
+import { useMemo } from 'react'
+import {
+  useForm,
+  useWatch,
+  type Resolver,
+  type UseFormReturn
+} from 'react-hook-form'
+import DuplicatePersonHint from './duplicate-person-hint'
 import OrgPicker from './org-picker'
 import TagSuggestRow from './tag-suggest-row'
 
@@ -80,11 +94,13 @@ function TagFieldRow({
 export default function PersonForm({
   person,
   onCancel,
-  onSaved
+  onSaved,
+  onOpenPerson
 }: {
   person?: Person
   onCancel(): void
   onSaved(): void
+  onOpenPerson?(id: string): void
 }) {
   const queryClient = useQueryClient()
 
@@ -179,6 +195,30 @@ export default function PersonForm({
     onError: (error) => errorToast(person ? '保存失败' : '创建失败', error)
   })
 
+  // 重复联系人检索:监听姓/名/手机,去抖后查询;编辑模式排除自身
+  const watchedLastName = useWatch({ control: form.control, name: 'last_name' })
+  const watchedFirstName = useWatch({
+    control: form.control,
+    name: 'first_name'
+  })
+  const watchedMobile = useWatch({ control: form.control, name: 'mobile' })
+  const duplicateParams = useMemo(
+    () => ({
+      lastName: watchedLastName ?? '',
+      firstName: watchedFirstName ?? '',
+      mobile: watchedMobile ?? '',
+      excludeId: person?.id
+    }),
+    [watchedLastName, watchedFirstName, watchedMobile, person?.id]
+  )
+  const debouncedDuplicateParams = useDebouncedValue(duplicateParams, 400)
+  const duplicatesQuery = useQuery({
+    ...duplicatePersonCandidatesQueryOptions(debouncedDuplicateParams),
+    // 加载新结果时保留旧候选,避免警示块闪烁
+    placeholderData: keepPreviousData
+  })
+  const duplicateCandidates = duplicatesQuery.data ?? []
+
   return (
     <Form {...form}>
       <form
@@ -198,6 +238,12 @@ export default function PersonForm({
             </Button>
           </div>
         </div>
+
+        {/* 疑似重复联系人警示(仅命中时显示,标题栏之下) */}
+        <DuplicatePersonHint
+          persons={duplicateCandidates}
+          onOpenPerson={onOpenPerson}
+        />
 
         {/* 分组 1:个人信息(姓/名/昵称/性别/生日/民族/血型/生肖/籍贯/出生地/政治面貌/当前单位/行政职务/技术职称/法人信息) */}
         <Card>

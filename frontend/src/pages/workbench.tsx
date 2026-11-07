@@ -174,7 +174,15 @@ export default function WorkbenchPage() {
   // 右栏内容:列表态常驻挂载(隐藏而非卸载),详情/表单态条件渲染
   const detailOrForm = creating ? (
     creating === 'persons' ? (
-      <PersonForm onCancel={closeCreating} onSaved={closeCreating} />
+      <PersonForm
+        onCancel={closeCreating}
+        onOpenPerson={(id) => {
+          // 跳转目标详情:关闭表单并选中该人员
+          setCreating(null)
+          handleSelect({ type: 'persons', id })
+        }}
+        onSaved={closeCreating}
+      />
     ) : (
       <OrganizationForm onCancel={closeCreating} onSaved={closeCreating} />
     )

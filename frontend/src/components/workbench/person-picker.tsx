@@ -12,6 +12,7 @@ import {
   PopoverContent,
   PopoverTrigger
 } from '@/components/ui/popover'
+import { buildPersonCandidateDisplay } from '@/lib/person-candidate'
 import { cn } from '@/lib/shadcn'
 import { emptyPersonFilters, personsQueryOptions } from '@/services/api-persons'
 import { useQuery } from '@tanstack/react-query'
@@ -61,29 +62,36 @@ export default function PersonPicker({
             <CommandGroup>
               {persons
                 ?.filter((p) => p.id !== excludeId)
-                .map((p) => (
-                  <CommandItem
-                    key={p.id}
-                    value={p.id}
-                    onSelect={() => {
-                      onChange(p.id)
-                      setOpen(false)
-                    }}>
-                    <CheckIcon
-                      className={cn(
-                        'mr-2 size-4',
-                        value === p.id ? 'opacity-100' : 'opacity-0'
+                .map((p) => {
+                  const d = buildPersonCandidateDisplay(p)
+                  return (
+                    <CommandItem
+                      key={p.id}
+                      value={p.id}
+                      onSelect={() => {
+                        onChange(p.id)
+                        setOpen(false)
+                      }}>
+                      <CheckIcon
+                        className={cn(
+                          'mr-2 size-4',
+                          value === p.id ? 'opacity-100' : 'opacity-0'
+                        )}
+                      />
+                      <span className='shrink-0 font-medium'>{d.label}</span>
+                      {d.nickname && (
+                        <span className='text-muted-foreground ml-1 shrink-0 text-xs'>
+                          ({d.nickname})
+                        </span>
                       )}
-                    />
-                    {p.last_name}
-                    {p.first_name}
-                    {p.nickname && (
-                      <span className='text-muted-foreground ml-1 text-xs'>
-                        ({p.nickname})
-                      </span>
-                    )}
-                  </CommandItem>
-                ))}
+                      {d.orgName && (
+                        <span className='text-muted-foreground ml-2 min-w-0 flex-1 truncate text-right text-xs'>
+                          {d.orgName}
+                        </span>
+                      )}
+                    </CommandItem>
+                  )
+                })}
             </CommandGroup>
           </CommandList>
         </Command>

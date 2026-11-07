@@ -4,6 +4,7 @@ import Mention from '@tiptap/extension-mention'
 import { PluginKey } from '@tiptap/pm/state'
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
 import { buildInitialContent, htmlToTokenText } from '@/lib/mention-serialize'
+import { buildPersonCandidateDisplay } from '@/lib/person-candidate'
 import {
   emptyPersonFilters,
   personsQueryOptions
@@ -15,8 +16,14 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-// 候选项统一结构:kind p=人 / o=组织
-type Candidate = { kind: 'p' | 'o'; id: string; label: string }
+// 候选项统一结构:kind p=人 / o=组织;昵称/单位仅人员用于展示
+type Candidate = {
+  kind: 'p' | 'o'
+  id: string
+  label: string
+  nickname?: string
+  orgName?: string
+}
 
 // @ 提及 suggestion 插件的 plugin key(选中时据此取整个 @query 选区替换)
 const mentionPluginKey = new PluginKey('event-mention-suggest')
@@ -112,11 +119,17 @@ export default function MentionEditor({
   const candidates: Candidate[] = [
     // 人员:服务端已按 search_text 过滤,本地不再 label 过滤
     // (否则"勇 康"这类倒序/空格命中会被原样比对误删)。
-    ...(persons ?? []).map((p) => ({
-      kind: 'p' as const,
-      id: p.id,
-      label: `${p.last_name}${p.first_name}`
-    })),
+    // 展示昵称/单位用于区分同名同姓,label 仍为姓名(供插入正文)
+    ...(persons ?? []).map((p) => {
+      const d = buildPersonCandidateDisplay(p)
+      return {
+        kind: 'p' as const,
+        id: p.id,
+        label: d.label,
+        nickname: d.nickname,
+        orgName: d.orgName
+      }
+    }),
     // 组织:组织查询未按名称服务端过滤,保留本地 label 过滤
     ...(orgs ?? [])
       .filter((o) => o.name.includes(query))
@@ -181,11 +194,21 @@ export default function MentionEditor({
                 <button
                   type='button'
                   onClick={() => insertMention(c)}
-                  className='hover:bg-accent flex w-full items-center gap-1.5 rounded-sm px-2 py-1.5 text-left'>
-                  <span className='text-muted-foreground text-xs'>
+                  className='hover:bg-accent flex w-full min-w-0 items-center gap-1.5 rounded-sm px-2 py-1.5 text-left'>
+                  <span className='text-muted-foreground shrink-0 text-xs'>
                     {c.kind === 'p' ? '人' : '组'}
                   </span>
-                  {c.label}
+                  <span className='shrink-0 font-medium'>{c.label}</span>
+                  {c.nickname && (
+                    <span className='text-muted-foreground shrink-0 text-xs'>
+                      ({c.nickname})
+                    </span>
+                  )}
+                  {c.orgName && (
+                    <span className='text-muted-foreground min-w-0 flex-1 truncate text-right text-xs'>
+                      {c.orgName}
+                    </span>
+                  )}
                 </button>
               </li>
             ))}
