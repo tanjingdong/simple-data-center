@@ -32,12 +32,12 @@ function BadgeRow({ label, value }: { label: string; value?: string }) {
 }
 
 type SectionRow = { label: string; value?: string; badge?: boolean }
+type SectionKey = 'personal' | 'contact' | 'social' | 'profile'
+type Section = { key: SectionKey; title: string; rows: SectionRow[] }
 
-const sections = (
-  person: Person,
-  expandedOrgName?: string
-): { title: string; rows: SectionRow[] }[] => [
+const sections = (person: Person, expandedOrgName?: string): Section[] => [
   {
+    key: 'personal',
     title: '个人信息',
     rows: [
       { label: '性别', value: person.gender || undefined },
@@ -58,6 +58,7 @@ const sections = (
     ]
   },
   {
+    key: 'contact',
     title: '联系信息',
     rows: [
       { label: '手机号', value: person.mobile || undefined },
@@ -68,6 +69,7 @@ const sections = (
     ]
   },
   {
+    key: 'social',
     title: '人脉信息',
     rows: [
       {
@@ -79,6 +81,7 @@ const sections = (
     ]
   },
   {
+    key: 'profile',
     title: '个人档案',
     rows: [
       { label: '兴趣爱好', value: person.interests || undefined },
@@ -115,7 +118,7 @@ export default function PersonOverview({
         </CardHeader>
       </Card>
       {sections(person, expandedOrgName).map((section) => (
-        <Card key={section.title}>
+        <Card key={section.key}>
           <CardHeader className='pb-2'>
             <CardTitle className='text-base'>{section.title}</CardTitle>
           </CardHeader>

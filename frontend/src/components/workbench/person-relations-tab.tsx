@@ -1,4 +1,8 @@
 import { Button } from '@/components/ui/button'
+import {
+  formatRelationPeerName,
+  getRelationOtherPerson
+} from '@/lib/relation-peers'
 import { Relation } from '@/schemas/relation-schema'
 import {
   deleteRelation,
@@ -36,14 +40,9 @@ export default function PersonRelationsTab({ personId }: { personId: string }) {
       </div>
       <ul className='divide-y'>
         {relations.map((relation) => {
-          // 对方 = expand 中 id 不等于当前对象的另一侧
-          const other =
-            relation.expand?.person_a?.id === personId
-              ? relation.expand?.person_b
-              : relation.expand?.person_a
-          const otherName = other
-            ? `${other.last_name}${other.first_name}`
-            : '未知'
+          // 对方 = expand 中 id 不等于当前对象的另一侧（与概况摘要共用解析）
+          const other = getRelationOtherPerson(relation, personId)
+          const otherName = formatRelationPeerName(other)
           return (
             <li
               key={relation.id}

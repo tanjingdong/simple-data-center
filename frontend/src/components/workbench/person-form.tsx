@@ -33,6 +33,7 @@ import {
 import {
   createPerson,
   duplicatePersonCandidatesQueryOptions,
+  hasDuplicateCriteria,
   personTagPoolQueryOptions,
   updatePerson
 } from '@/services/api-persons'
@@ -94,13 +95,11 @@ function TagFieldRow({
 export default function PersonForm({
   person,
   onCancel,
-  onSaved,
-  onOpenPerson
+  onSaved
 }: {
   person?: Person
   onCancel(): void
   onSaved(): void
-  onOpenPerson?(id: string): void
 }) {
   const queryClient = useQueryClient()
 
@@ -195,7 +194,7 @@ export default function PersonForm({
     onError: (error) => errorToast(person ? '保存失败' : '创建失败', error)
   })
 
-  // 重复联系人检索:监听姓/名/手机,去抖后查询;编辑模式排除自身
+  // 重复联系人检索:监听姓/名/手机,去抖后查询聚合列并做拼接精确判定;编辑模式排除自身
   const watchedLastName = useWatch({ control: form.control, name: 'last_name' })
   const watchedFirstName = useWatch({
     control: form.control,
@@ -217,7 +216,10 @@ export default function PersonForm({
     // 加载新结果时保留旧候选,避免警示块闪烁
     placeholderData: keepPreviousData
   })
-  const duplicateCandidates = duplicatesQuery.data ?? []
+  // 条件清空后即便缓存里还留着上一次结果(keepPreviousData)也不再展示,避免残留警示
+  const duplicateCandidates = hasDuplicateCriteria(debouncedDuplicateParams)
+    ? (duplicatesQuery.data ?? [])
+    : []
 
   return (
     <Form {...form}>
@@ -240,10 +242,7 @@ export default function PersonForm({
         </div>
 
         {/* 疑似重复联系人警示(仅命中时显示,标题栏之下) */}
-        <DuplicatePersonHint
-          persons={duplicateCandidates}
-          onOpenPerson={onOpenPerson}
-        />
+        <DuplicatePersonHint persons={duplicateCandidates} />
 
         {/* 分组 1:个人信息(姓/名/昵称/性别/生日/民族/血型/生肖/籍贯/出生地/政治面貌/当前单位/行政职务/技术职称/法人信息) */}
         <Card>

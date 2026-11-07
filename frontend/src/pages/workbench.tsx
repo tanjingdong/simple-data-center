@@ -8,6 +8,7 @@ import PersonDetail from '@/components/workbench/person-detail'
 import PersonForm from '@/components/workbench/person-form'
 import ResultTable from '@/components/workbench/result-table'
 import { isDefaultSearch, type SearchScope } from '@/lib/selection'
+import { pbIdSchema } from '@/schemas/pb-schema'
 import {
   emptyOrganizationFilters,
   organizationDetailQueryOptions,
@@ -41,7 +42,13 @@ interface AppliedSearch {
 }
 
 export default function WorkbenchPage() {
-  const [target, setTarget] = useState<WorkbenchTarget>(null)
+  // 重复联系人链接在新标签页打开 /social?person=<id>:初始态直接按参数选中该人员
+  const [target, setTarget] = useState<WorkbenchTarget>(() => {
+    const id = new URLSearchParams(window.location.search).get('person')
+    return id && pbIdSchema.safeParse(id).success
+      ? { type: 'persons', id }
+      : null
+  })
   const [creating, setCreating] = useState<CreatingMode>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -174,24 +181,29 @@ export default function WorkbenchPage() {
   // 右栏内容:列表态常驻挂载(隐藏而非卸载),详情/表单态条件渲染
   const detailOrForm = creating ? (
     creating === 'persons' ? (
-      <PersonForm
-        onCancel={closeCreating}
-        onOpenPerson={(id) => {
-          // 跳转目标详情:关闭表单并选中该人员
-          setCreating(null)
-          handleSelect({ type: 'persons', id })
-        }}
-        onSaved={closeCreating}
-      />
+      <PersonForm onCancel={closeCreating} onSaved={closeCreating} />
     ) : (
       <OrganizationForm onCancel={closeCreating} onSaved={closeCreating} />
     )
   ) : target?.type === 'persons' ? (
-    <PersonDetail
-      personId={target.id}
-      onDeleted={clearTarget}
-      onSelectTarget={handleSelect}
-    />
+    targetPerson.isError ? (
+      // 深链 /social?person=<id> 指向已删除/不存在的联系人时,给可恢复的提示,
+      // 避免整页落到全局错误页(新标签页里返回按钮往往是 no-op)
+      <div className='flex flex-col items-center gap-3 py-16 text-center'>
+        <p className='text-muted-foreground text-sm'>
+          该联系人不存在或已被删除。
+        </p>
+        <Button variant='outline' size='sm' onClick={clearTarget}>
+          返回列表
+        </Button>
+      </div>
+    ) : (
+      <PersonDetail
+        personId={target.id}
+        onDeleted={clearTarget}
+        onSelectTarget={handleSelect}
+      />
+    )
   ) : target?.type === 'organizations' ? (
     <OrganizationDetail
       orgId={target.id}

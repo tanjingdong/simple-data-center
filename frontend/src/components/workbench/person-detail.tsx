@@ -1,4 +1,10 @@
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import { errorToast, successToast } from '@/lib/toast'
 import { buildVCard } from '@/lib/vcard'
 import { deletePerson, personDetailQueryOptions } from '@/services/api-persons'
@@ -7,7 +13,14 @@ import {
   useQueryClient,
   useSuspenseQuery
 } from '@tanstack/react-query'
-import { PencilIcon, PlusIcon, QrCodeIcon, Trash2Icon } from 'lucide-react'
+import {
+  ChevronDownIcon,
+  PencilIcon,
+  PlusIcon,
+  QrCodeIcon,
+  Trash2Icon,
+  UserPlusIcon
+} from 'lucide-react'
 import { useState } from 'react'
 import EventFormDialog from './event-form-dialog'
 import ExperiencePanel from './experience-panel'
@@ -16,6 +29,7 @@ import PersonForm from './person-form'
 import PersonOverview from './person-overview'
 import PersonQrDialog from './person-qr-dialog'
 import PersonRelationsTab from './person-relations-tab'
+import RelationFormDialog from './relation-form-dialog'
 import { SimpleTabs } from './simple-tabs'
 
 // 人员详情:概况/关系/事件 三个 Tab(任职履历事件化,任职/离职走事件);
@@ -36,6 +50,9 @@ export default function PersonDetail({
   const [editing, setEditing] = useState(false)
   const [showQr, setShowQr] = useState(false)
   const [eventOpen, setEventOpen] = useState(false)
+  const [relationOpen, setRelationOpen] = useState(false)
+  // 当前页签由详情持有：「查看全部」需要从概况切到关系页签
+  const [activeTab, setActiveTab] = useState('overview')
   const queryClient = useQueryClient()
 
   const deleteMutation = useMutation({
@@ -54,11 +71,6 @@ export default function PersonDetail({
         key={person.id}
         person={person}
         onCancel={() => setEditing(false)}
-        onOpenPerson={(id) => {
-          // 退出编辑并跳转目标详情(未保存内容丢弃,用户已确认)
-          setEditing(false)
-          onSelectTarget?.({ type: 'persons', id })
-        }}
         onSaved={() => setEditing(false)}
       />
     )
@@ -72,18 +84,36 @@ export default function PersonDetail({
 
   return (
     <div className='flex h-full flex-col gap-3 p-2'>
-      <div className='flex items-center justify-between'>
+      {/* 窄屏放不下时按钮组整体换行,避免挤压姓名标题 */}
+      <div className='flex flex-wrap items-center justify-between gap-2'>
         <h1 className='text-xl font-bold'>
           {person.last_name}
           {person.first_name}
         </h1>
         <div className='flex items-center gap-2'>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={() => setEventOpen(true)}>
-            <PlusIcon className='size-4' /> 新增事件
-          </Button>
+          {/* 编辑入口收敛为下拉:编辑联系人 / 新增关系 / 新增事件,减少头部并列按钮 */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant='outline'
+                size='sm'
+                className='min-w-32 justify-center'>
+                <PencilIcon className='size-4' /> 编辑
+                <ChevronDownIcon className='size-3 opacity-60' />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end'>
+              <DropdownMenuItem onSelect={() => setEditing(true)}>
+                <PencilIcon className='size-4' /> 编辑联系人
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setRelationOpen(true)}>
+                <UserPlusIcon className='size-4' /> 新增关系
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setEventOpen(true)}>
+                <PlusIcon className='size-4' /> 新增事件
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
             variant='outline'
             size='sm'
@@ -96,9 +126,6 @@ export default function PersonDetail({
               setShowQr(true)
             }}>
             <QrCodeIcon className='size-4' /> 二维码
-          </Button>
-          <Button variant='outline' size='sm' onClick={() => setEditing(true)}>
-            <PencilIcon className='size-4' /> 编辑
           </Button>
           <Button
             variant='destructive'
@@ -123,7 +150,9 @@ export default function PersonDetail({
           { value: 'relations', label: '关系' },
           { value: 'events', label: '事件' }
         ]}
-        defaultValue='overview'>
+        defaultValue='overview'
+        value={activeTab}
+        onValueChange={setActiveTab}>
         {(active) => (
           <>
             {active === 'overview' && (
@@ -138,6 +167,7 @@ export default function PersonDetail({
                   <ExperiencePanel
                     personId={personId}
                     onSelectTarget={onSelectTarget}
+                    onViewAllRelations={() => setActiveTab('relations')}
                   />
                 </aside>
               </div>
@@ -154,7 +184,12 @@ export default function PersonDetail({
           </>
         )}
       </SimpleTabs>
-      {/* 头部「新增事件」按钮打开:prefill 当前人 token */}
+      {/* 头部「编辑」下拉打开:编辑联系人 / 新增关系 / 新增事件 */}
+      <RelationFormDialog
+        open={relationOpen}
+        personId={personId}
+        onOpenChange={setRelationOpen}
+      />
       <EventFormDialog
         open={eventOpen}
         prefill={{

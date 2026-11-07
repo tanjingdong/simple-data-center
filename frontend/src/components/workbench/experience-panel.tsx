@@ -3,17 +3,20 @@ import { eventsOfPersonQueryOptions } from '@/services/api-events'
 import { personDetailQueryOptions } from '@/services/api-persons'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import EventCard from './event-card'
+import PersonRelationsSummary from './person-relations-summary'
 
-// 经历信息:学历类字段 + 最近 10 个事件时间线(右栏)
+// 经历信息 + 关系摘要 + 最近 10 个事件时间线(右栏,顺序即用户要求的阅读流)
 export default function ExperiencePanel({
   personId,
-  onSelectTarget
+  onSelectTarget,
+  onViewAllRelations
 }: {
   personId: string
   onSelectTarget?: (target: {
     type: 'persons' | 'organizations'
     id: string
   }) => void
+  onViewAllRelations?: () => void
 }) {
   const { data: person } = useSuspenseQuery(personDetailQueryOptions(personId))
   const { data: events } = useSuspenseQuery(
@@ -45,6 +48,13 @@ export default function ExperiencePanel({
             ))}
         </CardContent>
       </Card>
+
+      {/* 关系摘要夹在经历信息与最近事件之间,点击条目仍跳转对方详情 */}
+      <PersonRelationsSummary
+        personId={personId}
+        onSelectTarget={onSelectTarget}
+        onViewAll={onViewAllRelations}
+      />
 
       <Card>
         <CardHeader className='pb-2'>

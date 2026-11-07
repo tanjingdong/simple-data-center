@@ -7,13 +7,23 @@ import { useState, type ReactNode } from 'react'
 export function SimpleTabs({
   tabs,
   defaultValue,
+  value,
+  onValueChange,
   children
 }: {
   tabs: { value: string; label: string }[]
   defaultValue: string
+  value?: string
+  onValueChange?: (value: string) => void
   children: (active: string) => ReactNode
 }) {
-  const [active, setActive] = useState(defaultValue)
+  const [internal, setInternal] = useState(defaultValue)
+  // 受控时以 value 为准；非受控仍走内部 state，兼容组织详情等既有调用方
+  const active = value ?? internal
+  const select = (next: string) => {
+    setInternal(next)
+    onValueChange?.(next)
+  }
 
   return (
     <div className='flex flex-1 flex-col gap-3'>
@@ -29,7 +39,7 @@ export function SimpleTabs({
                 ? 'bg-background font-medium shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
             )}
-            onClick={() => setActive(tab.value)}>
+            onClick={() => select(tab.value)}>
             {tab.label}
           </button>
         ))}

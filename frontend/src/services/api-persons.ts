@@ -88,8 +88,11 @@ export function escapeFilterValue(value: string): string {
   return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")
 }
 
-// 重复联系人检索条件:同名同姓(姓、名分别精确相等)或同手机号(精确相等),
-// 编辑模式排除自身。无有效条件时返回空串(使用方据此跳过查询)。
+// 重复联系人检索条件:姓名按「姓+名」与「名 空格 姓」两种形态对聚合检索列做包含召回
+// (获得超集),只要姓或名任一非空即召回(如姓填「李文」也能命中库中「李」「文」);
+// 手机号精确相等;编辑模式排除自身。无有效条件时返回空串(使用方据此跳过查询)。
+// 召回为超集(无分隔拼接会出现「李明」命中「李明明」、单位名含该串等),
+// 由 matchesDuplicatePerson 做精确判定后再展示。
 export function buildDuplicatePersonFilter(params: {
   lastName: string
   firstName: string
@@ -100,11 +103,16 @@ export function buildDuplicatePersonFilter(params: {
   const firstName = params.firstName.trim()
   const mobile = params.mobile.trim()
 
+  const fullName = lastName + firstName
+  // 「名 空格 姓」需要两侧都有值才成立;只有一侧时只召回拼接形态
+  const reversedName = lastName && firstName ? `${firstName} ${lastName}` : ''
+
   const conds: string[] = []
-  if (lastName && firstName) {
-    conds.push(
-      `(last_name='${escapeFilterValue(lastName)}' && first_name='${escapeFilterValue(firstName)}')`
-    )
+  if (fullName) {
+    conds.push(`(search_text~'${escapeFilterValue(fullName)}')`)
+  }
+  if (reversedName) {
+    conds.push(`(search_text~'${escapeFilterValue(reversedName)}')`)
   }
   if (mobile) {
     conds.push(`(mobile='${escapeFilterValue(mobile)}')`)
@@ -120,6 +128,70 @@ export function buildDuplicatePersonFilter(params: {
     : grouped
 }
 
+// 疑似重复的精确判定:姓名按「姓+名」拼接后完全相等,或「名 空格 姓」形态完全相等
+// (允许录入边界不同,如 欧阳/锋 ↔ 欧/阳锋),或手机号完全相等。
+export function matchesDuplicatePerson(
+  person: Pick<Person, 'last_name' | 'first_name' | 'mobile'>,
+  target: { fullName: string; reversedName?: string; mobile: string }
+): boolean {
+  const fullName = target.fullName.trim()
+  const reversedName = target.reversedName?.trim() ?? ''
+  const mobile = target.mobile.trim()
+  if (fullName && person.last_name + person.first_name === fullName) return true
+  if (
+    reversedName &&
+    `${person.first_name} ${person.last_name}` === reversedName
+  ) {
+    return true
+  }
+  return mobile !== '' && person.mobile === mobile
+}
+
+// 是否存在可下发的重复检查条件(姓/名/手机号任一非空,纯空白不算)。
+export function hasDuplicateCriteria(params: {
+  lastName: string
+  firstName: string
+  mobile: string
+}): boolean {
+  return Boolean(
+    params.lastName.trim() || params.firstName.trim() || params.mobile.trim()
+  )
+}
+
+// 疑似重复候选人查询:先按聚合列召回超集(getFullList 全量取回,不做 20 条截断),
+// 再用 matchesDuplicatePerson 精确判定。
+export async function findDuplicatePersonCandidates(params: {
+  lastName: string
+  firstName: string
+  mobile: string
+  excludeId?: string
+}): Promise<PersonWithOrg[]> {
+  const filter = buildDuplicatePersonFilter(params)
+  if (!filter) return []
+
+  const last = params.lastName.trim()
+  const first = params.firstName.trim()
+  const fullName = last + first
+  const reversedName = last && first ? `${first} ${last}` : ''
+  const mobile = params.mobile.trim()
+
+  const items = await pb.collection('persons').getFullList({
+    filter,
+    expand: 'current_org_id'
+  })
+  return items
+    .map(
+      (item) =>
+        ({
+          ...personResponseSchema.parse(item),
+          expand: item.expand as PersonWithOrg['expand']
+        }) as PersonWithOrg
+    )
+    .filter((p) =>
+      matchesDuplicatePerson(p, { fullName, reversedName, mobile })
+    )
+}
+
 // 疑似重复联系人查询(编辑页警示用);expand 单位用于展示区分信息。
 export function duplicatePersonCandidatesQueryOptions(params: {
   lastName: string
@@ -130,19 +202,7 @@ export function duplicatePersonCandidatesQueryOptions(params: {
   const filter = buildDuplicatePersonFilter(params)
   return queryOptions({
     queryKey: ['persons', 'duplicates', params],
-    queryFn: async () => {
-      const result = await pb.collection('persons').getList(1, 20, {
-        filter,
-        expand: 'current_org_id'
-      })
-      return result.items.map(
-        (item) =>
-          ({
-            ...personResponseSchema.parse(item),
-            expand: item.expand as PersonWithOrg['expand']
-          }) as PersonWithOrg
-      )
-    },
+    queryFn: () => findDuplicatePersonCandidates(params),
     enabled: filter !== '',
     staleTime: 10 * 1000
   })
