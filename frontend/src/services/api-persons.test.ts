@@ -11,11 +11,19 @@ describe('buildPersonFilter', () => {
     expect(buildPersonFilter(emptyPersonFilters)).toBe('')
   })
 
-  it('查询词匹配姓名、昵称、手机号', () => {
+  it('查询词对聚合列与手机号原词匹配', () => {
     const filter = buildPersonFilter({ ...emptyPersonFilters, query: '张' })
-    expect(filter).toBe(
-      "(last_name~'张' || first_name~'张' || nickname~'张' || mobile~'张')"
-    )
+    expect(filter).toBe("(search_text~'张' || mobile~'张')")
+  })
+
+  it('跨姓名检索命中聚合列', () => {
+    const filter = buildPersonFilter({ ...emptyPersonFilters, query: '康勇' })
+    expect(filter).toBe("(search_text~'康勇' || mobile~'康勇')")
+  })
+
+  it('带空格的西式顺序输入原样进入比较', () => {
+    const filter = buildPersonFilter({ ...emptyPersonFilters, query: '勇 康' })
+    expect(filter).toBe("(search_text~'勇 康' || mobile~'勇 康')")
   })
 
   it('多条件以 && 连接并各自加括号', () => {
@@ -48,9 +56,7 @@ describe('buildPersonListFilter', () => {
       { ...emptyPersonFilters, query: '张' },
       'all'
     )
-    expect(filter).toBe(
-      "(last_name~'张' || first_name~'张' || nickname~'张' || mobile~'张')"
-    )
+    expect(filter).toBe("(search_text~'张' || mobile~'张')")
   })
 
   it('viewMode=recent 追加 30 天时间条件', () => {

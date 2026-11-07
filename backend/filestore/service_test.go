@@ -19,6 +19,13 @@ func newFilestoreTestApp(t *testing.T, alistURL string) *pocketbase.PocketBase {
 	if err := pb.Bootstrap(); err != nil {
 		t.Fatalf("初始化测试应用失败: %v", err)
 	}
+	// 测试结束时释放数据库连接:Windows 下 t.TempDir 清理
+	// 删不掉仍被占用的 auxiliary.db,会让用例在断言全过后误报失败
+	t.Cleanup(func() {
+		if err := pb.ResetBootstrapState(); err != nil {
+			t.Logf("释放测试应用数据库连接失败(可忽略残留锁警告): %v", err)
+		}
+	})
 
 	// filestore_files 集合(DeleteFile 只读 storage_key,其余字段给最小集)
 	// 注意:PocketBase v0.39 的 FieldsList.Add 返回无值(void),不能接 err

@@ -77,6 +77,13 @@ func newTestHealthApp(t *testing.T) *application {
 	if err := app.pb.Bootstrap(); err != nil {
 		t.Fatalf("初始化测试应用失败: %v", err)
 	}
+	// 测试结束时释放数据库连接:Windows 下 t.TempDir 清理
+	// 删不掉仍被占用的 auxiliary.db,会让用例在断言全过后误报失败
+	t.Cleanup(func() {
+		if err := app.pb.ResetBootstrapState(); err != nil {
+			t.Logf("释放测试应用数据库连接失败(可忽略残留锁警告): %v", err)
+		}
+	})
 	app.setupHealthHooks()
 
 	collection := core.NewBaseCollection(healthCollection)

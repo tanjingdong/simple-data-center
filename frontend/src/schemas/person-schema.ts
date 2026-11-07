@@ -51,6 +51,9 @@ export const personResponseSchema = z.object({
   id: pbIdSchema,
   last_name: z.string(),
   first_name: z.string(),
+  // search_text 为服务端维护的聚合检索冗余列,前端只消费不提交
+  // (personSchema 表单与 personFormFields 不含该字段)
+  search_text: z.string().catch(''),
   gender: z.string().catch(''),
   birthday: z.string().catch('').transform((v) => v.slice(0, 10)),
   id_card: z.string().catch(''),

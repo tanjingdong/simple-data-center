@@ -25,6 +25,8 @@ tans-pim*.exe
 # Build output & server log
 release/
 server.log
+server.err.log
+.simple-data-center.pid
 
 # Database
 db

@@ -2,6 +2,15 @@
 
 本项目版本号遵循语义化版本(SemVer)。版本记录自 v0.5.0 起,更早版本见 git 历史。
 
+## [1.3.3] - 2026-11-07
+
+修复联系人跨姓名搜索,并扩展检索覆盖面。包括:
+
+- **跨姓名搜索搜索不到联系人**:输入「康勇」搜不到,输入「康」或「勇」却可以。原因是姓、名按两个字段分别模糊匹配,完整姓名两个字段都只各包含半个词。现已为 persons 增加由后端自动维护的聚合检索列 `search_text`(姓名「姓+名」与西式「名 姓」两种输入形态 + 昵称 + 当前单位名 + 行政/技术职务,无分隔拼接),检索时对聚合列和手机号做原词直接比较,「康勇」「勇 康」、昵称、单位名、职务关键词均可命中;检索视图、@提及候选、关系人员选择器三处搜索入口一并生效。已知取舍:无空格倒序「勇康」、带空格正序「康 勇」两类罕见输入不命中。
+- **数据模型变更**:persons 新增 text 字段 `search_text`,由服务端在人员保存时自动重算(前端表单不涉及、外部写入会被覆盖为重算值);组织改名/删除时相关人员的聚合列经提交后钩子同步重算(此次保存会刷新这些人的「最近更新」时间);启动时自动回填存量数据(先探测字段存在,老库缺字段只提示不写入,避免无谓更新)。
+- **升级提示**:已有部署需重新构建 exe 后,先在数据管理后台重新导入 `backend/pb_schema.json` 的 persons 集合(或手工为 persons 表添加 search_text 文本字段),再重启后端执行启动回填;未导入 schema 前请勿更新前端构建产物(新检索过滤会因字段缺失而 400)。
+- **升级提示(工具链)**:本机 Go 1.27 默认启用的 jsonv2 实验与 PocketBase v0.39.4 的集合 JSON 解码存在不兼容——在管理后台导入/编辑集合时服务端会因无限递归崩溃(栈溢出),与本项目代码无关。`dev_tools/build.sh` 与 `build.ps1` 已按编译器版本门控自动处理(仅当 go≥1.26 时设置 `GOEXPERIMENT=none` 恢复 json v1 语义,旧编译器行为不变);若绕过脚本直接 `go build`,仍需自行设置该环境变量。后续升级 PocketBase 或受官方修复后可移除该门控。
+
 ## [1.3.2] - 2026-11-05
 
 合并基座 V0.7.5。包括:
@@ -10,6 +19,7 @@
 - **令牌校验能力**:后端新增 `backend/usertoken` 包与 `usertoken.RequireAuth` 校验中间件(`Authorization: Bearer <token>` 通过后以该用户身份执行,`last_used_at` 按 60 秒节流更新);本期未挂载到任何现有业务路由,供后续公开 API 接入。
 - **数据模型变更**:users 集合新增 4 个 hidden 字段(`api_token_hash` / `api_token_created_at` / `api_token_last_used_at` / `api_token_disabled`)与部分唯一索引;非 superuser 无法通过 PB API 读写,另加请求 hook 拦截 superuser 的直接改写。`usertoken_enabled` 配置项由服务启动时自动补插。
 - **开发工具**:新增 `dev_tools/start.sh`(检查二进制与既有进程后后台启动,日志写入 `server.log`)与 `dev_tools/stop.sh`(终止本机所有本服务进程,先 SIGTERM、3 秒未退再 SIGKILL,支持 `--dry-run`);`dev_tools/restart.sh` 改为复用二者。
+- **开发工具(Windows)**:新增 `dev_tools/build.ps1` / `start.ps1` / `stop.ps1` / `restart.ps1`,与 bash 版功能一一对应,面向 Windows 实机测试;目标平台由 `build.ps1` 菜单或 `-OS`/`-Arch` 参数选择(可在 Windows 上直接交叉编译 Linux 产物)。与 bash 版的已知差异:Windows 无 SIGTERM,`stop.ps1` 为强制终止(依赖 WAL 回滚);用 `.simple-data-center.pid` 精确记 PID 并只认本项目目录下的进程;服务运行时 `build.ps1` 拒绝覆盖正在运行的 exe(在 Windows 上无法替换运行中的镜像文件);日志拆分为 `server.log`(stdout)与 `server.err.log`(stderr)。
 - **升级提示**:已有部署需在数据管理后台重新导入 `backend/pb_schema.json` 的 users 集合(或手工添加 4 个字段与索引)。
 - README 与二开说明书(`READEM_developer.html`)已同步基座说明。
 

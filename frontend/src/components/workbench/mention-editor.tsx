@@ -110,13 +110,18 @@ export default function MentionEditor({
   }, [editor, value])
 
   const candidates: Candidate[] = [
+    // 人员:服务端已按 search_text 过滤,本地不再 label 过滤
+    // (否则"勇 康"这类倒序/空格命中会被原样比对误删)。
     ...(persons ?? []).map((p) => ({
       kind: 'p' as const,
       id: p.id,
       label: `${p.last_name}${p.first_name}`
     })),
-    ...(orgs ?? []).map((o) => ({ kind: 'o' as const, id: o.id, label: o.name }))
-  ].filter((c) => c.label.includes(query))
+    // 组织:组织查询未按名称服务端过滤,保留本地 label 过滤
+    ...(orgs ?? [])
+      .filter((o) => o.name.includes(query))
+      .map((o) => ({ kind: 'o' as const, id: o.id, label: o.name }))
+  ]
 
   const insertMention = (c: Candidate) => {
     if (!editor) return

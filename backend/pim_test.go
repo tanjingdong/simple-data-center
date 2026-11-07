@@ -103,3 +103,33 @@ func TestValidateRating_Invalid(t *testing.T) {
 		}
 	}
 }
+
+// personSearchText 构造人员聚合检索列:姓名两形态(姓+名 / 名 空格 姓)
+// + 昵称 + 单位名 + 职务,无分隔符直接拼接(宁多召回,接受跨字段交界误命中)。
+// 手机号不进聚合列(检索侧单独分支);历史任职不参与(只取当前单位)。
+func TestPersonSearchText(t *testing.T) {
+	cases := []struct {
+		name          string
+		lastName      string
+		firstName     string
+		nickname      string
+		orgName       string
+		adminPosition string
+		techTitle     string
+		want          string
+	}{
+		{
+			"全字段", "康", "勇", "老王", "南海航运", "局长", "高工",
+			"康勇勇 康老王南海航运局长高工",
+		},
+		{"仅姓名", "康", "勇", "", "", "", "", "康勇勇 康"},
+		{"空姓容忍", "", "勇", "", "", "", "", "勇勇 "},
+	}
+	for _, tt := range cases {
+		got := personSearchText(tt.lastName, tt.firstName, tt.nickname, tt.orgName, tt.adminPosition, tt.techTitle)
+		if got != tt.want {
+			t.Errorf("personSearchText(%q,%q,%q,%q,%q,%q) = %q, want %q",
+				tt.lastName, tt.firstName, tt.nickname, tt.orgName, tt.adminPosition, tt.techTitle, got, tt.want)
+		}
+	}
+}

@@ -59,9 +59,9 @@ export function buildPersonFilter(filters: PersonFilters): string {
   const q = filters.query.trim()
 
   if (q) {
-    parts.push(
-      `last_name~'${q}' || first_name~'${q}' || nickname~'${q}' || mobile~'${q}'`
-    )
+    // 姓名/昵称/单位/职务统一走聚合列 search_text,手机号单独分支;
+    // 查询词保持原词(数据侧已含姓名两形态,无分隔聚合宁多召回)。
+    parts.push(`search_text~'${q}' || mobile~'${q}'`)
   }
   if (filters.personTags.trim()) {
     parts.push(`person_tags~'${filters.personTags.trim()}'`)

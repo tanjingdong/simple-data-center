@@ -329,6 +329,20 @@
         "type": "text"
       },
       {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "f_search_text",
+        "max": 0,
+        "min": 0,
+        "name": "search_text",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
         "hidden": false,
         "id": "f_gender",
         "maxSelect": 1,

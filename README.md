@@ -94,6 +94,28 @@
 - 启动开发服务器 `npm run dev`(Vite 热重载 + PocketBase 同起)
 - 维护脚本:`dev_tools/build.sh`(构建)、`dev_tools/start.sh`(启动服务)、`dev_tools/stop.sh`(终止本机所有本服务进程,支持 `--dry-run` 仅列出 PID)、`dev_tools/restart.sh`(重启服务)
 
+#### Windows
+
+`dev_tools/` 同时提供 PowerShell 版,功能与 bash 版对应,适用于在 Windows 上做「编译成品 → 启动 → 浏览器实机验证」:
+
+```powershell
+.\dev_tools\build.ps1              # 交互选择系统与架构;或 -OS linux -Arch amd64 直接指定
+.\dev_tools\start.ps1              # 后台启动,监听 0.0.0.0:8090
+.\dev_tools\start.ps1 -Port 18090  # 临时换端口(避免与已占用端口冲突)
+.\dev_tools\stop.ps1 -DryRun       # 仅列出将终止的 PID
+.\dev_tools\stop.ps1
+.\dev_tools\restart.ps1
+```
+
+与 bash 版的差异(脚本头部注释亦有说明):
+
+- Windows 无 SIGTERM,`stop.ps1` 调用 `Stop-Process` 强制终止;PocketBase 的 SQLite 使用 WAL,下次启动会自动回滚未提交事务。
+- 进程识别改用 `.simple-data-center.pid` 精确记 PID,兜底只扫描**本项目目录下**的 `simple-data-center*.exe`,不会误伤其他目录的同名程序。
+- 服务运行时 `build.ps1` 会拒绝复制到项目根目录(Windows 无法覆盖运行中的可执行文件),请先 `stop.ps1`。
+- 日志拆分为 `server.log`(stdout)与 `server.err.log`(stderr,含 `PIM_ENC_KEY` 等警告)。
+- 脚本为 UTF-8 with BOM,兼容 Windows 自带的 PowerShell 5.1 与 PowerShell 7。若提示禁止运行脚本,用 `powershell -ExecutionPolicy Bypass -File .\dev_tools\build.ps1` 或 `pwsh -File ...` 显式指定。
+- 另:`npm run dev` 的 `&` 并行在 Windows 的 cmd 下是顺序执行,开发时请分两个终端分别跑 `npm run dev:client` 与 `npm run dev:server`;`npm run build:server` 中的 `CGO_ENABLED=0 go build` 为 bash 语法,Windows 下请用 `build.ps1` 或手动设置 `$env:CGO_ENABLED='0'`。
+
 ### 生产构建
 
 - 构建前端和后端 `npm run build`

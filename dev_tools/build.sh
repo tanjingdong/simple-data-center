@@ -35,6 +35,18 @@ if ! command -v go >/dev/null 2>&1; then
   exit 1
 fi
 
+# 1.1 版本门控:go1.26+ 默认启用 jsonv2 实验,与 PocketBase v0.39.4 的集合 JSON
+# 解码不兼容(管理后台导入/编辑集合时服务端无限递归崩溃,详见 CHANGELOG 1.3.3)。
+# 仅当编译器版本 ≥1.26 时设置 GOEXPERIMENT=none 恢复经典 json v1 语义;
+# 旧编译器不设置,行为与既有一致。
+GO_MAJOR="$(go version | sed -E 's/^go version go([0-9]+)\..*/\1/')"
+GO_MINOR="$(go version | sed -E 's/^go version go[0-9]+\.([0-9]+).*/\1/')"
+if [ -n "$GO_MAJOR" ] && [ -n "$GO_MINOR" ] \
+   && { [ "$GO_MAJOR" -gt 1 ] || { [ "$GO_MAJOR" -eq 1 ] && [ "$GO_MINOR" -ge 26 ]; }; }; then
+  export GOEXPERIMENT=none
+  echo "检测到 go${GO_MAJOR}.${GO_MINOR},已自动设置 GOEXPERIMENT=none(规避 jsonv2 × PocketBase 集合解析崩溃)。"
+fi
+
 # 2. 读取版本号(package.json 顶层 version 字段)
 VERSION="$(grep '"version"' "$ROOT_DIR/package.json" | head -1 \
   | sed -E 's/.*"version"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/')"
