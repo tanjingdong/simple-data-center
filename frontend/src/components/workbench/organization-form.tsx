@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { errorToast, successToast } from '@/lib/toast'
 import {
   importanceLevelOptions,
@@ -27,21 +28,28 @@ import {
 } from '@/schemas/organization-schema'
 import {
   createOrganization,
+  duplicateOrgCandidatesQueryOptions,
   updateOrganization
 } from '@/services/api-organizations'
+import { type MergeInput } from '@/services/api-pim-merge'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useForm, type Resolver } from 'react-hook-form'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMemo, useState } from 'react'
+import { useForm, useWatch, type Resolver } from 'react-hook-form'
+import DuplicateOrganizationHint from './duplicate-organization-hint'
+import MergeDialog from './merge-dialog'
 
 // 组织新建/编辑共用表单;名称必填,资源评级 1-5,地图链接为可空 URL
 export default function OrganizationForm({
   organization,
   onCancel,
-  onSaved
+  onSaved,
+  onMerged
 }: {
   organization?: Organization
   onCancel(): void
   onSaved(): void
+  onMerged?(survivorId: string): void
 }) {
   const queryClient = useQueryClient()
 
@@ -88,6 +96,48 @@ export default function OrganizationForm({
       errorToast(organization ? '保存失败' : '创建失败', error)
   })
 
+  // 组织重名检索:监听名称,去抖后查询聚合列并做 trim 精确判定;编辑模式排除自身。
+  // 查询自身在名称为空时禁用(见 duplicateOrgCandidatesQueryOptions),此处再兜底清空,
+  // 避免禁用状态下缓存里残留的上一次候选继续展示。
+  const watchedName = useWatch({ control: form.control, name: 'name' })
+  const duplicateParams = useMemo(
+    () => ({ name: watchedName ?? '', excludeId: organization?.id }),
+    [watchedName, organization?.id]
+  )
+  const debouncedDuplicateParams = useDebouncedValue(duplicateParams, 400)
+  const duplicatesQuery = useQuery(
+    duplicateOrgCandidatesQueryOptions(debouncedDuplicateParams)
+  )
+  const duplicateCandidates = debouncedDuplicateParams.name.trim()
+    ? (duplicatesQuery.data ?? [])
+    : []
+
+  // 当前表单里的组织名称(A 侧);合并资格判定与对话框标签都用它
+  const currentNameLabel =
+    (watchedName ?? '').trim() || organization?.name || ''
+
+  // 合并入口:A 侧字段在点击瞬间冻结为快照(预览查询键包含 input,不能每次渲染重建);
+  // 候选名称同时冻结,避免候选列表随后刷新导致对话框标签变化。
+  const [mergeInput, setMergeInput] = useState<MergeInput | null>(null)
+  const [mergeOtherLabel, setMergeOtherLabel] = useState('')
+
+  // 新建模式没有 organization,不提供合并入口
+  function openMerge(candidate: Organization) {
+    if (!organization) return
+    setMergeInput({
+      kind: 'organizations',
+      editingId: organization.id,
+      otherId: candidate.id,
+      fields: form.getValues()
+    })
+    setMergeOtherLabel(candidate.name || '未命名组织')
+  }
+
+  function closeMerge() {
+    setMergeInput(null)
+    setMergeOtherLabel('')
+  }
+
   return (
     <Form {...form}>
       <form
@@ -107,6 +157,13 @@ export default function OrganizationForm({
             </Button>
           </div>
         </div>
+
+        {/* 疑似重复组织警示(仅命中时显示,标题栏之下);合并入口仅编辑模式出现 */}
+        <DuplicateOrganizationHint
+          orgs={duplicateCandidates}
+          canMerge={Boolean(organization)}
+          onMerge={openMerge}
+        />
 
         <Card>
           <CardHeader className='pb-2'>
@@ -166,6 +223,21 @@ export default function OrganizationForm({
           </CardContent>
         </Card>
       </form>
+      {/* 合并确认对话框:预览/提交/失效/提示由对话框自理,本表单只提供 A 侧快照与落点回调 */}
+      <MergeDialog
+        open={mergeInput !== null}
+        kind='organizations'
+        input={mergeInput}
+        editingLabel={currentNameLabel}
+        otherLabel={mergeOtherLabel}
+        onOpenChange={(open) => {
+          if (!open) closeMerge()
+        }}
+        onMerged={(survivorId) => {
+          closeMerge()
+          onMerged?.(survivorId)
+        }}
+      />
     </Form>
   )
 }

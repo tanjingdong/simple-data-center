@@ -1,3 +1,4 @@
+import { escapeFilterValue } from '@/lib/pb-filter'
 import { buildTagPool, type TagRecord } from '@/lib/person-tags'
 import {
   Person,
@@ -82,11 +83,8 @@ export function buildPersonFilter(filters: PersonFilters): string {
   return parts.length ? parts.map((p) => `(${p})`).join(' && ') : ''
 }
 
-// 转义 PocketBase filter 字符串字面量中的特殊字符(单引号与反斜杠),
-// 避免用户输入拼坏过滤器。
-export function escapeFilterValue(value: string): string {
-  return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")
-}
+// 转义实现统一放在 @/lib/pb-filter;此处再导出以保持既有导入路径(测试与其他调用方)。
+export { escapeFilterValue }
 
 // 重复联系人检索条件:姓名按「姓+名」与「名 空格 姓」两种形态对聚合检索列做包含召回
 // (获得超集),只要姓或名任一非空即召回(如姓填「李文」也能命中库中「李」「文」);

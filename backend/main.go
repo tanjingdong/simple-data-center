@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"sync/atomic"
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/s-petr/longhabit/frpc"
@@ -13,6 +14,10 @@ type application struct {
 	pb     *pocketbase.PocketBase
 	config appConfig
 	frpc   *frpc.Manager
+	// orgSearchTextBackfillRunning 为真时(启动回填组织 search_text 期间),
+	// organizations 的提交后级联跳过:回填的保存不应重写整张 persons 表。
+	// 用原子量是因为回填可能由多个保存路径触发,读钩子与写回填不在同一 goroutine 保证下。
+	orgSearchTextBackfillRunning atomic.Bool
 }
 
 // appConfig holds the application's configuration settings.
@@ -38,6 +43,7 @@ func main() {
 	app.mountFs()
 	app.setupAuthHooks()
 	app.setupPimHooks()
+	app.setupPimMergeRoutes()
 	app.setupHealthHooks()
 	app.setupHealthRoutes()
 	app.disableHealthRouteLogging()

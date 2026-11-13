@@ -42,11 +42,17 @@ interface AppliedSearch {
 }
 
 export default function WorkbenchPage() {
-  // 重复联系人链接在新标签页打开 /social?person=<id>:初始态直接按参数选中该人员
+  // 重复联系人/组织链接在新标签页打开 /social?person=<id> 或 /social?org=<id>:
+  // 初始态直接按参数选中该记录;person 优先,参数都非法时为 null(列表态)
   const [target, setTarget] = useState<WorkbenchTarget>(() => {
-    const id = new URLSearchParams(window.location.search).get('person')
-    return id && pbIdSchema.safeParse(id).success
-      ? { type: 'persons', id }
+    const params = new URLSearchParams(window.location.search)
+    const personId = params.get('person')
+    if (personId && pbIdSchema.safeParse(personId).success) {
+      return { type: 'persons', id: personId }
+    }
+    const orgId = params.get('org')
+    return orgId && pbIdSchema.safeParse(orgId).success
+      ? { type: 'organizations', id: orgId }
       : null
   })
   const [creating, setCreating] = useState<CreatingMode>(null)
@@ -205,11 +211,24 @@ export default function WorkbenchPage() {
       />
     )
   ) : target?.type === 'organizations' ? (
-    <OrganizationDetail
-      orgId={target.id}
-      onDeleted={clearTarget}
-      onSelectTarget={handleSelect}
-    />
+    targetOrg.isError ? (
+      // 深链 /social?org=<id> 指向已删除/不存在的组织时,给可恢复的提示,
+      // 避免整页落到全局错误页(与上面的联系人分支对称)
+      <div className='flex flex-col items-center gap-3 py-16 text-center'>
+        <p className='text-muted-foreground text-sm'>
+          该组织不存在或已被删除。
+        </p>
+        <Button variant='outline' size='sm' onClick={clearTarget}>
+          返回列表
+        </Button>
+      </div>
+    ) : (
+      <OrganizationDetail
+        orgId={target.id}
+        onDeleted={clearTarget}
+        onSelectTarget={handleSelect}
+      />
+    )
   ) : null
 
   return (

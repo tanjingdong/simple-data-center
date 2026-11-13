@@ -24,6 +24,9 @@ export const organizationSchema = z.object({
 export const organizationResponseSchema = z.object({
   id: pbIdSchema,
   name: z.string(),
+  // search_text 为服务端维护的聚合检索冗余列(= TrimSpace(name)),前端只消费不提交
+  // (organizationSchema 表单与 OrganizationFormFields 不含该字段)
+  search_text: z.string().catch(''),
   type: z.string().catch(''),
   importance_level: z.number().catch(0),
   phone: z.string().catch(''),

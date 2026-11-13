@@ -31,12 +31,14 @@ import {
   trustLevelOptions
 } from '@/schemas/person-schema'
 import {
+  PersonWithOrg,
   createPerson,
   duplicatePersonCandidatesQueryOptions,
   hasDuplicateCriteria,
   personTagPoolQueryOptions,
   updatePerson
 } from '@/services/api-persons'
+import { type MergeInput } from '@/services/api-pim-merge'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   keepPreviousData,
@@ -44,7 +46,7 @@ import {
   useQuery,
   useQueryClient
 } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import {
   useForm,
   useWatch,
@@ -52,6 +54,7 @@ import {
   type UseFormReturn
 } from 'react-hook-form'
 import DuplicatePersonHint from './duplicate-person-hint'
+import MergeDialog from './merge-dialog'
 import OrgPicker from './org-picker'
 import TagSuggestRow from './tag-suggest-row'
 
@@ -95,11 +98,13 @@ function TagFieldRow({
 export default function PersonForm({
   person,
   onCancel,
-  onSaved
+  onSaved,
+  onMerged
 }: {
   person?: Person
   onCancel(): void
   onSaved(): void
+  onMerged?(survivorId: string): void
 }) {
   const queryClient = useQueryClient()
 
@@ -221,6 +226,37 @@ export default function PersonForm({
     ? (duplicatesQuery.data ?? [])
     : []
 
+  // 当前表单里的姓名(A 侧);合并资格判定与对话框标签都用它
+  const currentName = {
+    last_name: watchedLastName ?? '',
+    first_name: watchedFirstName ?? ''
+  }
+  const currentNameLabel = currentName.last_name + currentName.first_name
+
+  // 合并入口:A 侧字段在点击瞬间冻结为快照(预览查询键包含 input,不能每次渲染重建);
+  // 候选姓名同时冻结,避免候选列表随后刷新导致对话框标签变化。
+  const [mergeInput, setMergeInput] = useState<MergeInput | null>(null)
+  const [mergeOtherLabel, setMergeOtherLabel] = useState('')
+
+  // 新建模式没有 person,不提供合并入口
+  function openMerge(candidate: PersonWithOrg) {
+    if (!person) return
+    setMergeInput({
+      kind: 'persons',
+      editingId: person.id,
+      otherId: candidate.id,
+      fields: form.getValues()
+    })
+    setMergeOtherLabel(
+      `${candidate.last_name}${candidate.first_name}` || '未命名联系人'
+    )
+  }
+
+  function closeMerge() {
+    setMergeInput(null)
+    setMergeOtherLabel('')
+  }
+
   return (
     <Form {...form}>
       <form
@@ -241,8 +277,13 @@ export default function PersonForm({
           </div>
         </div>
 
-        {/* 疑似重复联系人警示(仅命中时显示,标题栏之下) */}
-        <DuplicatePersonHint persons={duplicateCandidates} />
+        {/* 疑似重复联系人警示(仅命中时显示,标题栏之下);合并入口仅编辑模式出现 */}
+        <DuplicatePersonHint
+          persons={duplicateCandidates}
+          canMerge={Boolean(person)}
+          currentName={currentName}
+          onMerge={openMerge}
+        />
 
         {/* 分组 1:个人信息(姓/名/昵称/性别/生日/民族/血型/生肖/籍贯/出生地/政治面貌/当前单位/行政职务/技术职称/法人信息) */}
         <Card>
@@ -389,6 +430,21 @@ export default function PersonForm({
           </CardContent>
         </Card>
       </form>
+      {/* 合并确认对话框:预览/提交/失效/提示由对话框自理,本表单只提供 A 侧快照与落点回调 */}
+      <MergeDialog
+        open={mergeInput !== null}
+        kind='persons'
+        input={mergeInput}
+        editingLabel={currentNameLabel}
+        otherLabel={mergeOtherLabel}
+        onOpenChange={(open) => {
+          if (!open) closeMerge()
+        }}
+        onMerged={(survivorId) => {
+          closeMerge()
+          onMerged?.(survivorId)
+        }}
+      />
     </Form>
   )
 }

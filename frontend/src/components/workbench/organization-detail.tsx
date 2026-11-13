@@ -56,6 +56,11 @@ export default function OrganizationDetail({
         organization={organization}
         onCancel={() => setEditing(false)}
         onSaved={() => setEditing(false)}
+        onMerged={(id) => {
+          // 合并后当前编辑记录可能已被删除,退出编辑态并切到保留者详情
+          setEditing(false)
+          onSelectTarget?.({ type: 'organizations', id })
+        }}
       />
     )
   }

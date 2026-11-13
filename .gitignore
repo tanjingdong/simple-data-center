@@ -12,6 +12,13 @@ release/
 CLAUDE.md
 server.log
 
+# 本地联系人笔记(指向个人 Obsidian 库的 junction,不入库)
+resource/联系人信息/
+
+# 本地工具与权限修复备份,不入库
+.dsh/
+acl-recovery/
+
 # Compiled binary
 longhabit
 longhabit*.exe
